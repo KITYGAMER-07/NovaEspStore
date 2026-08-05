@@ -166,13 +166,31 @@
 
             const durData = await getData('durations/' + durationId);
             const prices = await getList('prices');
+            let priceFound = false;
             prices.forEach(p => {
                 if (p.productId === currentProduct.id && p.durationId === durationId) {
                     currentPrice = p.price;
                     const unitLabel = durData?.unit ? durData.unit.charAt(0).toUpperCase() + durData.unit.slice(1) : '';
                     currentDuration = { id: durationId, name: durData?.name + ' ' + unitLabel };
+                    priceFound = true;
                 }
             });
+
+            if (!priceFound) {
+                document.getElementById('totalDisplay').innerHTML = '<span class="text-danger fw-bold"><i class="bi bi-x-circle"></i> Price not set for this combination</span>';
+                document.getElementById('purchaseBtn').disabled = true;
+                return;
+            }
+
+            // Check if keys available
+            const keys = await getList('licenseKeys');
+            const availableKey = keys.find(k => k.productId === currentProduct.id && k.durationId === durationId && !k.used);
+
+            if (!availableKey) {
+                document.getElementById('totalDisplay').innerHTML = '<span class="text-danger fw-bold"><i class="bi bi-x-circle"></i> Not available. Choose another duration</span>';
+                document.getElementById('purchaseBtn').disabled = true;
+                return;
+            }
 
             document.getElementById('purchaseBtn').disabled = false;
             calculateTotal();
