@@ -1,0 +1,1213 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Key Selling Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit, setDoc, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firestore.js";
+
+        // ==========================================
+        // FIREBASE CONFIG - REPLACE WITH YOURS
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "YOUR_FIREBASE_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // ==========================================
+        // RAZORPAY CONFIG - REPLACE WITH YOURS
+        // ==========================================
+        const RAZORPAY_KEY_ID = "YOUR_RAZORPAY_KEY_ID";
+
+        // ==========================================
+        // ADMIN CREDENTIALS
+        // ==========================================
+        const ADMIN_USERNAME = "admin";
+        const ADMIN_PASSWORD = "admin123";
+
+        // ==========================================
+        // GLOBAL STATE
+        // ==========================================
+        let currentProduct = null;
+        let currentDuration = null;
+        let currentPrice = 0;
+        let currentCoupon = null;
+        let discountAmount = 0;
+        let finalAmount = 0;
+        let isAdmin = false;
+
+        // ==========================================
+        // NAVIGATION
+        // ==========================================
+        window.showSection = function(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.add('d-none'));
+            document.getElementById(sectionId).classList.remove('d-none');
+            if (sectionId === 'admin-dashboard') loadAdminDashboard();
+            if (sectionId === 'admin-products') loadAdminProducts();
+            if (sectionId === 'admin-durations') loadAdminDurations();
+            if (sectionId === 'admin-prices') loadAdminPrices();
+            if (sectionId === 'admin-keys') loadAdminKeys();
+            if (sectionId === 'admin-coupons') loadAdminCoupons();
+            if (sectionId === 'admin-orders') loadAdminOrders();
+            if (sectionId === 'admin-payments') loadAdminPayments();
+        };
+
+        // ==========================================
+        // HOME PAGE - LOAD PRODUCTS
+        // ==========================================
+        async function loadHomeProducts() {
+            const select = document.getElementById('productSelect');
+            select.innerHTML = '<option value="">-- Select Product --</option>';
+
+            const snapshot = await getDocs(collection(db, 'products'));
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.enabled !== false) {
+                    select.innerHTML += `<option value="${doc.id}">${data.name}</option>`;
+                }
+            });
+        }
+
+        window.onProductChange = async function() {
+            const productId = document.getElementById('productSelect').value;
+            const durationSelect = document.getElementById('durationSelect');
+            durationSelect.innerHTML = '<option value="">-- Select Duration --</option>';
+            document.getElementById('priceDisplay').innerHTML = '<span class="text-muted">Select duration to see price</span>';
+            document.getElementById('purchaseBtn').disabled = true;
+            currentProduct = null;
+            currentDuration = null;
+            currentPrice = 0;
+
+            if (!productId) return;
+
+            const docRef = doc(db, 'products', productId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                currentProduct = { id: docSnap.id, ...docSnap.data() };
+
+                // Load durations with prices for this product
+                const pricesSnapshot = await getDocs(collection(db, 'prices'));
+                const durationIds = new Set();
+                pricesSnapshot.forEach(p => {
+                    const pdata = p.data();
+                    if (pdata.productId === productId) {
+                        durationIds.add(pdata.durationId);
+                    }
+                });
+
+                for (const durId of durationIds) {
+                    const durRef = doc(db, 'durations', durId);
+                    const durSnap = await getDoc(durRef);
+                    if (durSnap.exists()) {
+                        const durData = durSnap.data();
+                        durationSelect.innerHTML += `<option value="${durId}">${durData.name}</option>`;
+                    }
+                }
+            }
+        };
+
+        window.onDurationChange = async function() {
+            const durationId = document.getElementById('durationSelect').value;
+            if (!durationId || !currentProduct) return;
+
+            const pricesSnapshot = await getDocs(collection(db, 'prices'));
+            pricesSnapshot.forEach(p => {
+                const pdata = p.data();
+                if (pdata.productId === currentProduct.id && pdata.durationId === durationId) {
+                    currentPrice = pdata.price;
+                    currentDuration = { id: durationId, name: document.getElementById('durationSelect').options[document.getElementById('durationSelect').selectedIndex].text };
+                }
+            });
+
+            document.getElementById('priceDisplay').innerHTML = `<h4 class="text-success fw-bold">₹${currentPrice}</h4>`;
+            document.getElementById('purchaseBtn').disabled = false;
+            calculateTotal();
+        };
+
+        window.applyCoupon = async function() {
+            const code = document.getElementById('couponInput').value.trim().toUpperCase();
+            if (!code) {
+                currentCoupon = null;
+                calculateTotal();
+                return;
+            }
+
+            const couponsSnapshot = await getDocs(collection(db, 'coupons'));
+            let found = false;
+            couponsSnapshot.forEach(c => {
+                const cdata = c.data();
+                if (cdata.code === code) {
+                    const now = new Date();
+                    const expiry = cdata.expiryDate ? new Date(cdata.expiryDate) : null;
+                    if (!expiry || expiry > now) {
+                        currentCoupon = { id: c.id, ...cdata };
+                        found = true;
+                    }
+                }
+            });
+
+            if (found) {
+                document.getElementById('couponMsg').innerHTML = '<span class="text-success"><i class="bi bi-check-circle"></i> Coupon applied!</span>';
+            } else {
+                document.getElementById('couponMsg').innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Invalid or expired coupon</span>';
+                currentCoupon = null;
+            }
+            calculateTotal();
+        };
+
+        function calculateTotal() {
+            discountAmount = 0;
+            if (currentCoupon) {
+                if (currentCoupon.type === 'percentage') {
+                    discountAmount = Math.round(currentPrice * currentCoupon.value / 100);
+                } else {
+                    discountAmount = currentCoupon.value;
+                }
+            }
+            finalAmount = Math.max(0, currentPrice - discountAmount);
+
+            let html = '';
+            if (currentCoupon) {
+                html += `<div class="text-decoration-line-through text-muted">₹${currentPrice}</div>`;
+                html += `<div class="text-success">Discount: -₹${discountAmount}</div>`;
+            }
+            html += `<div class="h3 text-primary fw-bold">Total: ₹${finalAmount}</div>`;
+            document.getElementById('totalDisplay').innerHTML = html;
+        }
+
+        // ==========================================
+        // RAZORPAY PAYMENT
+        // ==========================================
+        window.initiatePayment = async function() {
+            if (!currentProduct || !currentDuration || finalAmount <= 0) return;
+
+            const orderId = 'ORD' + Date.now();
+
+            const options = {
+                key: RAZORPAY_KEY_ID,
+                amount: finalAmount * 100,
+                currency: "INR",
+                name: currentProduct.name,
+                description: `${currentProduct.name} - ${currentDuration.name}`,
+                order_id: orderId,
+                handler: async function(response) {
+                    await processSuccessPayment(response, orderId);
+                },
+                prefill: {
+                    name: "",
+                    email: "",
+                    contact: ""
+                },
+                theme: {
+                    color: "#0d6efd"
+                }
+            };
+
+            const rzp = new Razorpay(options);
+            rzp.on('payment.failed', function(response) {
+                alert('Payment failed: ' + response.error.description);
+            });
+            rzp.open();
+        };
+
+        async function processSuccessPayment(response, orderId) {
+            // Find unused license key
+            const keysQuery = query(collection(db, 'licenseKeys'), where('productId', '==', currentProduct.id), where('used', '==', false), limit(1));
+            const keysSnapshot = await getDocs(keysQuery);
+
+            let assignedKey = null;
+            if (!keysSnapshot.empty) {
+                const keyDoc = keysSnapshot.docs[0];
+                assignedKey = keyDoc.data().key;
+                await updateDoc(doc(db, 'licenseKeys', keyDoc.id), { used: true, usedAt: serverTimestamp(), orderId: orderId });
+            }
+
+            // Save order
+            const orderData = {
+                orderId: orderId,
+                productId: currentProduct.id,
+                productName: currentProduct.name,
+                durationId: currentDuration.id,
+                durationName: currentDuration.name,
+                originalPrice: currentPrice,
+                discountAmount: discountAmount,
+                finalAmount: finalAmount,
+                couponCode: currentCoupon ? currentCoupon.code : null,
+                licenseKey: assignedKey,
+                paymentId: response.razorpay_payment_id,
+                status: 'paid',
+                createdAt: serverTimestamp()
+            };
+            await addDoc(collection(db, 'orders'), orderData);
+
+            // Save payment record
+            await addDoc(collection(db, 'payments'), {
+                orderId: orderId,
+                paymentId: response.razorpay_payment_id,
+                amount: finalAmount,
+                gateway: 'razorpay',
+                status: 'success',
+                createdAt: serverTimestamp()
+            });
+
+            // Show success
+            document.getElementById('successOrderId').textContent = orderId;
+            document.getElementById('successProduct').textContent = currentProduct.name;
+            document.getElementById('successDuration').textContent = currentDuration.name;
+            document.getElementById('successKey').textContent = assignedKey || 'No keys available - Contact Admin';
+            document.getElementById('successAmount').textContent = '₹' + finalAmount;
+
+            showSection('success-page');
+        }
+
+        window.copyKey = function() {
+            const key = document.getElementById('successKey').textContent;
+            navigator.clipboard.writeText(key);
+            alert('License key copied!');
+        };
+
+        window.downloadInvoice = function() {
+            const orderId = document.getElementById('successOrderId').textContent;
+            const product = document.getElementById('successProduct').textContent;
+            const duration = document.getElementById('successDuration').textContent;
+            const key = document.getElementById('successKey').textContent;
+            const amount = document.getElementById('successAmount').textContent;
+
+            const invoice = `
+=====================================
+         INVOICE
+=====================================
+Order ID: ${orderId}
+Date: ${new Date().toLocaleString()}
+-------------------------------------
+Product: ${product}
+Duration: ${duration}
+License Key: ${key}
+-------------------------------------
+Amount Paid: ${amount}
+=====================================
+Thank you for your purchase!
+            `;
+
+            const blob = new Blob([invoice], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Invoice_${orderId}.txt`;
+            a.click();
+        };
+
+        // ==========================================
+        // ADMIN LOGIN
+        // ==========================================
+        window.adminLogin = function() {
+            const u = document.getElementById('adminUser').value;
+            const p = document.getElementById('adminPass').value;
+            if (u === ADMIN_USERNAME && p === ADMIN_PASSWORD) {
+                isAdmin = true;
+                document.getElementById('adminNav').classList.remove('d-none');
+                document.getElementById('loginNav').classList.add('d-none');
+                showSection('admin-dashboard');
+            } else {
+                alert('Invalid credentials!');
+            }
+        };
+
+        window.adminLogout = function() {
+            isAdmin = false;
+            document.getElementById('adminNav').classList.add('d-none');
+            document.getElementById('loginNav').classList.remove('d-none');
+            showSection('home');
+        };
+
+        // ==========================================
+        // ADMIN DASHBOARD
+        // ==========================================
+        async function loadAdminDashboard() {
+            const ordersSnap = await getDocs(collection(db, 'orders'));
+            let totalOrders = 0, totalSales = 0, totalRevenue = 0;
+            const recentOrders = [];
+
+            ordersSnap.forEach(d => {
+                const data = d.data();
+                totalOrders++;
+                if (data.status === 'paid') {
+                    totalSales++;
+                    totalRevenue += data.finalAmount || 0;
+                }
+                recentOrders.push(data);
+            });
+
+            document.getElementById('dashTotalOrders').textContent = totalOrders;
+            document.getElementById('dashTotalSales').textContent = totalSales;
+            document.getElementById('dashRevenue').textContent = '₹' + totalRevenue;
+
+            recentOrders.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+            let html = '';
+            recentOrders.slice(0, 5).forEach(o => {
+                html += `<tr><td>${o.orderId}</td><td>${o.productName}</td><td>${o.durationName}</td><td>₹${o.finalAmount}</td><td><span class="badge bg-success">${o.status}</span></td></tr>`;
+            });
+            document.getElementById('recentOrdersTable').innerHTML = html || '<tr><td colspan="5" class="text-center">No orders yet</td></tr>';
+        }
+
+        // ==========================================
+        // ADMIN PRODUCTS
+        // ==========================================
+        async function loadAdminProducts() {
+            const snapshot = await getDocs(collection(db, 'products'));
+            let html = '';
+            snapshot.forEach(d => {
+                const data = d.data();
+                html += `<tr>
+                    <td>${data.name}</td>
+                    <td><span class="badge ${data.enabled !== false ? 'bg-success' : 'bg-secondary'}">${data.enabled !== false ? 'Enabled' : 'Disabled'}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="editProduct('${d.id}', '${data.name}', ${data.enabled !== false})"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteProduct('${d.id}')"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('productsTable').innerHTML = html || '<tr><td colspan="3" class="text-center">No products</td></tr>';
+        }
+
+        window.saveProduct = async function() {
+            const name = document.getElementById('productName').value.trim();
+            const enabled = document.getElementById('productEnabled').checked;
+            const editId = document.getElementById('productEditId').value;
+
+            if (!name) { alert('Enter product name'); return; }
+
+            if (editId) {
+                await updateDoc(doc(db, 'products', editId), { name, enabled });
+            } else {
+                await addDoc(collection(db, 'products'), { name, enabled, createdAt: serverTimestamp() });
+            }
+
+            document.getElementById('productName').value = '';
+            document.getElementById('productEditId').value = '';
+            document.getElementById('productEnabled').checked = true;
+            document.getElementById('productModalTitle').textContent = 'Add Product';
+            bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
+            loadAdminProducts();
+        };
+
+        window.editProduct = function(id, name, enabled) {
+            document.getElementById('productName').value = name;
+            document.getElementById('productEnabled').checked = enabled;
+            document.getElementById('productEditId').value = id;
+            document.getElementById('productModalTitle').textContent = 'Edit Product';
+            new bootstrap.Modal(document.getElementById('productModal')).show();
+        };
+
+        window.deleteProduct = async function(id) {
+            if (confirm('Delete this product?')) {
+                await deleteDoc(doc(db, 'products', id));
+                loadAdminProducts();
+            }
+        };
+
+        window.openProductModal = function() {
+            document.getElementById('productName').value = '';
+            document.getElementById('productEditId').value = '';
+            document.getElementById('productEnabled').checked = true;
+            document.getElementById('productModalTitle').textContent = 'Add Product';
+            new bootstrap.Modal(document.getElementById('productModal')).show();
+        };
+
+        // ==========================================
+        // ADMIN DURATIONS
+        // ==========================================
+        async function loadAdminDurations() {
+            const snapshot = await getDocs(collection(db, 'durations'));
+            let html = '';
+            snapshot.forEach(d => {
+                const data = d.data();
+                html += `<tr>
+                    <td>${data.name}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="editDuration('${d.id}', '${data.name}')"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteDuration('${d.id}')"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('durationsTable').innerHTML = html || '<tr><td colspan="2" class="text-center">No durations</td></tr>';
+        }
+
+        window.saveDuration = async function() {
+            const name = document.getElementById('durationName').value.trim();
+            const editId = document.getElementById('durationEditId').value;
+            if (!name) { alert('Enter duration name'); return; }
+
+            if (editId) {
+                await updateDoc(doc(db, 'durations', editId), { name });
+            } else {
+                await addDoc(collection(db, 'durations'), { name, createdAt: serverTimestamp() });
+            }
+
+            document.getElementById('durationName').value = '';
+            document.getElementById('durationEditId').value = '';
+            document.getElementById('durationModalTitle').textContent = 'Add Duration';
+            bootstrap.Modal.getInstance(document.getElementById('durationModal')).hide();
+            loadAdminDurations();
+        };
+
+        window.editDuration = function(id, name) {
+            document.getElementById('durationName').value = name;
+            document.getElementById('durationEditId').value = id;
+            document.getElementById('durationModalTitle').textContent = 'Edit Duration';
+            new bootstrap.Modal(document.getElementById('durationModal')).show();
+        };
+
+        window.deleteDuration = async function(id) {
+            if (confirm('Delete this duration?')) {
+                await deleteDoc(doc(db, 'durations', id));
+                loadAdminDurations();
+            }
+        };
+
+        window.openDurationModal = function() {
+            document.getElementById('durationName').value = '';
+            document.getElementById('durationEditId').value = '';
+            document.getElementById('durationModalTitle').textContent = 'Add Duration';
+            new bootstrap.Modal(document.getElementById('durationModal')).show();
+        };
+
+        // ==========================================
+        // ADMIN PRICES
+        // ==========================================
+        async function loadAdminPrices() {
+            const pricesSnap = await getDocs(collection(db, 'prices'));
+            const productsSnap = await getDocs(collection(db, 'products'));
+            const durationsSnap = await getDocs(collection(db, 'durations'));
+
+            const products = {}, durations = {};
+            productsSnap.forEach(d => products[d.id] = d.data().name);
+            durationsSnap.forEach(d => durations[d.id] = d.data().name);
+
+            let html = '';
+            pricesSnap.forEach(d => {
+                const data = d.data();
+                html += `<tr>
+                    <td>${products[data.productId] || 'Unknown'}</td>
+                    <td>${durations[data.durationId] || 'Unknown'}</td>
+                    <td>₹${data.price}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="editPrice('${d.id}', '${data.productId}', '${data.durationId}', ${data.price})"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deletePrice('${d.id}')"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('pricesTable').innerHTML = html || '<tr><td colspan="4" class="text-center">No prices set</td></tr>';
+        }
+
+        async function populatePriceDropdowns() {
+            const pSelect = document.getElementById('priceProduct');
+            const dSelect = document.getElementById('priceDuration');
+            pSelect.innerHTML = '<option value="">Select Product</option>';
+            dSelect.innerHTML = '<option value="">Select Duration</option>';
+
+            const pSnap = await getDocs(collection(db, 'products'));
+            pSnap.forEach(d => {
+                if (d.data().enabled !== false) pSelect.innerHTML += `<option value="${d.id}">${d.data().name}</option>`;
+            });
+
+            const dSnap = await getDocs(collection(db, 'durations'));
+            dSnap.forEach(d => {
+                dSelect.innerHTML += `<option value="${d.id}">${d.data().name}</option>`;
+            });
+        }
+
+        window.savePrice = async function() {
+            const productId = document.getElementById('priceProduct').value;
+            const durationId = document.getElementById('priceDuration').value;
+            const price = parseInt(document.getElementById('priceValue').value);
+            const editId = document.getElementById('priceEditId').value;
+
+            if (!productId || !durationId || !price || price <= 0) { alert('Fill all fields'); return; }
+
+            if (editId) {
+                await updateDoc(doc(db, 'prices', editId), { productId, durationId, price });
+            } else {
+                await addDoc(collection(db, 'prices'), { productId, durationId, price, createdAt: serverTimestamp() });
+            }
+
+            document.getElementById('priceValue').value = '';
+            document.getElementById('priceEditId').value = '';
+            document.getElementById('priceModalTitle').textContent = 'Set Price';
+            bootstrap.Modal.getInstance(document.getElementById('priceModal')).hide();
+            loadAdminPrices();
+        };
+
+        window.editPrice = function(id, productId, durationId, price) {
+            document.getElementById('priceProduct').value = productId;
+            document.getElementById('priceDuration').value = durationId;
+            document.getElementById('priceValue').value = price;
+            document.getElementById('priceEditId').value = id;
+            document.getElementById('priceModalTitle').textContent = 'Edit Price';
+            new bootstrap.Modal(document.getElementById('priceModal')).show();
+        };
+
+        window.deletePrice = async function(id) {
+            if (confirm('Delete this price?')) {
+                await deleteDoc(doc(db, 'prices', id));
+                loadAdminPrices();
+            }
+        };
+
+        window.openPriceModal = async function() {
+            await populatePriceDropdowns();
+            document.getElementById('priceValue').value = '';
+            document.getElementById('priceEditId').value = '';
+            document.getElementById('priceModalTitle').textContent = 'Set Price';
+            new bootstrap.Modal(document.getElementById('priceModal')).show();
+        };
+
+        // ==========================================
+        // ADMIN LICENSE KEYS
+        // ==========================================
+        async function loadAdminKeys() {
+            const snapshot = await getDocs(collection(db, 'licenseKeys'));
+            const productsSnap = await getDocs(collection(db, 'products'));
+            const products = {};
+            productsSnap.forEach(d => products[d.id] = d.data().name);
+
+            let activeHtml = '', usedHtml = '';
+            snapshot.forEach(d => {
+                const data = d.data();
+                const row = `<tr><td>${products[data.productId] || 'Unknown'}</td><td><code>${data.key}</code></td><td>${data.usedAt ? new Date(data.usedAt.seconds * 1000).toLocaleDateString() : '-'}</td></tr>`;
+                if (data.used) {
+                    usedHtml += row;
+                } else {
+                    activeHtml += row;
+                }
+            });
+
+            document.getElementById('activeKeysTable').innerHTML = activeHtml || '<tr><td colspan="3" class="text-center">No active keys</td></tr>';
+            document.getElementById('usedKeysTable').innerHTML = usedHtml || '<tr><td colspan="3" class="text-center">No used keys</td></tr>';
+
+            // Populate product dropdown for key import
+            const kSelect = document.getElementById('keyProduct');
+            kSelect.innerHTML = '<option value="">Select Product</option>';
+            productsSnap.forEach(d => {
+                if (d.data().enabled !== false) kSelect.innerHTML += `<option value="${d.id}">${d.data().name}</option>`;
+            });
+        }
+
+        window.importKeys = async function() {
+            const productId = document.getElementById('keyProduct').value;
+            const keysText = document.getElementById('keysTextarea').value.trim();
+
+            if (!productId || !keysText) { alert('Select product and enter keys'); return; }
+
+            const keys = keysText.split('
+').map(k => k.trim()).filter(k => k);
+            let count = 0;
+            for (const key of keys) {
+                await addDoc(collection(db, 'licenseKeys'), { productId, key, used: false, createdAt: serverTimestamp() });
+                count++;
+            }
+
+            alert(`${count} keys imported!`);
+            document.getElementById('keysTextarea').value = '';
+            loadAdminKeys();
+        };
+
+        window.addSingleKey = async function() {
+            const productId = document.getElementById('keyProduct').value;
+            const key = document.getElementById('singleKeyInput').value.trim();
+
+            if (!productId || !key) { alert('Select product and enter key'); return; }
+
+            await addDoc(collection(db, 'licenseKeys'), { productId, key, used: false, createdAt: serverTimestamp() });
+            document.getElementById('singleKeyInput').value = '';
+            alert('Key added!');
+            loadAdminKeys();
+        };
+
+        // ==========================================
+        // ADMIN COUPONS
+        // ==========================================
+        async function loadAdminCoupons() {
+            const snapshot = await getDocs(collection(db, 'coupons'));
+            let html = '';
+            snapshot.forEach(d => {
+                const data = d.data();
+                const expiry = data.expiryDate ? new Date(data.expiryDate).toLocaleDateString() : 'No expiry';
+                html += `<tr>
+                    <td>${data.code}</td>
+                    <td>${data.type === 'percentage' ? data.value + '%' : '₹' + data.value}</td>
+                    <td>${expiry}</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="deleteCoupon('${d.id}')"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('couponsTable').innerHTML = html || '<tr><td colspan="4" class="text-center">No coupons</td></tr>';
+        }
+
+        window.saveCoupon = async function() {
+            const code = document.getElementById('couponCode').value.trim().toUpperCase();
+            const type = document.getElementById('couponType').value;
+            const value = parseInt(document.getElementById('couponValue').value);
+            const expiry = document.getElementById('couponExpiry').value;
+
+            if (!code || !value || value <= 0) { alert('Fill all fields'); return; }
+
+            await addDoc(collection(db, 'coupons'), { code, type, value, expiryDate: expiry || null, createdAt: serverTimestamp() });
+
+            document.getElementById('couponCode').value = '';
+            document.getElementById('couponValue').value = '';
+            document.getElementById('couponExpiry').value = '';
+            bootstrap.Modal.getInstance(document.getElementById('couponModal')).hide();
+            loadAdminCoupons();
+        };
+
+        window.deleteCoupon = async function(id) {
+            if (confirm('Delete this coupon?')) {
+                await deleteDoc(doc(db, 'coupons', id));
+                loadAdminCoupons();
+            }
+        };
+
+        window.openCouponModal = function() {
+            document.getElementById('couponCode').value = '';
+            document.getElementById('couponValue').value = '';
+            document.getElementById('couponExpiry').value = '';
+            new bootstrap.Modal(document.getElementById('couponModal')).show();
+        };
+
+        // ==========================================
+        // ADMIN ORDERS
+        // ==========================================
+        async function loadAdminOrders() {
+            const snapshot = await getDocs(collection(db, 'orders'));
+            const productsSnap = await getDocs(collection(db, 'products'));
+            const products = {};
+            productsSnap.forEach(d => products[d.id] = d.data().name);
+
+            let paidHtml = '', failedHtml = '';
+            snapshot.forEach(d => {
+                const data = d.data();
+                const date = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleString() : '-';
+                const row = `<tr>
+                    <td>${data.orderId}</td>
+                    <td>${data.productName}</td>
+                    <td>${data.durationName}</td>
+                    <td>₹${data.finalAmount}</td>
+                    <td><code>${data.licenseKey || 'N/A'}</code></td>
+                    <td>${date}</td>
+                </tr>`;
+
+                if (data.status === 'paid') paidHtml += row;
+                else failedHtml += row;
+            });
+
+            document.getElementById('paidOrdersTable').innerHTML = paidHtml || '<tr><td colspan="6" class="text-center">No paid orders</td></tr>';
+            document.getElementById('failedOrdersTable').innerHTML = failedHtml || '<tr><td colspan="6" class="text-center">No failed orders</td></tr>';
+        }
+
+        window.searchOrders = function() {
+            const term = document.getElementById('orderSearch').value.toLowerCase();
+            document.querySelectorAll('#paidOrdersTable tr, #failedOrdersTable tr').forEach(tr => {
+                tr.style.display = tr.textContent.toLowerCase().includes(term) ? '' : 'none';
+            });
+        };
+
+        // ==========================================
+        // ADMIN PAYMENT SETTINGS
+        // ==========================================
+        async function loadAdminPayments() {
+            const snap = await getDocs(collection(db, 'settings'));
+            let settings = {};
+            snap.forEach(d => settings[d.id] = d.data());
+
+            document.getElementById('rzpKeyId').value = settings.razorpay?.keyId || '';
+            document.getElementById('rzpKeySecret').value = settings.razorpay?.keySecret || '';
+            document.getElementById('upiId').value = settings.upi?.id || '';
+            document.getElementById('upiName').value = settings.upi?.name || '';
+        }
+
+        window.savePaymentSettings = async function() {
+            const rzpKeyId = document.getElementById('rzpKeyId').value.trim();
+            const rzpKeySecret = document.getElementById('rzpKeySecret').value.trim();
+            const upiId = document.getElementById('upiId').value.trim();
+            const upiName = document.getElementById('upiName').value.trim();
+
+            await setDoc(doc(db, 'settings', 'razorpay'), { keyId: rzpKeyId, keySecret: rzpKeySecret });
+            await setDoc(doc(db, 'settings', 'upi'), { id: upiId, name: upiName });
+
+            alert('Payment settings saved!');
+        };
+
+        // ==========================================
+        // INITIALIZE
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHomeProducts();
+        });
+    </script>
+    <style>
+        body { background: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
+        .navbar { box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .card { border: none; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .purchase-card { max-width: 500px; margin: 0 auto; }
+        .btn-primary { border-radius: 10px; padding: 12px 30px; font-weight: 600; }
+        .form-select, .form-control { border-radius: 10px; padding: 12px; }
+        .price-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; padding: 20px; text-align: center; }
+        .success-box { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; border-radius: 16px; padding: 40px; text-align: center; }
+        .key-display { background: rgba(255,255,255,0.2); border-radius: 10px; padding: 15px; font-family: monospace; font-size: 1.2rem; word-break: break-all; }
+        .stat-card { background: white; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .stat-number { font-size: 2rem; font-weight: 700; color: #0d6efd; }
+        .admin-sidebar { min-height: calc(100vh - 56px); background: #1a1a2e; color: white; }
+        .admin-sidebar .nav-link { color: rgba(255,255,255,0.7); padding: 12px 20px; border-radius: 8px; margin: 2px 10px; }
+        .admin-sidebar .nav-link:hover, .admin-sidebar .nav-link.active { background: rgba(255,255,255,0.1); color: white; }
+        .section-title { font-weight: 700; margin-bottom: 20px; color: #1a1a2e; }
+    </style>
+<base target="_blank">
+</head>
+<body>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#" onclick="showSection('home')"><i class="bi bi-key-fill me-2"></i>KeyStore</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('home')">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('faq')">FAQ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('contact')">Contact</a></li>
+                    <li class="nav-item" id="loginNav"><a class="nav-link" href="#" onclick="showSection('admin-login')"><i class="bi bi-shield-lock me-1"></i>Admin Login</a></li>
+                    <li class="nav-item dropdown d-none" id="adminNav">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-speedometer2 me-1"></i>Admin</a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" onclick="showSection('admin-dashboard')">Dashboard</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showSection('admin-products')">Products</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showSection('admin-durations')">Durations</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showSection('admin-prices')">Prices</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showSection('admin-keys')">License Keys</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showSection('admin-coupons')">Coupons</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showSection('admin-orders')">Orders</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showSection('admin-payments')">Payment Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="adminLogout()"><i class="bi bi-box-arrow-right me-1"></i>Logout</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- HOME PAGE -->
+    <div id="home" class="section">
+        <div class="container py-5">
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold text-dark">Premium License Keys</h1>
+                <p class="lead text-muted">Instant delivery. Trusted by thousands.</p>
+            </div>
+
+            <div class="card purchase-card p-4">
+                <div class="card-body">
+                    <h4 class="mb-4 text-center"><i class="bi bi-cart3 me-2"></i>Purchase Panel</h4>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Select Product</label>
+                        <select class="form-select form-select-lg" id="productSelect" onchange="onProductChange()">
+                            <option value="">-- Select Product --</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Select Duration</label>
+                        <select class="form-select form-select-lg" id="durationSelect" onchange="onDurationChange()" disabled>
+                            <option value="">-- Select Duration --</option>
+                        </select>
+                    </div>
+
+                    <div class="price-box mb-3">
+                        <div class="text-white-50 small">Price</div>
+                        <div id="priceDisplay"><span class="text-white">Select product & duration</span></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Coupon Code (Optional)</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="couponInput" placeholder="Enter coupon code">
+                            <button class="btn btn-outline-primary" type="button" onclick="applyCoupon()">Apply</button>
+                        </div>
+                        <div id="couponMsg" class="mt-1 small"></div>
+                    </div>
+
+                    <div id="totalDisplay" class="text-center mb-3"></div>
+
+                    <button class="btn btn-primary w-100 btn-lg" id="purchaseBtn" onclick="initiatePayment()" disabled>
+                        <i class="bi bi-credit-card me-2"></i>Purchase Now
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- FAQ PAGE -->
+    <div id="faq" class="section d-none">
+        <div class="container py-5">
+            <h2 class="section-title text-center mb-4">Frequently Asked Questions</h2>
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header"><button class="accordion-button" data-bs-toggle="collapse" data-bs-target="#faq1">How do I receive my license key?</button></h2>
+                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">After successful payment, your license key is displayed instantly on the success page. You can also copy it to your clipboard.</div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#faq2">What payment methods are accepted?</button></h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">We accept all major payment methods via Razorpay including UPI, Credit/Debit cards, Net Banking, and Wallets.</div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#faq3">Is there a refund policy?</button></h2>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">Due to the digital nature of license keys, all sales are final. Please ensure you select the correct product and duration before purchasing.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- CONTACT PAGE -->
+    <div id="contact" class="section d-none">
+        <div class="container py-5">
+            <h2 class="section-title text-center mb-4">Contact Us</h2>
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card p-4">
+                        <div class="mb-3"><label class="form-label">Name</label><input type="text" class="form-control" placeholder="Your name"></div>
+                        <div class="mb-3"><label class="form-label">Email</label><input type="email" class="form-control" placeholder="your@email.com"></div>
+                        <div class="mb-3"><label class="form-label">Message</label><textarea class="form-control" rows="4" placeholder="Your message..."></textarea></div>
+                        <button class="btn btn-primary w-100">Send Message</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN LOGIN -->
+    <div id="admin-login" class="section d-none">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-md-4">
+                    <div class="card p-4">
+                        <div class="text-center mb-4">
+                            <i class="bi bi-shield-lock display-1 text-primary"></i>
+                            <h3 class="mt-3">Admin Login</h3>
+                        </div>
+                        <div class="mb-3"><label class="form-label">Username</label><input type="text" class="form-control" id="adminUser" placeholder="admin"></div>
+                        <div class="mb-3"><label class="form-label">Password</label><input type="password" class="form-control" id="adminPass" placeholder="••••••"></div>
+                        <button class="btn btn-primary w-100" onclick="adminLogin()">Login</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN DASHBOARD -->
+    <div id="admin-dashboard" class="section d-none">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12 p-4">
+                    <h3 class="section-title">Dashboard</h3>
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-4"><div class="stat-card"><div class="stat-number" id="dashTotalOrders">0</div><div class="text-muted">Total Orders</div></div></div>
+                        <div class="col-md-4"><div class="stat-card"><div class="stat-number" id="dashTotalSales">0</div><div class="text-muted">Total Sales</div></div></div>
+                        <div class="col-md-4"><div class="stat-card"><div class="stat-number" id="dashRevenue">₹0</div><div class="text-muted">Revenue</div></div></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header bg-white"><h5 class="mb-0">Recent Orders</h5></div>
+                        <div class="card-body p-0">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light"><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Status</th></tr></thead>
+                                <tbody id="recentOrdersTable"><tr><td colspan="5" class="text-center">Loading...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN PRODUCTS -->
+    <div id="admin-products" class="section d-none">
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="section-title mb-0">Product Management</h3>
+                <button class="btn btn-primary" onclick="openProductModal()"><i class="bi bi-plus-lg me-1"></i>Add Product</button>
+            </div>
+            <div class="card">
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light"><tr><th>Product Name</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody id="productsTable"><tr><td colspan="3" class="text-center">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN DURATIONS -->
+    <div id="admin-durations" class="section d-none">
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="section-title mb-0">Duration Management</h3>
+                <button class="btn btn-primary" onclick="openDurationModal()"><i class="bi bi-plus-lg me-1"></i>Add Duration</button>
+            </div>
+            <div class="card">
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light"><tr><th>Duration Name</th><th>Actions</th></tr></thead>
+                        <tbody id="durationsTable"><tr><td colspan="2" class="text-center">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN PRICES -->
+    <div id="admin-prices" class="section d-none">
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="section-title mb-0">Price Management</h3>
+                <button class="btn btn-primary" onclick="openPriceModal()"><i class="bi bi-plus-lg me-1"></i>Set Price</button>
+            </div>
+            <div class="card">
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light"><tr><th>Product</th><th>Duration</th><th>Price</th><th>Actions</th></tr></thead>
+                        <tbody id="pricesTable"><tr><td colspan="4" class="text-center">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN LICENSE KEYS -->
+    <div id="admin-keys" class="section d-none">
+        <div class="container-fluid p-4">
+            <h3 class="section-title">License Key Management</h3>
+
+            <div class="card mb-4">
+                <div class="card-header bg-white"><h5 class="mb-0">Import Keys</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <select class="form-select" id="keyProduct"><option value="">Select Product</option></select>
+                        </div>
+                        <div class="col-md-8">
+                            <textarea class="form-control" id="keysTextarea" rows="4" placeholder="Paste keys here (one per line)"></textarea>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-primary me-2" onclick="importKeys()"><i class="bi bi-upload me-1"></i>Import from Text</button>
+                        <div class="input-group mt-2" style="max-width: 400px;">
+                            <input type="text" class="form-control" id="singleKeyInput" placeholder="Or add single key">
+                            <button class="btn btn-outline-primary" onclick="addSingleKey()">Add Key</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <ul class="nav nav-tabs mb-3">
+                <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#activeKeys">Active Keys</a></li>
+                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#usedKeys">Used Keys</a></li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="activeKeys">
+                    <div class="card"><div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light"><tr><th>Product</th><th>Key</th><th>Added</th></tr></thead>
+                            <tbody id="activeKeysTable"><tr><td colspan="3" class="text-center">Loading...</td></tr></tbody>
+                        </table>
+                    </div></div>
+                </div>
+                <div class="tab-pane fade" id="usedKeys">
+                    <div class="card"><div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light"><tr><th>Product</th><th>Key</th><th>Used Date</th></tr></thead>
+                            <tbody id="usedKeysTable"><tr><td colspan="3" class="text-center">Loading...</td></tr></tbody>
+                        </table>
+                    </div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN COUPONS -->
+    <div id="admin-coupons" class="section d-none">
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="section-title mb-0">Coupon Management</h3>
+                <button class="btn btn-primary" onclick="openCouponModal()"><i class="bi bi-plus-lg me-1"></i>Create Coupon</button>
+            </div>
+            <div class="card">
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light"><tr><th>Code</th><th>Discount</th><th>Expiry</th><th>Actions</th></tr></thead>
+                        <tbody id="couponsTable"><tr><td colspan="4" class="text-center">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN ORDERS -->
+    <div id="admin-orders" class="section d-none">
+        <div class="container-fluid p-4">
+            <h3 class="section-title mb-4">Order Management</h3>
+            <div class="mb-3">
+                <input type="text" class="form-control" id="orderSearch" placeholder="Search orders..." onkeyup="searchOrders()">
+            </div>
+            <ul class="nav nav-tabs mb-3">
+                <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#paidOrders">Paid Orders</a></li>
+                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#failedOrders">Failed Orders</a></li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="paidOrders">
+                    <div class="card"><div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light"><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Key</th><th>Date</th></tr></thead>
+                            <tbody id="paidOrdersTable"><tr><td colspan="6" class="text-center">Loading...</td></tr></tbody>
+                        </table>
+                    </div></div>
+                </div>
+                <div class="tab-pane fade" id="failedOrders">
+                    <div class="card"><div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light"><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Key</th><th>Date</th></tr></thead>
+                            <tbody id="failedOrdersTable"><tr><td colspan="6" class="text-center">Loading...</td></tr></tbody>
+                        </table>
+                    </div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN PAYMENT SETTINGS -->
+    <div id="admin-payments" class="section d-none">
+        <div class="container-fluid p-4">
+            <h3 class="section-title mb-4">Payment Settings</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-credit-card me-2"></i>Razorpay</h5></div>
+                        <div class="card-body">
+                            <div class="mb-3"><label class="form-label">Key ID</label><input type="text" class="form-control" id="rzpKeyId" placeholder="rzp_test_..."></div>
+                            <div class="mb-3"><label class="form-label">Key Secret</label><input type="password" class="form-control" id="rzpKeySecret" placeholder="••••••"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-phone me-2"></i>UPI</h5></div>
+                        <div class="card-body">
+                            <div class="mb-3"><label class="form-label">UPI ID</label><input type="text" class="form-control" id="upiId" placeholder="yourname@upi"></div>
+                            <div class="mb-3"><label class="form-label">Payee Name</label><input type="text" class="form-control" id="upiName" placeholder="Your Name"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="savePaymentSettings()"><i class="bi bi-save me-1"></i>Save Settings</button>
+        </div>
+    </div>
+
+    <!-- SUCCESS PAGE -->
+    <div id="success-page" class="section d-none">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="success-box">
+                        <i class="bi bi-check-circle-fill display-1"></i>
+                        <h2 class="mt-3 mb-4">Payment Successful!</h2>
+                        <div class="text-start mb-3">
+                            <p><strong>Order ID:</strong> <span id="successOrderId"></span></p>
+                            <p><strong>Product:</strong> <span id="successProduct"></span></p>
+                            <p><strong>Duration:</strong> <span id="successDuration"></span></p>
+                            <p><strong>Amount Paid:</strong> <span id="successAmount"></span></p>
+                        </div>
+                        <div class="mb-4">
+                            <div class="text-white-50 small mb-2">Your License Key</div>
+                            <div class="key-display" id="successKey"></div>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button class="btn btn-light" onclick="copyKey()"><i class="bi bi-clipboard me-1"></i>Copy Key</button>
+                            <button class="btn btn-light" onclick="downloadInvoice()"><i class="bi bi-download me-1"></i>Download Invoice</button>
+                        </div>
+                        <button class="btn btn-outline-light mt-3 w-100" onclick="showSection('home')">Buy Another</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <div class="modal fade" id="productModal"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="productModalTitle">Add Product</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <input type="hidden" id="productEditId">
+            <div class="mb-3"><label class="form-label">Product Name</label><input type="text" class="form-control" id="productName"></div>
+            <div class="form-check"><input class="form-check-input" type="checkbox" id="productEnabled" checked><label class="form-check-label">Enabled</label></div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" onclick="saveProduct()">Save</button></div>
+    </div></div></div>
+
+    <div class="modal fade" id="durationModal"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="durationModalTitle">Add Duration</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <input type="hidden" id="durationEditId">
+            <div class="mb-3"><label class="form-label">Duration Name</label><input type="text" class="form-control" id="durationName" placeholder="e.g. 30 Days"></div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" onclick="saveDuration()">Save</button></div>
+    </div></div></div>
+
+    <div class="modal fade" id="priceModal"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="priceModalTitle">Set Price</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <input type="hidden" id="priceEditId">
+            <div class="mb-3"><label class="form-label">Product</label><select class="form-select" id="priceProduct"><option value="">Select Product</option></select></div>
+            <div class="mb-3"><label class="form-label">Duration</label><select class="form-select" id="priceDuration"><option value="">Select Duration</option></select></div>
+            <div class="mb-3"><label class="form-label">Price (₹)</label><input type="number" class="form-control" id="priceValue" min="1"></div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" onclick="savePrice()">Save</button></div>
+    </div></div></div>
+
+    <div class="modal fade" id="couponModal"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">Create Coupon</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <div class="mb-3"><label class="form-label">Coupon Code</label><input type="text" class="form-control" id="couponCode" placeholder="SAVE20"></div>
+            <div class="mb-3"><label class="form-label">Type</label><select class="form-select" id="couponType"><option value="percentage">Percentage (%)</option><option value="fixed">Fixed Amount (₹)</option></select></div>
+            <div class="mb-3"><label class="form-label">Value</label><input type="number" class="form-control" id="couponValue" min="1"></div>
+            <div class="mb-3"><label class="form-label">Expiry Date (Optional)</label><input type="date" class="form-control" id="couponExpiry"></div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" onclick="saveCoupon()">Create</button></div>
+    </div></div></div>
+
+</body>
+</html>
