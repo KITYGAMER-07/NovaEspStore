@@ -133,7 +133,7 @@
             const productId = document.getElementById('productSelect').value;
             const durationSelect = document.getElementById('durationSelect');
             durationSelect.innerHTML = '<option value="">-- Select Duration --</option>';
-            document.getElementById('priceDisplay').innerHTML = '<span class="text-muted">Select duration to see price</span>';
+            // price display removed
             document.getElementById('purchaseBtn').disabled = true;
             currentProduct = null;
             currentDuration = null;
@@ -174,7 +174,6 @@
                 }
             });
 
-            document.getElementById('priceDisplay').innerHTML = `<h4 class="text-success fw-bold">₹${currentPrice}</h4>`;
             document.getElementById('purchaseBtn').disabled = false;
             calculateTotal();
         };
