@@ -261,13 +261,13 @@
         };
 
         async function processSuccessPayment(response, orderId) {
-            // Find unused license key
+            // Find unused license key matching product + duration
             const keys = await getList('licenseKeys');
             let assignedKey = null;
             let keyDocId = null;
 
             for (const k of keys) {
-                if (k.productId === currentProduct.id && !k.used) {
+                if (k.productId === currentProduct.id && k.durationId === currentDuration.id && !k.used) {
                     assignedKey = k.key;
                     keyDocId = k.id;
                     break;
@@ -662,13 +662,18 @@ Thank you for your purchase!
         async function loadAdminKeys() {
             const keys = await getList('licenseKeys');
             const productsSnap = await getData('products');
+            const durationsSnap = await getData('durations');
             const products = productsSnap || {};
+            const durations = durationsSnap || {};
 
             let activeHtml = '', usedHtml = '';
             keys.forEach(k => {
                 const prodName = products[k.productId]?.name || 'Unknown';
+                const dur = durations[k.durationId];
+                const durName = dur ? `${dur.name} ${dur.unit ? dur.unit.charAt(0).toUpperCase() + dur.unit.slice(1) : ''}` : 'Unknown';
                 const usedDate = k.usedAt ? new Date(k.usedAt).toLocaleDateString() : '-';
-                const row = `<tr><td>${prodName}</td><td><code>${k.key}</code></td><td>${usedDate}</td></tr>`;
+                const addedDate = k.createdAt ? new Date(k.createdAt).toLocaleDateString() : '-';
+                const row = `<tr><td>${prodName}</td><td>${durName}</td><td><code>${k.key}</code></td><td>${k.used ? usedDate : addedDate}</td></tr>`;
                 if (k.used) {
                     usedHtml += row;
                 } else {
@@ -676,8 +681,8 @@ Thank you for your purchase!
                 }
             });
 
-            document.getElementById('activeKeysTable').innerHTML = activeHtml || '<tr><td colspan="3" class="text-center">No active keys</td></tr>';
-            document.getElementById('usedKeysTable').innerHTML = usedHtml || '<tr><td colspan="3" class="text-center">No used keys</td></tr>';
+            document.getElementById('activeKeysTable').innerHTML = activeHtml || '<tr><td colspan="4" class="text-center">No active keys</td></tr>';
+            document.getElementById('usedKeysTable').innerHTML = usedHtml || '<tr><td colspan="4" class="text-center">No used keys</td></tr>';
 
             // Populate product dropdown for key import
             const kSelect = document.getElementById('keyProduct');
@@ -708,11 +713,14 @@ Thank you for your purchase!
 
         window.addSingleKey = async function() {
             const productId = document.getElementById('keyProduct').value;
+            const durationId = document.getElementById('keyDuration').value;
             const key = document.getElementById('singleKeyInput').value.trim();
 
-            if (!productId || !key) { alert('Select product and enter key'); return; }
+            if (!productId) { alert('Select product'); return; }
+            if (!durationId) { alert('Select duration'); return; }
+            if (!key) { alert('Enter key'); return; }
 
-            await pushData('licenseKeys', { productId, key, used: false, createdAt: Date.now() });
+            await pushData('licenseKeys', { productId, durationId, key, used: false, createdAt: Date.now() });
             document.getElementById('singleKeyInput').value = '';
             alert('Key added!');
             loadAdminKeys();
@@ -1099,18 +1107,25 @@ Thank you for your purchase!
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <select class="form-select" id="keyProduct"><option value="">Select Product</option></select>
+                            <label class="form-label fw-semibold">Select Product</label>
+                            <select class="form-select" id="keyProduct" onchange="onKeyProductChange()"><option value="">Select Product</option></select>
                         </div>
-                        <div class="col-md-8">
-                            <textarea class="form-control" id="keysTextarea" rows="4" placeholder="Paste keys here (one per line)"></textarea>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Select Duration</label>
+                            <select class="form-select" id="keyDuration"><option value="">Select Duration</option></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Or add single key</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="singleKeyInput" placeholder="Enter single key">
+                                <button class="btn btn-outline-primary" onclick="addSingleKey()">Add Key</button>
+                            </div>
                         </div>
                     </div>
                     <div class="mt-3">
-                        <button class="btn btn-primary me-2" onclick="importKeys()"><i class="bi bi-upload me-1"></i>Import from Text</button>
-                        <div class="input-group mt-2" style="max-width: 400px;">
-                            <input type="text" class="form-control" id="singleKeyInput" placeholder="Or add single key">
-                            <button class="btn btn-outline-primary" onclick="addSingleKey()">Add Key</button>
-                        </div>
+                        <label class="form-label fw-semibold">Paste keys (one per line)</label>
+                        <textarea class="form-control" id="keysTextarea" rows="4" placeholder="Paste keys here (one per line)"></textarea>
+                        <button class="btn btn-primary mt-2" onclick="importKeys()"><i class="bi bi-upload me-1"></i>Import Keys</button>
                     </div>
                 </div>
             </div>
@@ -1123,16 +1138,16 @@ Thank you for your purchase!
                 <div class="tab-pane fade show active" id="activeKeys">
                     <div class="card"><div class="card-body p-0">
                         <table class="table table-hover mb-0">
-                            <thead class="table-light"><tr><th>Product</th><th>Key</th><th>Added</th></tr></thead>
-                            <tbody id="activeKeysTable"><tr><td colspan="3" class="text-center">Loading...</td></tr></tbody>
+                            <thead class="table-light"><tr><th>Product</th><th>Duration</th><th>Key</th><th>Added</th></tr></thead>
+                            <tbody id="activeKeysTable"><tr><td colspan="4" class="text-center">Loading...</td></tr></tbody>
                         </table>
                     </div></div>
                 </div>
                 <div class="tab-pane fade" id="usedKeys">
                     <div class="card"><div class="card-body p-0">
                         <table class="table table-hover mb-0">
-                            <thead class="table-light"><tr><th>Product</th><th>Key</th><th>Used Date</th></tr></thead>
-                            <tbody id="usedKeysTable"><tr><td colspan="3" class="text-center">Loading...</td></tr></tbody>
+                            <thead class="table-light"><tr><th>Product</th><th>Duration</th><th>Key</th><th>Used Date</th></tr></thead>
+                            <tbody id="usedKeysTable"><tr><td colspan="4" class="text-center">Loading...</td></tr></tbody>
                         </table>
                     </div></div>
                 </div>
