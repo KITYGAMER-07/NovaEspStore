@@ -355,6 +355,7 @@
             document.getElementById('successDuration').textContent = currentDuration.name;
             document.getElementById('successKey').textContent = assignedKey || 'No keys available - Contact Admin';
             document.getElementById('successAmount').textContent = '₹' + finalAmount;
+            document.getElementById('successAmount').setAttribute('data-amount', finalAmount);
 
             showSection('success-page');
         }
@@ -370,10 +371,12 @@
             const product = document.getElementById('successProduct').textContent;
             const duration = document.getElementById('successDuration').textContent;
             const key = document.getElementById('successKey').textContent;
-            const amount = document.getElementById('successAmount').textContent;
+            const amountDisplay = document.getElementById('successAmount').textContent;
 
-            const invoice = `
-=====================================
+            // Ensure amount is properly formatted with ₹ symbol
+            const amount = amountDisplay.includes('₹') ? amountDisplay : '₹' + amountDisplay;
+
+            const invoice = `=====================================
          INVOICE
 =====================================
 Order ID: ${orderId}
@@ -385,15 +388,17 @@ License Key: ${key}
 -------------------------------------
 Amount Paid: ${amount}
 =====================================
-Thank you for your purchase!
-            `;
+Thank you for your purchase!`;
 
             const blob = new Blob([invoice], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
             a.download = `Invoice_${orderId}.txt`;
+            document.body.appendChild(a);
             a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         };
 
         // ==========================================
