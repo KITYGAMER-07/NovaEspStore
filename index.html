@@ -119,7 +119,7 @@
         // ==========================================
         async function loadHomeProducts() {
             const select = document.getElementById('productSelect');
-            select.innerHTML = '<option value="">-- Select Product --</option>';
+            select.innerHTML = '<option value="">Select Product</option>';
 
             const products = await getList('products');
             products.forEach(p => {
@@ -132,7 +132,7 @@
         window.onProductChange = async function() {
             const productId = document.getElementById('productSelect').value;
             const durationSelect = document.getElementById('durationSelect');
-            durationSelect.innerHTML = '<option value="">-- Select Duration --</option>';
+            durationSelect.innerHTML = '<option value="">Select Duration</option>';
             // price display removed
             document.getElementById('purchaseBtn').disabled = true;
             currentProduct = null;
@@ -909,7 +909,7 @@ Thank you for your purchase!
     <!-- NAVBAR -->
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
         <div class="container">
-            <a class="navbar-brand fw-bold" href="#" onclick="showSection('home'); return false;"><i class="bi bi-key-fill me-2"></i>KeyStore</a>
+            <a class="navbar-brand fw-bold" href="#" onclick="showSection('home'); return false;"><i class="bi bi-key-fill me-2"></i>NovaEsp</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                 <span class="navbar-toggler-icon"></span>
             </button>
@@ -946,19 +946,19 @@ Thank you for your purchase!
 
             <div class="card purchase-card p-4">
                 <div class="card-body">
-                    <h4 class="mb-4 text-center"><i class="bi bi-cart3 me-2"></i>Purchase Panel</h4>
+                    <h4 class="mb-4 text-center"><i class="bi bi-cart3 me-2"></i>NovaEsp Store</h4>
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Select Product</label>
                         <select class="form-select form-select-lg" id="productSelect" onchange="onProductChange()">
-                            <option value="">-- Select Product --</option>
+                            <option value="">Select Product</option>
                         </select>
                     </div>
 
                     <div class="mb-3">
                         <label class="form-label fw-semibold">Select Duration</label>
                         <select class="form-select form-select-lg" id="durationSelect" onchange="onDurationChange()" disabled>
-                            <option value="">-- Select Duration --</option>
+                            <option value="">Select Duration</option>
                         </select>
                     </div>
 
