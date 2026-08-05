@@ -139,7 +139,10 @@
             currentDuration = null;
             currentPrice = 0;
 
-            if (!productId) return;
+            if (!productId) {
+                durationSelect.disabled = true;
+                return;
+            }
 
             const product = await getData('products/' + productId);
             if (product) {
@@ -153,6 +156,7 @@
                     const unitLabel = dur.unit ? dur.unit.charAt(0).toUpperCase() + dur.unit.slice(1) : 'Days';
                     durationSelect.innerHTML += `<option value="${dur.id}">${dur.name} ${unitLabel}</option>`;
                 });
+                durationSelect.disabled = false;
             }
         };
 
