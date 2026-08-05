@@ -693,16 +693,34 @@ Thank you for your purchase!
             });
         }
 
+        window.onKeyProductChange = async function() {
+            const productId = document.getElementById('keyProduct').value;
+            const dSelect = document.getElementById('keyDuration');
+            dSelect.innerHTML = '<option value="">Select Duration</option>';
+
+            if (!productId) return;
+
+            const durations = await getList('durations');
+            const productDurations = durations.filter(d => d.productId === productId);
+            productDurations.forEach(d => {
+                const unitLabel = d.unit ? d.unit.charAt(0).toUpperCase() + d.unit.slice(1) : 'Days';
+                dSelect.innerHTML += `<option value="${d.id}">${d.name} ${unitLabel}</option>`;
+            });
+        };
+
         window.importKeys = async function() {
             const productId = document.getElementById('keyProduct').value;
+            const durationId = document.getElementById('keyDuration').value;
             const keysText = document.getElementById('keysTextarea').value.trim();
 
-            if (!productId || !keysText) { alert('Select product and enter keys'); return; }
+            if (!productId) { alert('Select product'); return; }
+            if (!durationId) { alert('Select duration'); return; }
+            if (!keysText) { alert('Enter keys'); return; }
 
             const keys = keysText.split('\n').map(k => k.trim()).filter(k => k);
             let count = 0;
             for (const key of keys) {
-                await pushData('licenseKeys', { productId, key, used: false, createdAt: Date.now() });
+                await pushData('licenseKeys', { productId, durationId, key, used: false, createdAt: Date.now() });
                 count++;
             }
 
