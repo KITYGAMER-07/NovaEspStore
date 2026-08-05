@@ -552,6 +552,22 @@ Thank you for your purchase!
             });
         }
 
+
+        window.onKeyProductChange = async function() {
+            const productId = document.getElementById('keyProduct').value;
+            const dSelect = document.getElementById('keyDuration');
+            dSelect.innerHTML = '<option value="">Select Duration</option>';
+
+            if (!productId) return;
+
+            const durations = await getList('durations');
+            const productDurations = durations.filter(d => d.productId === productId);
+            productDurations.forEach(d => {
+                const unitLabel = d.unit ? d.unit.charAt(0).toUpperCase() + d.unit.slice(1) : 'Days';
+                dSelect.innerHTML += `<option value="${d.id}">${d.name} ${unitLabel}</option>`;
+            });
+        };
+
         // ==========================================
         // ADMIN PRICES
         // ==========================================
@@ -693,29 +709,14 @@ Thank you for your purchase!
             });
         }
 
-        window.onKeyProductChange = async function() {
-            const productId = document.getElementById('keyProduct').value;
-            const dSelect = document.getElementById('keyDuration');
-            dSelect.innerHTML = '<option value="">Select Duration</option>';
-
-            if (!productId) return;
-
-            const durations = await getList('durations');
-            const productDurations = durations.filter(d => d.productId === productId);
-            productDurations.forEach(d => {
-                const unitLabel = d.unit ? d.unit.charAt(0).toUpperCase() + d.unit.slice(1) : 'Days';
-                dSelect.innerHTML += `<option value="${d.id}">${d.name} ${unitLabel}</option>`;
-            });
-        };
-
         window.importKeys = async function() {
             const productId = document.getElementById('keyProduct').value;
             const durationId = document.getElementById('keyDuration').value;
             const keysText = document.getElementById('keysTextarea').value.trim();
 
-            if (!productId) { alert('Select product'); return; }
-            if (!durationId) { alert('Select duration'); return; }
-            if (!keysText) { alert('Enter keys'); return; }
+            if (!productId) { alert('Select a product'); return; }
+            if (!durationId) { alert('Select a duration'); return; }
+            if (!keysText) { alert('Enter keys to import'); return; }
 
             const keys = keysText.split('\n').map(k => k.trim()).filter(k => k);
             let count = 0;
@@ -882,6 +883,7 @@ Thank you for your purchase!
         .admin-sidebar .nav-link:hover, .admin-sidebar .nav-link.active { background: rgba(255,255,255,0.1); color: white; }
         .section-title { font-weight: 700; margin-bottom: 20px; color: #1a1a2e; }
     </style>
+<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 </head>
