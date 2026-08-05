@@ -774,27 +774,19 @@ Thank you for your purchase!
         // ==========================================
         async function loadAdminPayments() {
             const rzp = await getData('settings/razorpay');
-            const upi = await getData('settings/upi');
             const admin = await getData('settings/admin');
 
             document.getElementById('rzpKeyId').value = rzp?.keyId || '';
-            document.getElementById('rzpKeySecret').value = rzp?.keySecret || '';
-            document.getElementById('upiId').value = upi?.id || '';
-            document.getElementById('upiName').value = upi?.name || '';
             document.getElementById('adminUsername').value = admin?.username || '';
             document.getElementById('adminPassword').value = admin?.password || '';
         }
 
         window.savePaymentSettings = async function() {
             const rzpKeyId = document.getElementById('rzpKeyId').value.trim();
-            const rzpKeySecret = document.getElementById('rzpKeySecret').value.trim();
-            const upiId = document.getElementById('upiId').value.trim();
-            const upiName = document.getElementById('upiName').value.trim();
             const adminUsername = document.getElementById('adminUsername').value.trim();
             const adminPassword = document.getElementById('adminPassword').value.trim();
 
-            await setData('settings/razorpay', { keyId: rzpKeyId, keySecret: rzpKeySecret });
-            await setData('settings/upi', { id: upiId, name: upiName });
+            await setData('settings/razorpay', { keyId: rzpKeyId });
 
             if (adminUsername && adminPassword) {
                 await setData('settings/admin', { username: adminUsername, password: adminPassword });
@@ -829,6 +821,7 @@ Thank you for your purchase!
         .admin-sidebar .nav-link:hover, .admin-sidebar .nav-link.active { background: rgba(255,255,255,0.1); color: white; }
         .section-title { font-weight: 700; margin-bottom: 20px; color: #1a1a2e; }
     </style>
+<base target="_blank">
 <base target="_blank">
 </head>
 <body>
@@ -1167,25 +1160,16 @@ Thank you for your purchase!
         <div class="container-fluid p-4">
             <h3 class="section-title mb-4">Payment & Admin Settings</h3>
             <div class="row">
-                <div class="col-md-4">
+                <div class="col-md-6">
                     <div class="card mb-4">
                         <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-credit-card me-2"></i>Razorpay</h5></div>
                         <div class="card-body">
-                            <div class="mb-3"><label class="form-label">Key ID</label><input type="text" class="form-control" id="rzpKeyId" placeholder="rzp_test_..."></div>
-                            <div class="mb-3"><label class="form-label">Key Secret</label><input type="password" class="form-control" id="rzpKeySecret" placeholder="••••••"></div>
+                            <div class="mb-3"><label class="form-label">Razorpay Key ID (Merchant ID)</label><input type="text" class="form-control" id="rzpKeyId" placeholder="rzp_test_..."></div>
                         </div>
                     </div>
                 </div>
-                <div class="col-md-4">
-                    <div class="card mb-4">
-                        <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-phone me-2"></i>UPI</h5></div>
-                        <div class="card-body">
-                            <div class="mb-3"><label class="form-label">UPI ID</label><input type="text" class="form-control" id="upiId" placeholder="yourname@upi"></div>
-                            <div class="mb-3"><label class="form-label">Payee Name</label><input type="text" class="form-control" id="upiName" placeholder="Your Name"></div>
-                        </div>
-                    </div>
-                </div>
-                <div class="col-md-4">
+                
+                <div class="col-md-6">
                     <div class="card mb-4 border-warning">
                         <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Admin Credentials</h5></div>
                         <div class="card-body">
