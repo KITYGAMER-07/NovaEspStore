@@ -732,7 +732,7 @@ Thank you for your purchase!
                 const durName = dur ? `${dur.name} ${dur.unit ? dur.unit.charAt(0).toUpperCase() + dur.unit.slice(1) : ''}` : 'Unknown';
                 const usedDate = k.usedAt ? new Date(k.usedAt).toLocaleDateString() : '-';
                 const addedDate = k.createdAt ? new Date(k.createdAt).toLocaleDateString() : '-';
-                const row = `<tr><td>${prodName}</td><td>${durName}</td><td><code>${k.key}</code></td><td>${k.used ? usedDate : addedDate}</td></tr>`;
+                const row = `<tr><td>${prodName}</td><td>${durName}</td><td><code>${k.key}</code></td><td>${k.used ? usedDate : addedDate}</td><td><button class="btn btn-sm btn-danger" onclick="deleteKey('${k.id}')"><i class="bi bi-trash"></i></button></td></tr>`;
                 if (k.used) {
                     usedHtml += row;
                 } else {
@@ -740,8 +740,8 @@ Thank you for your purchase!
                 }
             });
 
-            document.getElementById('activeKeysTable').innerHTML = activeHtml || '<tr><td colspan="4" class="text-center">No active keys</td></tr>';
-            document.getElementById('usedKeysTable').innerHTML = usedHtml || '<tr><td colspan="4" class="text-center">No used keys</td></tr>';
+            document.getElementById('activeKeysTable').innerHTML = activeHtml || '<tr><td colspan="5" class="text-center">No active keys</td></tr>';
+            document.getElementById('usedKeysTable').innerHTML = usedHtml || '<tr><td colspan="5" class="text-center">No used keys</td></tr>';
 
             // Populate product dropdown for key import
             const kSelect = document.getElementById('keyProduct');
@@ -786,6 +786,13 @@ Thank you for your purchase!
             document.getElementById('singleKeyInput').value = '';
             alert('Key added!');
             loadAdminKeys();
+        };
+
+        window.deleteKey = async function(id) {
+            if (confirm('Are you sure you want to delete this license key?')) {
+                await deleteData('licenseKeys/' + id);
+                loadAdminKeys();
+            }
         };
 
         // ==========================================
@@ -931,6 +938,7 @@ Thank you for your purchase!
         .admin-sidebar .nav-link:hover, .admin-sidebar .nav-link.active { background: rgba(255,255,255,0.1); color: white; }
         .section-title { font-weight: 700; margin-bottom: 20px; color: #1a1a2e; }
     </style>
+<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
@@ -1201,7 +1209,7 @@ Thank you for your purchase!
                 <div class="tab-pane fade show active" id="activeKeys">
                     <div class="card"><div class="card-body p-0">
                         <table class="table table-hover mb-0">
-                            <thead class="table-light"><tr><th>Product</th><th>Duration</th><th>Key</th><th>Added</th></tr></thead>
+                            <thead class="table-light"><tr><th>Product</th><th>Duration</th><th>Key</th><th>Added</th><th>Actions</th></tr></thead>
                             <tbody id="activeKeysTable"><tr><td colspan="4" class="text-center">Loading...</td></tr></tbody>
                         </table>
                     </div></div>
@@ -1209,7 +1217,7 @@ Thank you for your purchase!
                 <div class="tab-pane fade" id="usedKeys">
                     <div class="card"><div class="card-body p-0">
                         <table class="table table-hover mb-0">
-                            <thead class="table-light"><tr><th>Product</th><th>Duration</th><th>Key</th><th>Used Date</th></tr></thead>
+                            <thead class="table-light"><tr><th>Product</th><th>Duration</th><th>Key</th><th>Used Date</th><th>Actions</th></tr></thead>
                             <tbody id="usedKeysTable"><tr><td colspan="4" class="text-center">Loading...</td></tr></tbody>
                         </table>
                     </div></div>
