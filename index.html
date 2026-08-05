@@ -1,1317 +1,1213 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KUTY STORY - Digital Book Store</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>Key Selling Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, getDoc, addDoc, updateDoc, deleteDoc, query, where, orderBy, limit, setDoc, serverTimestamp, onSnapshot } from "https://www.gstatic.com/firebasejs/10.7.1/firestore.js";
+
+        // ==========================================
+        // FIREBASE CONFIG - REPLACE WITH YOURS
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "YOUR_FIREBASE_API_KEY",
+            authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT_ID.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // ==========================================
+        // RAZORPAY CONFIG - REPLACE WITH YOURS
+        // ==========================================
+        const RAZORPAY_KEY_ID = "YOUR_RAZORPAY_KEY_ID";
+
+        // ==========================================
+        // ADMIN CREDENTIALS
+        // ==========================================
+        const ADMIN_USERNAME = "admin";
+        const ADMIN_PASSWORD = "admin123";
+
+        // ==========================================
+        // GLOBAL STATE
+        // ==========================================
+        let currentProduct = null;
+        let currentDuration = null;
+        let currentPrice = 0;
+        let currentCoupon = null;
+        let discountAmount = 0;
+        let finalAmount = 0;
+        let isAdmin = false;
+
+        // ==========================================
+        // NAVIGATION
+        // ==========================================
+        window.showSection = function(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.add('d-none'));
+            document.getElementById(sectionId).classList.remove('d-none');
+            if (sectionId === 'admin-dashboard') loadAdminDashboard();
+            if (sectionId === 'admin-products') loadAdminProducts();
+            if (sectionId === 'admin-durations') loadAdminDurations();
+            if (sectionId === 'admin-prices') loadAdminPrices();
+            if (sectionId === 'admin-keys') loadAdminKeys();
+            if (sectionId === 'admin-coupons') loadAdminCoupons();
+            if (sectionId === 'admin-orders') loadAdminOrders();
+            if (sectionId === 'admin-payments') loadAdminPayments();
+        };
+
+        // ==========================================
+        // HOME PAGE - LOAD PRODUCTS
+        // ==========================================
+        async function loadHomeProducts() {
+            const select = document.getElementById('productSelect');
+            select.innerHTML = '<option value="">-- Select Product --</option>';
+
+            const snapshot = await getDocs(collection(db, 'products'));
+            snapshot.forEach(doc => {
+                const data = doc.data();
+                if (data.enabled !== false) {
+                    select.innerHTML += `<option value="${doc.id}">${data.name}</option>`;
+                }
+            });
+        }
+
+        window.onProductChange = async function() {
+            const productId = document.getElementById('productSelect').value;
+            const durationSelect = document.getElementById('durationSelect');
+            durationSelect.innerHTML = '<option value="">-- Select Duration --</option>';
+            document.getElementById('priceDisplay').innerHTML = '<span class="text-muted">Select duration to see price</span>';
+            document.getElementById('purchaseBtn').disabled = true;
+            currentProduct = null;
+            currentDuration = null;
+            currentPrice = 0;
+
+            if (!productId) return;
+
+            const docRef = doc(db, 'products', productId);
+            const docSnap = await getDoc(docRef);
+            if (docSnap.exists()) {
+                currentProduct = { id: docSnap.id, ...docSnap.data() };
+
+                // Load durations with prices for this product
+                const pricesSnapshot = await getDocs(collection(db, 'prices'));
+                const durationIds = new Set();
+                pricesSnapshot.forEach(p => {
+                    const pdata = p.data();
+                    if (pdata.productId === productId) {
+                        durationIds.add(pdata.durationId);
+                    }
+                });
+
+                for (const durId of durationIds) {
+                    const durRef = doc(db, 'durations', durId);
+                    const durSnap = await getDoc(durRef);
+                    if (durSnap.exists()) {
+                        const durData = durSnap.data();
+                        durationSelect.innerHTML += `<option value="${durId}">${durData.name}</option>`;
+                    }
+                }
+            }
+        };
+
+        window.onDurationChange = async function() {
+            const durationId = document.getElementById('durationSelect').value;
+            if (!durationId || !currentProduct) return;
+
+            const pricesSnapshot = await getDocs(collection(db, 'prices'));
+            pricesSnapshot.forEach(p => {
+                const pdata = p.data();
+                if (pdata.productId === currentProduct.id && pdata.durationId === durationId) {
+                    currentPrice = pdata.price;
+                    currentDuration = { id: durationId, name: document.getElementById('durationSelect').options[document.getElementById('durationSelect').selectedIndex].text };
+                }
+            });
+
+            document.getElementById('priceDisplay').innerHTML = `<h4 class="text-success fw-bold">₹${currentPrice}</h4>`;
+            document.getElementById('purchaseBtn').disabled = false;
+            calculateTotal();
+        };
+
+        window.applyCoupon = async function() {
+            const code = document.getElementById('couponInput').value.trim().toUpperCase();
+            if (!code) {
+                currentCoupon = null;
+                calculateTotal();
+                return;
+            }
+
+            const couponsSnapshot = await getDocs(collection(db, 'coupons'));
+            let found = false;
+            couponsSnapshot.forEach(c => {
+                const cdata = c.data();
+                if (cdata.code === code) {
+                    const now = new Date();
+                    const expiry = cdata.expiryDate ? new Date(cdata.expiryDate) : null;
+                    if (!expiry || expiry > now) {
+                        currentCoupon = { id: c.id, ...cdata };
+                        found = true;
+                    }
+                }
+            });
+
+            if (found) {
+                document.getElementById('couponMsg').innerHTML = '<span class="text-success"><i class="bi bi-check-circle"></i> Coupon applied!</span>';
+            } else {
+                document.getElementById('couponMsg').innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Invalid or expired coupon</span>';
+                currentCoupon = null;
+            }
+            calculateTotal();
+        };
+
+        function calculateTotal() {
+            discountAmount = 0;
+            if (currentCoupon) {
+                if (currentCoupon.type === 'percentage') {
+                    discountAmount = Math.round(currentPrice * currentCoupon.value / 100);
+                } else {
+                    discountAmount = currentCoupon.value;
+                }
+            }
+            finalAmount = Math.max(0, currentPrice - discountAmount);
+
+            let html = '';
+            if (currentCoupon) {
+                html += `<div class="text-decoration-line-through text-muted">₹${currentPrice}</div>`;
+                html += `<div class="text-success">Discount: -₹${discountAmount}</div>`;
+            }
+            html += `<div class="h3 text-primary fw-bold">Total: ₹${finalAmount}</div>`;
+            document.getElementById('totalDisplay').innerHTML = html;
+        }
+
+        // ==========================================
+        // RAZORPAY PAYMENT
+        // ==========================================
+        window.initiatePayment = async function() {
+            if (!currentProduct || !currentDuration || finalAmount <= 0) return;
+
+            const orderId = 'ORD' + Date.now();
+
+            const options = {
+                key: RAZORPAY_KEY_ID,
+                amount: finalAmount * 100,
+                currency: "INR",
+                name: currentProduct.name,
+                description: `${currentProduct.name} - ${currentDuration.name}`,
+                order_id: orderId,
+                handler: async function(response) {
+                    await processSuccessPayment(response, orderId);
+                },
+                prefill: {
+                    name: "",
+                    email: "",
+                    contact: ""
+                },
+                theme: {
+                    color: "#0d6efd"
+                }
+            };
+
+            const rzp = new Razorpay(options);
+            rzp.on('payment.failed', function(response) {
+                alert('Payment failed: ' + response.error.description);
+            });
+            rzp.open();
+        };
+
+        async function processSuccessPayment(response, orderId) {
+            // Find unused license key
+            const keysQuery = query(collection(db, 'licenseKeys'), where('productId', '==', currentProduct.id), where('used', '==', false), limit(1));
+            const keysSnapshot = await getDocs(keysQuery);
+
+            let assignedKey = null;
+            if (!keysSnapshot.empty) {
+                const keyDoc = keysSnapshot.docs[0];
+                assignedKey = keyDoc.data().key;
+                await updateDoc(doc(db, 'licenseKeys', keyDoc.id), { used: true, usedAt: serverTimestamp(), orderId: orderId });
+            }
+
+            // Save order
+            const orderData = {
+                orderId: orderId,
+                productId: currentProduct.id,
+                productName: currentProduct.name,
+                durationId: currentDuration.id,
+                durationName: currentDuration.name,
+                originalPrice: currentPrice,
+                discountAmount: discountAmount,
+                finalAmount: finalAmount,
+                couponCode: currentCoupon ? currentCoupon.code : null,
+                licenseKey: assignedKey,
+                paymentId: response.razorpay_payment_id,
+                status: 'paid',
+                createdAt: serverTimestamp()
+            };
+            await addDoc(collection(db, 'orders'), orderData);
+
+            // Save payment record
+            await addDoc(collection(db, 'payments'), {
+                orderId: orderId,
+                paymentId: response.razorpay_payment_id,
+                amount: finalAmount,
+                gateway: 'razorpay',
+                status: 'success',
+                createdAt: serverTimestamp()
+            });
+
+            // Show success
+            document.getElementById('successOrderId').textContent = orderId;
+            document.getElementById('successProduct').textContent = currentProduct.name;
+            document.getElementById('successDuration').textContent = currentDuration.name;
+            document.getElementById('successKey').textContent = assignedKey || 'No keys available - Contact Admin';
+            document.getElementById('successAmount').textContent = '₹' + finalAmount;
+
+            showSection('success-page');
+        }
+
+        window.copyKey = function() {
+            const key = document.getElementById('successKey').textContent;
+            navigator.clipboard.writeText(key);
+            alert('License key copied!');
+        };
+
+        window.downloadInvoice = function() {
+            const orderId = document.getElementById('successOrderId').textContent;
+            const product = document.getElementById('successProduct').textContent;
+            const duration = document.getElementById('successDuration').textContent;
+            const key = document.getElementById('successKey').textContent;
+            const amount = document.getElementById('successAmount').textContent;
+
+            const invoice = `
+=====================================
+         INVOICE
+=====================================
+Order ID: ${orderId}
+Date: ${new Date().toLocaleString()}
+-------------------------------------
+Product: ${product}
+Duration: ${duration}
+License Key: ${key}
+-------------------------------------
+Amount Paid: ${amount}
+=====================================
+Thank you for your purchase!
+            `;
+
+            const blob = new Blob([invoice], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Invoice_${orderId}.txt`;
+            a.click();
+        };
+
+        // ==========================================
+        // ADMIN LOGIN
+        // ==========================================
+        window.adminLogin = function() {
+            const u = document.getElementById('adminUser').value;
+            const p = document.getElementById('adminPass').value;
+            if (u === ADMIN_USERNAME && p === ADMIN_PASSWORD) {
+                isAdmin = true;
+                document.getElementById('adminNav').classList.remove('d-none');
+                document.getElementById('loginNav').classList.add('d-none');
+                showSection('admin-dashboard');
+            } else {
+                alert('Invalid credentials!');
+            }
+        };
+
+        window.adminLogout = function() {
+            isAdmin = false;
+            document.getElementById('adminNav').classList.add('d-none');
+            document.getElementById('loginNav').classList.remove('d-none');
+            showSection('home');
+        };
+
+        // ==========================================
+        // ADMIN DASHBOARD
+        // ==========================================
+        async function loadAdminDashboard() {
+            const ordersSnap = await getDocs(collection(db, 'orders'));
+            let totalOrders = 0, totalSales = 0, totalRevenue = 0;
+            const recentOrders = [];
+
+            ordersSnap.forEach(d => {
+                const data = d.data();
+                totalOrders++;
+                if (data.status === 'paid') {
+                    totalSales++;
+                    totalRevenue += data.finalAmount || 0;
+                }
+                recentOrders.push(data);
+            });
+
+            document.getElementById('dashTotalOrders').textContent = totalOrders;
+            document.getElementById('dashTotalSales').textContent = totalSales;
+            document.getElementById('dashRevenue').textContent = '₹' + totalRevenue;
+
+            recentOrders.sort((a, b) => (b.createdAt?.seconds || 0) - (a.createdAt?.seconds || 0));
+            let html = '';
+            recentOrders.slice(0, 5).forEach(o => {
+                html += `<tr><td>${o.orderId}</td><td>${o.productName}</td><td>${o.durationName}</td><td>₹${o.finalAmount}</td><td><span class="badge bg-success">${o.status}</span></td></tr>`;
+            });
+            document.getElementById('recentOrdersTable').innerHTML = html || '<tr><td colspan="5" class="text-center">No orders yet</td></tr>';
+        }
+
+        // ==========================================
+        // ADMIN PRODUCTS
+        // ==========================================
+        async function loadAdminProducts() {
+            const snapshot = await getDocs(collection(db, 'products'));
+            let html = '';
+            snapshot.forEach(d => {
+                const data = d.data();
+                html += `<tr>
+                    <td>${data.name}</td>
+                    <td><span class="badge ${data.enabled !== false ? 'bg-success' : 'bg-secondary'}">${data.enabled !== false ? 'Enabled' : 'Disabled'}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="editProduct('${d.id}', '${data.name}', ${data.enabled !== false})"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteProduct('${d.id}')"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('productsTable').innerHTML = html || '<tr><td colspan="3" class="text-center">No products</td></tr>';
+        }
+
+        window.saveProduct = async function() {
+            const name = document.getElementById('productName').value.trim();
+            const enabled = document.getElementById('productEnabled').checked;
+            const editId = document.getElementById('productEditId').value;
+
+            if (!name) { alert('Enter product name'); return; }
+
+            if (editId) {
+                await updateDoc(doc(db, 'products', editId), { name, enabled });
+            } else {
+                await addDoc(collection(db, 'products'), { name, enabled, createdAt: serverTimestamp() });
+            }
+
+            document.getElementById('productName').value = '';
+            document.getElementById('productEditId').value = '';
+            document.getElementById('productEnabled').checked = true;
+            document.getElementById('productModalTitle').textContent = 'Add Product';
+            bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
+            loadAdminProducts();
+        };
+
+        window.editProduct = function(id, name, enabled) {
+            document.getElementById('productName').value = name;
+            document.getElementById('productEnabled').checked = enabled;
+            document.getElementById('productEditId').value = id;
+            document.getElementById('productModalTitle').textContent = 'Edit Product';
+            new bootstrap.Modal(document.getElementById('productModal')).show();
+        };
+
+        window.deleteProduct = async function(id) {
+            if (confirm('Delete this product?')) {
+                await deleteDoc(doc(db, 'products', id));
+                loadAdminProducts();
+            }
+        };
+
+        window.openProductModal = function() {
+            document.getElementById('productName').value = '';
+            document.getElementById('productEditId').value = '';
+            document.getElementById('productEnabled').checked = true;
+            document.getElementById('productModalTitle').textContent = 'Add Product';
+            new bootstrap.Modal(document.getElementById('productModal')).show();
+        };
+
+        // ==========================================
+        // ADMIN DURATIONS
+        // ==========================================
+        async function loadAdminDurations() {
+            const snapshot = await getDocs(collection(db, 'durations'));
+            let html = '';
+            snapshot.forEach(d => {
+                const data = d.data();
+                html += `<tr>
+                    <td>${data.name}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="editDuration('${d.id}', '${data.name}')"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteDuration('${d.id}')"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('durationsTable').innerHTML = html || '<tr><td colspan="2" class="text-center">No durations</td></tr>';
+        }
+
+        window.saveDuration = async function() {
+            const name = document.getElementById('durationName').value.trim();
+            const editId = document.getElementById('durationEditId').value;
+            if (!name) { alert('Enter duration name'); return; }
+
+            if (editId) {
+                await updateDoc(doc(db, 'durations', editId), { name });
+            } else {
+                await addDoc(collection(db, 'durations'), { name, createdAt: serverTimestamp() });
+            }
+
+            document.getElementById('durationName').value = '';
+            document.getElementById('durationEditId').value = '';
+            document.getElementById('durationModalTitle').textContent = 'Add Duration';
+            bootstrap.Modal.getInstance(document.getElementById('durationModal')).hide();
+            loadAdminDurations();
+        };
+
+        window.editDuration = function(id, name) {
+            document.getElementById('durationName').value = name;
+            document.getElementById('durationEditId').value = id;
+            document.getElementById('durationModalTitle').textContent = 'Edit Duration';
+            new bootstrap.Modal(document.getElementById('durationModal')).show();
+        };
+
+        window.deleteDuration = async function(id) {
+            if (confirm('Delete this duration?')) {
+                await deleteDoc(doc(db, 'durations', id));
+                loadAdminDurations();
+            }
+        };
+
+        window.openDurationModal = function() {
+            document.getElementById('durationName').value = '';
+            document.getElementById('durationEditId').value = '';
+            document.getElementById('durationModalTitle').textContent = 'Add Duration';
+            new bootstrap.Modal(document.getElementById('durationModal')).show();
+        };
+
+        // ==========================================
+        // ADMIN PRICES
+        // ==========================================
+        async function loadAdminPrices() {
+            const pricesSnap = await getDocs(collection(db, 'prices'));
+            const productsSnap = await getDocs(collection(db, 'products'));
+            const durationsSnap = await getDocs(collection(db, 'durations'));
+
+            const products = {}, durations = {};
+            productsSnap.forEach(d => products[d.id] = d.data().name);
+            durationsSnap.forEach(d => durations[d.id] = d.data().name);
+
+            let html = '';
+            pricesSnap.forEach(d => {
+                const data = d.data();
+                html += `<tr>
+                    <td>${products[data.productId] || 'Unknown'}</td>
+                    <td>${durations[data.durationId] || 'Unknown'}</td>
+                    <td>₹${data.price}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="editPrice('${d.id}', '${data.productId}', '${data.durationId}', ${data.price})"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deletePrice('${d.id}')"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('pricesTable').innerHTML = html || '<tr><td colspan="4" class="text-center">No prices set</td></tr>';
+        }
+
+        async function populatePriceDropdowns() {
+            const pSelect = document.getElementById('priceProduct');
+            const dSelect = document.getElementById('priceDuration');
+            pSelect.innerHTML = '<option value="">Select Product</option>';
+            dSelect.innerHTML = '<option value="">Select Duration</option>';
+
+            const pSnap = await getDocs(collection(db, 'products'));
+            pSnap.forEach(d => {
+                if (d.data().enabled !== false) pSelect.innerHTML += `<option value="${d.id}">${d.data().name}</option>`;
+            });
+
+            const dSnap = await getDocs(collection(db, 'durations'));
+            dSnap.forEach(d => {
+                dSelect.innerHTML += `<option value="${d.id}">${d.data().name}</option>`;
+            });
+        }
+
+        window.savePrice = async function() {
+            const productId = document.getElementById('priceProduct').value;
+            const durationId = document.getElementById('priceDuration').value;
+            const price = parseInt(document.getElementById('priceValue').value);
+            const editId = document.getElementById('priceEditId').value;
+
+            if (!productId || !durationId || !price || price <= 0) { alert('Fill all fields'); return; }
+
+            if (editId) {
+                await updateDoc(doc(db, 'prices', editId), { productId, durationId, price });
+            } else {
+                await addDoc(collection(db, 'prices'), { productId, durationId, price, createdAt: serverTimestamp() });
+            }
+
+            document.getElementById('priceValue').value = '';
+            document.getElementById('priceEditId').value = '';
+            document.getElementById('priceModalTitle').textContent = 'Set Price';
+            bootstrap.Modal.getInstance(document.getElementById('priceModal')).hide();
+            loadAdminPrices();
+        };
+
+        window.editPrice = function(id, productId, durationId, price) {
+            document.getElementById('priceProduct').value = productId;
+            document.getElementById('priceDuration').value = durationId;
+            document.getElementById('priceValue').value = price;
+            document.getElementById('priceEditId').value = id;
+            document.getElementById('priceModalTitle').textContent = 'Edit Price';
+            new bootstrap.Modal(document.getElementById('priceModal')).show();
+        };
+
+        window.deletePrice = async function(id) {
+            if (confirm('Delete this price?')) {
+                await deleteDoc(doc(db, 'prices', id));
+                loadAdminPrices();
+            }
+        };
+
+        window.openPriceModal = async function() {
+            await populatePriceDropdowns();
+            document.getElementById('priceValue').value = '';
+            document.getElementById('priceEditId').value = '';
+            document.getElementById('priceModalTitle').textContent = 'Set Price';
+            new bootstrap.Modal(document.getElementById('priceModal')).show();
+        };
+
+        // ==========================================
+        // ADMIN LICENSE KEYS
+        // ==========================================
+        async function loadAdminKeys() {
+            const snapshot = await getDocs(collection(db, 'licenseKeys'));
+            const productsSnap = await getDocs(collection(db, 'products'));
+            const products = {};
+            productsSnap.forEach(d => products[d.id] = d.data().name);
+
+            let activeHtml = '', usedHtml = '';
+            snapshot.forEach(d => {
+                const data = d.data();
+                const row = `<tr><td>${products[data.productId] || 'Unknown'}</td><td><code>${data.key}</code></td><td>${data.usedAt ? new Date(data.usedAt.seconds * 1000).toLocaleDateString() : '-'}</td></tr>`;
+                if (data.used) {
+                    usedHtml += row;
+                } else {
+                    activeHtml += row;
+                }
+            });
+
+            document.getElementById('activeKeysTable').innerHTML = activeHtml || '<tr><td colspan="3" class="text-center">No active keys</td></tr>';
+            document.getElementById('usedKeysTable').innerHTML = usedHtml || '<tr><td colspan="3" class="text-center">No used keys</td></tr>';
+
+            // Populate product dropdown for key import
+            const kSelect = document.getElementById('keyProduct');
+            kSelect.innerHTML = '<option value="">Select Product</option>';
+            productsSnap.forEach(d => {
+                if (d.data().enabled !== false) kSelect.innerHTML += `<option value="${d.id}">${d.data().name}</option>`;
+            });
+        }
+
+        window.importKeys = async function() {
+            const productId = document.getElementById('keyProduct').value;
+            const keysText = document.getElementById('keysTextarea').value.trim();
+
+            if (!productId || !keysText) { alert('Select product and enter keys'); return; }
+
+            const keys = keysText.split('
+').map(k => k.trim()).filter(k => k);
+            let count = 0;
+            for (const key of keys) {
+                await addDoc(collection(db, 'licenseKeys'), { productId, key, used: false, createdAt: serverTimestamp() });
+                count++;
+            }
+
+            alert(`${count} keys imported!`);
+            document.getElementById('keysTextarea').value = '';
+            loadAdminKeys();
+        };
+
+        window.addSingleKey = async function() {
+            const productId = document.getElementById('keyProduct').value;
+            const key = document.getElementById('singleKeyInput').value.trim();
+
+            if (!productId || !key) { alert('Select product and enter key'); return; }
+
+            await addDoc(collection(db, 'licenseKeys'), { productId, key, used: false, createdAt: serverTimestamp() });
+            document.getElementById('singleKeyInput').value = '';
+            alert('Key added!');
+            loadAdminKeys();
+        };
+
+        // ==========================================
+        // ADMIN COUPONS
+        // ==========================================
+        async function loadAdminCoupons() {
+            const snapshot = await getDocs(collection(db, 'coupons'));
+            let html = '';
+            snapshot.forEach(d => {
+                const data = d.data();
+                const expiry = data.expiryDate ? new Date(data.expiryDate).toLocaleDateString() : 'No expiry';
+                html += `<tr>
+                    <td>${data.code}</td>
+                    <td>${data.type === 'percentage' ? data.value + '%' : '₹' + data.value}</td>
+                    <td>${expiry}</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="deleteCoupon('${d.id}')"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('couponsTable').innerHTML = html || '<tr><td colspan="4" class="text-center">No coupons</td></tr>';
+        }
+
+        window.saveCoupon = async function() {
+            const code = document.getElementById('couponCode').value.trim().toUpperCase();
+            const type = document.getElementById('couponType').value;
+            const value = parseInt(document.getElementById('couponValue').value);
+            const expiry = document.getElementById('couponExpiry').value;
+
+            if (!code || !value || value <= 0) { alert('Fill all fields'); return; }
+
+            await addDoc(collection(db, 'coupons'), { code, type, value, expiryDate: expiry || null, createdAt: serverTimestamp() });
+
+            document.getElementById('couponCode').value = '';
+            document.getElementById('couponValue').value = '';
+            document.getElementById('couponExpiry').value = '';
+            bootstrap.Modal.getInstance(document.getElementById('couponModal')).hide();
+            loadAdminCoupons();
+        };
+
+        window.deleteCoupon = async function(id) {
+            if (confirm('Delete this coupon?')) {
+                await deleteDoc(doc(db, 'coupons', id));
+                loadAdminCoupons();
+            }
+        };
+
+        window.openCouponModal = function() {
+            document.getElementById('couponCode').value = '';
+            document.getElementById('couponValue').value = '';
+            document.getElementById('couponExpiry').value = '';
+            new bootstrap.Modal(document.getElementById('couponModal')).show();
+        };
+
+        // ==========================================
+        // ADMIN ORDERS
+        // ==========================================
+        async function loadAdminOrders() {
+            const snapshot = await getDocs(collection(db, 'orders'));
+            const productsSnap = await getDocs(collection(db, 'products'));
+            const products = {};
+            productsSnap.forEach(d => products[d.id] = d.data().name);
+
+            let paidHtml = '', failedHtml = '';
+            snapshot.forEach(d => {
+                const data = d.data();
+                const date = data.createdAt ? new Date(data.createdAt.seconds * 1000).toLocaleString() : '-';
+                const row = `<tr>
+                    <td>${data.orderId}</td>
+                    <td>${data.productName}</td>
+                    <td>${data.durationName}</td>
+                    <td>₹${data.finalAmount}</td>
+                    <td><code>${data.licenseKey || 'N/A'}</code></td>
+                    <td>${date}</td>
+                </tr>`;
+
+                if (data.status === 'paid') paidHtml += row;
+                else failedHtml += row;
+            });
+
+            document.getElementById('paidOrdersTable').innerHTML = paidHtml || '<tr><td colspan="6" class="text-center">No paid orders</td></tr>';
+            document.getElementById('failedOrdersTable').innerHTML = failedHtml || '<tr><td colspan="6" class="text-center">No failed orders</td></tr>';
+        }
+
+        window.searchOrders = function() {
+            const term = document.getElementById('orderSearch').value.toLowerCase();
+            document.querySelectorAll('#paidOrdersTable tr, #failedOrdersTable tr').forEach(tr => {
+                tr.style.display = tr.textContent.toLowerCase().includes(term) ? '' : 'none';
+            });
+        };
+
+        // ==========================================
+        // ADMIN PAYMENT SETTINGS
+        // ==========================================
+        async function loadAdminPayments() {
+            const snap = await getDocs(collection(db, 'settings'));
+            let settings = {};
+            snap.forEach(d => settings[d.id] = d.data());
+
+            document.getElementById('rzpKeyId').value = settings.razorpay?.keyId || '';
+            document.getElementById('rzpKeySecret').value = settings.razorpay?.keySecret || '';
+            document.getElementById('upiId').value = settings.upi?.id || '';
+            document.getElementById('upiName').value = settings.upi?.name || '';
+        }
+
+        window.savePaymentSettings = async function() {
+            const rzpKeyId = document.getElementById('rzpKeyId').value.trim();
+            const rzpKeySecret = document.getElementById('rzpKeySecret').value.trim();
+            const upiId = document.getElementById('upiId').value.trim();
+            const upiName = document.getElementById('upiName').value.trim();
+
+            await setDoc(doc(db, 'settings', 'razorpay'), { keyId: rzpKeyId, keySecret: rzpKeySecret });
+            await setDoc(doc(db, 'settings', 'upi'), { id: upiId, name: upiName });
+
+            alert('Payment settings saved!');
+        };
+
+        // ==========================================
+        // INITIALIZE
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', () => {
+            loadHomeProducts();
+        });
+    </script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #fff8f0 0%, #ffe8d6 100%);
-            color: #333;
-            line-height: 1.6;
-            overflow-x: hidden;
-        }
-
-        /* Header */
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid #f0d5b8;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.05);
-        }
-
-        .header-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 22px;
-            font-weight: 800;
-            color: #8B4513;
-            text-decoration: none;
-        }
-
-        .logo img {
-            width: 42px;
-            height: 42px;
-            border-radius: 10px;
-            object-fit: cover;
-            box-shadow: 0 2px 8px rgba(139, 69, 19, 0.2);
-        }
-
-        nav ul {
-            display: flex;
-            list-style: none;
-            gap: 30px;
-        }
-
-        nav a {
-            text-decoration: none;
-            color: #666;
-            font-weight: 500;
-            font-size: 14px;
-            transition: color 0.3s;
-            position: relative;
-        }
-
-        nav a:hover {
-            color: #8B4513;
-        }
-
-        nav a::after {
-            content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: #8B4513;
-            transition: width 0.3s;
-        }
-
-        nav a:hover::after {
-            width: 100%;
-        }
-
-        .mobile-menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #8B4513;
-        }
-
-        /* Hero Section */
-        .hero {
-            padding: 80px 20px 80px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-bg-icon {
-            position: absolute;
-            top: -30px;
-            right: -30px;
-            opacity: 0.04;
-            transform: rotate(-15deg);
-            pointer-events: none;
-        }
-
-        .hero-bg-icon svg {
-            width: 300px;
-            height: 300px;
-        }
-
-        .hero-logo {
-            margin-bottom: 25px;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .hero-logo img {
-            width: 220px;
-            height: 220px;
-            object-fit: cover;
-            border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(139, 69, 19, 0.2);
-        }
-
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
-        }
-
-        .hero h1 {
-            font-size: 56px;
-            font-weight: 800;
-            color: #5D2E0C;
-            margin-bottom: 10px;
-            letter-spacing: -1px;
-        }
-
-        .hero h2 {
-            font-size: 24px;
-            color: #8B4513;
-            font-weight: 400;
-            margin-bottom: 8px;
-        }
-
-        .hero p {
-            font-size: 18px;
-            color: #888;
-            max-width: 500px;
-            margin: 0 auto 40px;
-        }
-
-        .hero-buttons {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 16px 40px;
-            border-radius: 50px;
-            font-size: 16px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s;
-            cursor: pointer;
-            border: none;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #D2691E, #8B4513);
-            color: white;
-            box-shadow: 0 10px 30px rgba(139, 69, 19, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(139, 69, 19, 0.4);
-        }
-
-        .btn-secondary {
-            background: white;
-            color: #666;
-            border: 2px solid #e0d5c8;
-        }
-
-        .btn-secondary:hover {
-            border-color: #8B4513;
-            color: #8B4513;
-            transform: translateY(-3px);
-        }
-
-        .btn svg {
-            width: 20px;
-            height: 20px;
-            fill: currentColor;
-        }
-
-        /* Section Styles */
-        .section {
-            padding: 80px 20px;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .section-title {
-            text-align: center;
-            font-size: 36px;
-            font-weight: 700;
-            color: #5D2E0C;
-            margin-bottom: 50px;
-            position: relative;
-        }
-
-        .section-title::after {
-            content: '';
-            display: block;
-            width: 60px;
-            height: 4px;
-            background: linear-gradient(90deg, #D2691E, #8B4513);
-            border-radius: 2px;
-            margin: 15px auto 0;
-        }
-
-        /* About Section */
-        .about-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 60px;
-            align-items: center;
-        }
-
-        .about-text {
-            font-size: 16px;
-            color: #555;
-            line-height: 1.8;
-        }
-
-        .about-text p {
-            margin-bottom: 15px;
-        }
-
-        .about-text strong {
-            color: #8B4513;
-        }
-
-        .about-card {
-            background: linear-gradient(135deg, #fff5eb, #ffe8d6);
-            border-radius: 24px;
-            padding: 50px;
-            text-align: center;
-            border: 1px solid #f0d5b8;
-        }
-
-        .about-card-icon {
-            margin-bottom: 20px;
-        }
-
-        .about-card-icon svg {
-            width: 70px;
-            height: 70px;
-        }
-
-        .about-card h3 {
-            font-size: 22px;
-            color: #5D2E0C;
-            margin-bottom: 10px;
-        }
-
-        .about-card p {
-            color: #777;
-            font-size: 15px;
-        }
-
-        /* Categories */
-        .categories-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-        }
-
-        .category-card {
-            background: white;
-            border-radius: 20px;
-            padding: 35px 20px;
-            text-align: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            transition: all 0.3s;
-            border: 1px solid #f5efe8;
-        }
-
-        .category-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
-            border-color: #D2691E;
-        }
-
-        .category-icon {
-            margin-bottom: 12px;
-        }
-
-        .category-icon svg {
-            width: 45px;
-            height: 45px;
-        }
-
-        .category-name {
-            font-weight: 600;
-            color: #444;
-            font-size: 14px;
-        }
-
-        /* How It Works */
-        .steps-container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .step {
-            display: flex;
-            align-items: flex-start;
-            gap: 25px;
-            padding: 30px;
-            margin-bottom: 20px;
-            border-radius: 20px;
-            transition: all 0.3s;
-        }
-
-        .step:nth-child(odd) {
-            background: linear-gradient(135deg, #fff8f0, #fff0e0);
-        }
-
-        .step:nth-child(even) {
-            background: linear-gradient(135deg, #fff0e0, #ffe8d6);
-        }
-
-        .step:hover {
-            transform: translateX(10px);
-        }
-
-        .step-number {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #D2691E, #8B4513);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 18px;
-            flex-shrink: 0;
-            box-shadow: 0 5px 15px rgba(139, 69, 19, 0.3);
-        }
-
-        .step-content h4 {
-            font-size: 18px;
-            color: #5D2E0C;
-            margin-bottom: 5px;
-        }
-
-        .step-content p {
-            color: #777;
-            font-size: 15px;
-        }
-
-        /* Why Choose Us */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 25px;
-        }
-
-        .feature-card {
-            background: white;
-            border-radius: 20px;
-            padding: 40px 25px;
-            text-align: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            transition: all 0.3s;
-            border: 1px solid #f5efe8;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
-        }
-
-        .feature-icon {
-            margin-bottom: 15px;
-        }
-
-        .feature-icon svg {
-            width: 50px;
-            height: 50px;
-        }
-
-        .feature-card h4 {
-            font-size: 17px;
-            color: #5D2E0C;
-            margin-bottom: 8px;
-        }
-
-        .feature-card p {
-            color: #888;
-            font-size: 14px;
-        }
-
-        /* FAQ */
-        .faq-container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .faq-item {
-            background: white;
-            border-radius: 16px;
-            margin-bottom: 15px;
-            overflow: hidden;
-            box-shadow: 0 3px 15px rgba(0,0,0,0.05);
-            border: 1px solid #f5efe8;
-        }
-
-        .faq-question {
-            padding: 22px 25px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: 600;
-            color: #5D2E0C;
-            font-size: 16px;
-            transition: background 0.3s;
-        }
-
-        .faq-question:hover {
-            background: #fff8f0;
-        }
-
-        .faq-arrow {
-            font-size: 12px;
-            color: #D2691E;
-            transition: transform 0.3s;
-        }
-
-        .faq-item.active .faq-arrow {
-            transform: rotate(180deg);
-        }
-
-        .faq-answer {
-            padding: 0 25px;
-            max-height: 0;
-            overflow: hidden;
-            transition: all 0.3s;
-            color: #666;
-            font-size: 15px;
-            line-height: 1.7;
-        }
-
-        .faq-item.active .faq-answer {
-            padding: 0 25px 22px;
-            max-height: 200px;
-        }
-
-        /* Contact */
-        .contact-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 25px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .contact-card {
-            background: white;
-            border-radius: 20px;
-            padding: 40px 30px;
-            text-align: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            transition: all 0.3s;
-            border: 1px solid #f5efe8;
-        }
-
-        .contact-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
-        }
-
-        .contact-icon {
-            margin-bottom: 15px;
-        }
-
-        .contact-icon svg {
-            width: 50px;
-            height: 50px;
-        }
-
-        .contact-card h4 {
-            font-size: 17px;
-            color: #5D2E0C;
-            margin-bottom: 8px;
-        }
-
-        .contact-card a {
-            color: #D2691E;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 15px;
-        }
-
-        .contact-card a:hover {
-            text-decoration: underline;
-        }
-
-        .contact-card p {
-            color: #888;
-            font-size: 15px;
-        }
-
-        /* Policies */
-        .policies-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 25px;
-        }
-
-        .policy-card {
-            background: white;
-            border-radius: 20px;
-            padding: 35px 25px;
-            border: 1px solid #f0d5b8;
-            transition: all 0.3s;
-        }
-
-        .policy-card:hover {
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            transform: translateY(-5px);
-        }
-
-        .policy-card h4 {
-            font-size: 18px;
-            color: #5D2E0C;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .policy-card h4 svg {
-            width: 28px;
-            height: 28px;
-        }
-
-        .policy-card ul {
-            list-style: none;
-        }
-
-        .policy-card li {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 10px;
-            padding-left: 5px;
-            line-height: 1.6;
-        }
-
-        /* Footer */
-        footer {
-            background: linear-gradient(135deg, #3d1f0a, #5D2E0C);
-            color: #e8c9a8;
-            padding: 60px 20px 30px;
-        }
-
-        .footer-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .footer-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: 40px;
-            margin-bottom: 40px;
-        }
-
-        .footer-brand {
-            font-size: 22px;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .footer-brand img {
-            width: 30px;
-            height: 30px;
-            border-radius: 6px;
-            object-fit: cover;
-        }
-
-        .footer-desc {
-            font-size: 14px;
-            line-height: 1.7;
-            color: #c9a87c;
-        }
-
-        .footer-col h4 {
-            color: white;
-            font-size: 16px;
-            margin-bottom: 20px;
-        }
-
-        .footer-col ul {
-            list-style: none;
-        }
-
-        .footer-col li {
-            margin-bottom: 10px;
-        }
-
-        .footer-col a {
-            color: #c9a87c;
-            text-decoration: none;
-            font-size: 14px;
-            transition: color 0.3s;
-        }
-
-        .footer-col a:hover {
-            color: white;
-        }
-
-        .footer-bot-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(255,255,255,0.1);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-size: 14px;
-            transition: all 0.3s;
-        }
-
-        .footer-bot-btn:hover {
-            background: rgba(255,255,255,0.2);
-        }
-
-        .footer-bot-btn svg {
-            width: 20px;
-            height: 20px;
-            fill: currentColor;
-        }
-
-        .footer-bottom {
-            border-top: 1px solid rgba(255,255,255,0.1);
-            padding-top: 25px;
-            text-align: center;
-            font-size: 13px;
-            color: #a08060;
-        }
-
-        .footer-bottom a {
-            color: #e8c9a8;
-            text-decoration: none;
-        }
-
-        .footer-bottom a:hover {
-            text-decoration: underline;
-        }
-
-        /* Responsive */
-        @media (max-width: 900px) {
-            .hero h1 { font-size: 40px; }
-            .about-content { grid-template-columns: 1fr; }
-            .categories-grid { grid-template-columns: repeat(2, 1fr); }
-            .features-grid { grid-template-columns: repeat(2, 1fr); }
-            .policies-grid { grid-template-columns: 1fr; }
-            .footer-grid { grid-template-columns: 1fr 1fr; }
-            .hero-logo img { width: 180px; height: 180px; }
-        }
-
-        @media (max-width: 600px) {
-            nav ul { display: none; }
-            .mobile-menu-btn { display: block; }
-            .hero h1 { font-size: 32px; }
-            .hero h2 { font-size: 18px; }
-            .categories-grid { grid-template-columns: 1fr 1fr; }
-            .features-grid { grid-template-columns: 1fr; }
-            .contact-grid { grid-template-columns: 1fr; }
-            .footer-grid { grid-template-columns: 1fr; }
-            .step { flex-direction: column; text-align: center; }
-            .hero-logo img { width: 150px; height: 150px; }
-            .logo img { width: 36px; height: 36px; }
-            .logo { font-size: 18px; }
-        }
-
-        /* Mobile Menu */
-        .mobile-menu {
-            display: none;
-            position: absolute;
-            top: 100%;
-            left: 0;
-            right: 0;
-            background: white;
-            border-top: 1px solid #f0d5b8;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            padding: 20px;
-        }
-
-        .mobile-menu.active {
-            display: block;
-        }
-
-        .mobile-menu a {
-            display: block;
-            padding: 12px 0;
-            color: #666;
-            text-decoration: none;
-            font-weight: 500;
-            border-bottom: 1px solid #f5efe8;
-        }
-
-        .mobile-menu a:last-child {
-            border-bottom: none;
-        }
-
-        /* Smooth Scroll */
-        html {
-            scroll-behavior: smooth;
-        }
+        body { background: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
+        .navbar { box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .card { border: none; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .purchase-card { max-width: 500px; margin: 0 auto; }
+        .btn-primary { border-radius: 10px; padding: 12px 30px; font-weight: 600; }
+        .form-select, .form-control { border-radius: 10px; padding: 12px; }
+        .price-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; padding: 20px; text-align: center; }
+        .success-box { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; border-radius: 16px; padding: 40px; text-align: center; }
+        .key-display { background: rgba(255,255,255,0.2); border-radius: 10px; padding: 15px; font-family: monospace; font-size: 1.2rem; word-break: break-all; }
+        .stat-card { background: white; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .stat-number { font-size: 2rem; font-weight: 700; color: #0d6efd; }
+        .admin-sidebar { min-height: calc(100vh - 56px); background: #1a1a2e; color: white; }
+        .admin-sidebar .nav-link { color: rgba(255,255,255,0.7); padding: 12px 20px; border-radius: 8px; margin: 2px 10px; }
+        .admin-sidebar .nav-link:hover, .admin-sidebar .nav-link.active { background: rgba(255,255,255,0.1); color: white; }
+        .section-title { font-weight: 700; margin-bottom: 20px; color: #1a1a2e; }
     </style>
 <base target="_blank">
 </head>
 <body>
-    <!-- SVG Icons Definitions -->
-    <svg style="display:none;">
-        <defs>
-            <symbol id="icon-book" viewBox="0 0 64 64">
-                <rect x="8" y="4" width="48" height="56" rx="4" fill="none" stroke="#8B4513" stroke-width="3"/>
-                <line x1="24" y1="4" x2="24" y2="60" stroke="#8B4513" stroke-width="2"/>
-                <path d="M12 16h8M12 24h8M12 32h8M12 40h8" stroke="#D2691E" stroke-width="2" stroke-linecap="round"/>
-                <path d="M28 16h20M28 24h20M28 32h16" stroke="#8B4513" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
-                <circle cx="44" cy="48" r="6" fill="#D2691E" opacity="0.8"/>
-            </symbol>
-
-            <symbol id="icon-telegram" viewBox="0 0 24 24">
-                <path d="M21.5 4.5L2.5 11.5L9.5 13.5L12.5 20.5L21.5 4.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                <path d="M9.5 13.5L14.5 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </symbol>
-
-            <symbol id="icon-message" viewBox="0 0 24 24">
-                <rect x="3" y="4" width="18" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="2"/>
-                <path d="M8 18l4 3l4-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </symbol>
-
-            <symbol id="icon-target" viewBox="0 0 64 64">
-                <circle cx="32" cy="32" r="24" fill="none" stroke="#8B4513" stroke-width="3"/>
-                <circle cx="32" cy="32" r="14" fill="none" stroke="#D2691E" stroke-width="3"/>
-                <circle cx="32" cy="32" r="5" fill="#D2691E"/>
-                <line x1="32" y1="4" x2="32" y2="12" stroke="#8B4513" stroke-width="2" stroke-linecap="round"/>
-                <line x1="32" y1="52" x2="32" y2="60" stroke="#8B4513" stroke-width="2" stroke-linecap="round"/>
-                <line x1="4" y1="32" x2="12" y2="32" stroke="#8B4513" stroke-width="2" stroke-linecap="round"/>
-                <line x1="52" y1="32" x2="60" y2="32" stroke="#8B4513" stroke-width="2" stroke-linecap="round"/>
-            </symbol>
-
-            <symbol id="icon-adventure" viewBox="0 0 64 64">
-                <path d="M32 8L40 28L60 32L44 44L48 60L32 50L16 60L20 44L4 32L24 28Z" fill="none" stroke="#D2691E" stroke-width="2.5" stroke-linejoin="round"/>
-                <circle cx="32" cy="32" r="6" fill="#8B4513"/>
-            </symbol>
-
-            <symbol id="icon-romance" viewBox="0 0 64 64">
-                <path d="M32 56C32 56 8 40 8 24C8 16 14 10 22 10C27 10 30 13 32 16C34 13 37 10 42 10C50 10 56 16 56 24C56 40 32 56 32 56Z" fill="none" stroke="#D2691E" stroke-width="2.5"/>
-            </symbol>
-
-            <symbol id="icon-mystery" viewBox="0 0 64 64">
-                <circle cx="32" cy="28" r="16" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-                <path d="M32 20v8M32 36v2" stroke="#D2691E" stroke-width="2.5" stroke-linecap="round"/>
-                <path d="M20 48c0-6.6 5.4-12 12-12s12 5.4 12 12" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-            </symbol>
-
-            <symbol id="icon-horror" viewBox="0 0 64 64">
-                <path d="M32 8c-13.3 0-24 8-24 18c0 8 5 14 12 16v8l8-6l8 6v-8c7-2 12-8 12-16C48 16 37.3 8 32 8z" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-                <circle cx="24" cy="28" r="3" fill="#D2691E"/>
-                <circle cx="40" cy="28" r="3" fill="#D2691E"/>
-                <path d="M28 36c2 2 6 2 8 0" stroke="#D2691E" stroke-width="2" stroke-linecap="round" fill="none"/>
-            </symbol>
-
-            <symbol id="icon-fantasy" viewBox="0 0 64 64">
-                <path d="M32 4L36 24L56 28L36 32L32 52L28 32L8 28L28 24Z" fill="none" stroke="#D2691E" stroke-width="2" stroke-linejoin="round"/>
-                <circle cx="32" cy="28" r="4" fill="#8B4513"/>
-            </symbol>
-
-            <symbol id="icon-children" viewBox="0 0 64 64">
-                <circle cx="32" cy="20" r="10" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-                <path d="M16 56c0-8.8 7.2-16 16-16s16 7.2 16 16" fill="none" stroke="#D2691E" stroke-width="2.5"/>
-                <circle cx="28" cy="18" r="2" fill="#D2691E"/>
-                <circle cx="36" cy="18" r="2" fill="#D2691E"/>
-                <path d="M28 24c2 2 6 2 8 0" stroke="#D2691E" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-            </symbol>
-
-            <symbol id="icon-historical" viewBox="0 0 64 64">
-                <path d="M32 8L12 20v24l20 12l20-12V20L32 8z" fill="none" stroke="#8B4513" stroke-width="2.5" stroke-linejoin="round"/>
-                <path d="M32 8v48M12 20l20 12l20-12" stroke="#8B4513" stroke-width="2" fill="none"/>
-                <circle cx="32" cy="32" r="6" fill="none" stroke="#D2691E" stroke-width="2"/>
-            </symbol>
-
-            <symbol id="icon-educational" viewBox="0 0 64 64">
-                <path d="M32 8L8 20v8c0 13.3 10.7 24 24 24s24-10.7 24-24v-8L32 8z" fill="none" stroke="#8B4513" stroke-width="2.5" stroke-linejoin="round"/>
-                <path d="M32 8v44" stroke="#8B4513" stroke-width="2"/>
-                <path d="M32 24l-8 4l8 4l8-4z" fill="none" stroke="#D2691E" stroke-width="2"/>
-            </symbol>
-
-            <symbol id="icon-lock" viewBox="0 0 64 64">
-                <rect x="12" y="28" width="40" height="28" rx="4" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-                <path d="M20 28V20a12 12 0 0124 0v8" fill="none" stroke="#D2691E" stroke-width="2.5"/>
-                <circle cx="32" cy="42" r="4" fill="#D2691E"/>
-                <line x1="32" y1="46" x2="32" y2="50" stroke="#D2691E" stroke-width="2" stroke-linecap="round"/>
-            </symbol>
-
-            <symbol id="icon-lightning" viewBox="0 0 64 64">
-                <path d="M36 4L16 32h16l-4 28l20-28H32l4-28z" fill="none" stroke="#D2691E" stroke-width="2.5" stroke-linejoin="round"/>
-            </symbol>
-
-            <symbol id="icon-phone" viewBox="0 0 64 64">
-                <rect x="18" y="4" width="28" height="56" rx="6" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-                <line x1="26" y1="12" x2="38" y2="12" stroke="#D2691E" stroke-width="2" stroke-linecap="round"/>
-                <rect x="22" y="18" width="20" height="28" rx="2" fill="none" stroke="#D2691E" stroke-width="2"/>
-                <circle cx="32" cy="52" r="3" fill="#D2691E"/>
-            </symbol>
-
-            <symbol id="icon-cart" viewBox="0 0 64 64">
-                <path d="M8 12h8l4 32h32l4-24H20" fill="none" stroke="#8B4513" stroke-width="2.5" stroke-linejoin="round"/>
-                <circle cx="26" cy="52" r="4" fill="none" stroke="#D2691E" stroke-width="2"/>
-                <circle cx="50" cy="52" r="4" fill="none" stroke="#D2691E" stroke-width="2"/>
-            </symbol>
-
-            <symbol id="icon-headset" viewBox="0 0 64 64">
-                <path d="M32 8c-13.3 0-24 10.7-24 24v8h6v-8c0-9.9 8.1-18 18-18s18 8.1 18 18v8h6v-8C56 18.7 45.3 8 32 8z" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-                <rect x="8" y="36" width="10" height="14" rx="3" fill="none" stroke="#D2691E" stroke-width="2.5"/>
-                <rect x="46" y="36" width="10" height="14" rx="3" fill="none" stroke="#D2691E" stroke-width="2.5"/>
-                <path d="M18 46c0 8 6 12 14 12s14-4 14-12" fill="none" stroke="#8B4513" stroke-width="2"/>
-            </symbol>
-
-            <symbol id="icon-money" viewBox="0 0 64 64">
-                <circle cx="32" cy="32" r="24" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-                <path d="M32 16v4M32 44v4M20 32h-4M48 32h-4" stroke="#D2691E" stroke-width="2" stroke-linecap="round"/>
-                <text x="32" y="38" text-anchor="middle" fill="#D2691E" font-size="20" font-weight="bold" font-family="Poppins,sans-serif">$</text>
-            </symbol>
-
-            <symbol id="icon-email" viewBox="0 0 64 64">
-                <rect x="8" y="12" width="48" height="40" rx="6" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-                <path d="M8 16l24 20 24-20" fill="none" stroke="#D2691E" stroke-width="2.5" stroke-linejoin="round"/>
-            </symbol>
-
-            <symbol id="icon-bot" viewBox="0 0 64 64">
-                <rect x="16" y="16" width="32" height="28" rx="6" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-                <circle cx="26" cy="28" r="3" fill="#D2691E"/>
-                <circle cx="38" cy="28" r="3" fill="#D2691E"/>
-                <rect x="28" y="36" width="8" height="3" rx="1.5" fill="#D2691E"/>
-                <line x1="32" y1="8" x2="32" y2="16" stroke="#8B4513" stroke-width="2.5" stroke-linecap="round"/>
-                <circle cx="32" cy="6" r="3" fill="#D2691E"/>
-                <rect x="12" y="40" width="8" height="12" rx="2" fill="none" stroke="#8B4513" stroke-width="2"/>
-                <rect x="44" y="40" width="8" height="12" rx="2" fill="none" stroke="#8B4513" stroke-width="2"/>
-            </symbol>
-
-            <symbol id="icon-chat" viewBox="0 0 64 64">
-                <rect x="8" y="8" width="48" height="36" rx="8" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-                <path d="M24 44l8 10 8-10" fill="none" stroke="#D2691E" stroke-width="2.5" stroke-linejoin="round"/>
-                <line x1="18" y1="22" x2="30" y2="22" stroke="#D2691E" stroke-width="2" stroke-linecap="round"/>
-                <line x1="18" y1="30" x2="42" y2="30" stroke="#D2691E" stroke-width="2" stroke-linecap="round"/>
-            </symbol>
-
-            <symbol id="icon-clock" viewBox="0 0 64 64">
-                <circle cx="32" cy="32" r="24" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-                <line x1="32" y1="32" x2="32" y2="16" stroke="#D2691E" stroke-width="2.5" stroke-linecap="round"/>
-                <line x1="32" y1="32" x2="42" y2="32" stroke="#D2691E" stroke-width="2.5" stroke-linecap="round"/>
-                <circle cx="32" cy="32" r="2" fill="#8B4513"/>
-            </symbol>
-
-            <symbol id="icon-privacy" viewBox="0 0 64 64">
-                <path d="M32 4L8 16v12c0 14.4 10.2 27.8 24 32 13.8-4.2 24-17.6 24-32V16L32 4z" fill="none" stroke="#8B4513" stroke-width="2.5" stroke-linejoin="round"/>
-                <path d="M22 32l8 8 12-14" fill="none" stroke="#D2691E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-            </symbol>
-
-            <symbol id="icon-document" viewBox="0 0 64 64">
-                <path d="M16 4h24l16 16v40H16V4z" fill="none" stroke="#8B4513" stroke-width="2.5" stroke-linejoin="round"/>
-                <path d="M40 4v16h16" fill="none" stroke="#D2691E" stroke-width="2.5"/>
-                <line x1="22" y1="32" x2="42" y2="32" stroke="#D2691E" stroke-width="2" stroke-linecap="round"/>
-                <line x1="22" y1="40" x2="38" y2="40" stroke="#D2691E" stroke-width="2" stroke-linecap="round"/>
-                <line x1="22" y1="48" x2="34" y2="48" stroke="#D2691E" stroke-width="2" stroke-linecap="round"/>
-            </symbol>
-
-            <symbol id="icon-refund" viewBox="0 0 64 64">
-                <circle cx="32" cy="32" r="24" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-                <path d="M32 16v16l10 6" fill="none" stroke="#D2691E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M20 12l-4 4 4 4" fill="none" stroke="#8B4513" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </symbol>
-        </defs>
-    </svg>
-
-    <!-- Header -->
-    <header>
-        <div class="header-container">
-            <a href="#" class="logo">
-                <img src="logo.jpg" alt="KUTY STORY">
-                KUTY STORY
-            </a>
-            <nav>
-                <ul>
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#about">About Us</a></li>
-                    <li><a href="#howitworks">How It Works</a></li>
-                    <li><a href="#faq">FAQ</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                </ul>
-            </nav>
-            <button class="mobile-menu-btn" onclick="toggleMenu()">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                    <line x1="3" y1="6" x2="21" y2="6"/>
-                    <line x1="3" y1="12" x2="21" y2="12"/>
-                    <line x1="3" y1="18" x2="21" y2="18"/>
-                </svg>
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
+        <div class="container">
+            <a class="navbar-brand fw-bold" href="#" onclick="showSection('home')"><i class="bi bi-key-fill me-2"></i>KeyStore</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
             </button>
-        </div>
-        <div class="mobile-menu" id="mobileMenu">
-            <a href="#home" onclick="toggleMenu()">Home</a>
-            <a href="#about" onclick="toggleMenu()">About Us</a>
-            <a href="#howitworks" onclick="toggleMenu()">How It Works</a>
-            <a href="#faq" onclick="toggleMenu()">FAQ</a>
-            <a href="#contact" onclick="toggleMenu()">Contact</a>
-        </div>
-    </header>
-
-    <!-- Hero Section -->
-    <section class="hero" id="home">
-        <div class="hero-bg-icon">
-            <svg><use href="#icon-book"/></svg>
-        </div>
-        <div class="hero-logo">
-            <img src="logo.jpg" alt="KUTY STORY Logo">
-        </div>
-        <h1>KUTY STORY</h1>
-        <h2>Read Your Favourite Story Books Anytime, Anywhere.</h2>
-        <p>We provide digital story books through our official Telegram Bot. Secure, fast, and easy digital book purchases.</p>
-        <div class="hero-buttons">
-            <a href="https://t.me/KUTYSTORYBOT" target="_blank" class="btn btn-primary">
-                <svg><use href="#icon-telegram"/></svg> Open Telegram Bot
-            </a>
-            <a href="https://t.me/KUTYSTORY" target="_blank" class="btn btn-secondary">
-                <svg><use href="#icon-message"/></svg> Contact Support
-            </a>
-        </div>
-    </section>
-
-    <!-- About Section -->
-    <section class="section" id="about">
-        <h2 class="section-title">About Us</h2>
-        <div class="about-content">
-            <div class="about-text">
-                <p><strong>KUTY STORY</strong> is an online digital book store.</p>
-                <p>We provide digital story books through our official Telegram Bot.</p>
-                <p>Our mission is to provide readers with an easy, secure and fast way to purchase digital books.</p>
-                <p>We focus on quality service, quick delivery and customer support.</p>
-            </div>
-            <div class="about-card">
-                <div class="about-card-icon">
-                    <svg><use href="#icon-target"/></svg>
-                </div>
-                <h3>Our Mission</h3>
-                <p>Making digital reading accessible to everyone through Telegram.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Book Categories -->
-    <section class="section" style="background: linear-gradient(135deg, #fff0e0, #ffe8d6); margin: 0; max-width: 100%; padding: 80px 20px;">
-        <div style="max-width: 1200px; margin: 0 auto;">
-            <h2 class="section-title">Book Categories</h2>
-            <div class="categories-grid">
-                <div class="category-card">
-                    <div class="category-icon">
-                        <svg><use href="#icon-adventure"/></svg>
-                    </div>
-                    <div class="category-name">Adventure</div>
-                </div>
-                <div class="category-card">
-                    <div class="category-icon">
-                        <svg><use href="#icon-romance"/></svg>
-                    </div>
-                    <div class="category-name">Romance</div>
-                </div>
-                <div class="category-card">
-                    <div class="category-icon">
-                        <svg><use href="#icon-mystery"/></svg>
-                    </div>
-                    <div class="category-name">Mystery</div>
-                </div>
-                <div class="category-card">
-                    <div class="category-icon">
-                        <svg><use href="#icon-horror"/></svg>
-                    </div>
-                    <div class="category-name">Horror</div>
-                </div>
-                <div class="category-card">
-                    <div class="category-icon">
-                        <svg><use href="#icon-fantasy"/></svg>
-                    </div>
-                    <div class="category-name">Fantasy</div>
-                </div>
-                <div class="category-card">
-                    <div class="category-icon">
-                        <svg><use href="#icon-children"/></svg>
-                    </div>
-                    <div class="category-name">Children's Stories</div>
-                </div>
-                <div class="category-card">
-                    <div class="category-icon">
-                        <svg><use href="#icon-historical"/></svg>
-                    </div>
-                    <div class="category-name">Historical Stories</div>
-                </div>
-                <div class="category-card">
-                    <div class="category-icon">
-                        <svg><use href="#icon-educational"/></svg>
-                    </div>
-                    <div class="category-name">Educational Stories</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- How It Works -->
-    <section class="section" id="howitworks">
-        <h2 class="section-title">How It Works</h2>
-        <div class="steps-container">
-            <div class="step">
-                <div class="step-number">1</div>
-                <div class="step-content">
-                    <h4>Open Telegram Bot</h4>
-                    <p>Click the button to open our official Telegram Bot @KUTYSTORYBOT</p>
-                </div>
-            </div>
-            <div class="step">
-                <div class="step-number">2</div>
-                <div class="step-content">
-                    <h4>Browse Available Story Books</h4>
-                    <p>Browse available story books across multiple categories.</p>
-                </div>
-            </div>
-            <div class="step">
-                <div class="step-number">3</div>
-                <div class="step-content">
-                    <h4>Select Your Favourite Book</h4>
-                    <p>Select your favourite book and complete secure payment.</p>
-                </div>
-            </div>
-            <div class="step">
-                <div class="step-number">4</div>
-                <div class="step-content">
-                    <h4>Receive Your Digital Book</h4>
-                    <p>After payment, your digital book is delivered instantly through Telegram.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Why Choose Us -->
-    <section class="section" style="background: linear-gradient(135deg, #fff0e0, #ffe8d6); margin: 0; max-width: 100%; padding: 80px 20px;">
-        <div style="max-width: 1200px; margin: 0 auto;">
-            <h2 class="section-title">Why Choose Us</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg><use href="#icon-lock"/></svg>
-                    </div>
-                    <h4>Secure Payment</h4>
-                    <p>All transactions are encrypted and secure.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg><use href="#icon-lightning"/></svg>
-                    </div>
-                    <h4>Fast Delivery</h4>
-                    <p>Instant digital delivery after payment.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg><use href="#icon-phone"/></svg>
-                    </div>
-                    <h4>Digital Books</h4>
-                    <p>Read anytime, anywhere on any device.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg><use href="#icon-cart"/></svg>
-                    </div>
-                    <h4>Easy Purchase</h4>
-                    <p>Simple 4-step purchase process.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg><use href="#icon-headset"/></svg>
-                    </div>
-                    <h4>Customer Support</h4>
-                    <p>24/7 support via Telegram & Email.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg><use href="#icon-money"/></svg>
-                    </div>
-                    <h4>Best Prices</h4>
-                    <p>Affordable digital books for everyone.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- FAQ Section -->
-    <section class="section" id="faq">
-        <h2 class="section-title">Frequently Asked Questions</h2>
-        <div class="faq-container">
-            <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
-                    <span>How do I purchase a book?</span>
-                    <span class="faq-arrow">&#9660;</span>
-                </div>
-                <div class="faq-answer">
-                    Open our Telegram Bot @KUTYSTORYBOT, choose a book from the catalog, and complete the secure payment. Your book will be delivered instantly.
-                </div>
-            </div>
-            <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
-                    <span>How will I receive my book?</span>
-                    <span class="faq-arrow">&#9660;</span>
-                </div>
-                <div class="faq-answer">
-                    After successful payment, your digital book will be delivered directly through Telegram as a downloadable file.
-                </div>
-            </div>
-            <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
-                    <span>Can I contact support?</span>
-                    <span class="faq-arrow">&#9660;</span>
-                </div>
-                <div class="faq-answer">
-                    Yes! You can contact us through our Telegram Support @KUTYSTORY or email us at gamertrashbin@gmail.com
-                </div>
-            </div>
-            <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
-                    <span>What payment methods are accepted?</span>
-                    <span class="faq-arrow">&#9660;</span>
-                </div>
-                <div class="faq-answer">
-                    We accept UPI, Paytm, and other secure digital payment methods through our Telegram Bot.
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section class="section" id="contact" style="background: linear-gradient(135deg, #fff0e0, #ffe8d6); margin: 0; max-width: 100%; padding: 80px 20px;">
-        <div style="max-width: 800px; margin: 0 auto;">
-            <h2 class="section-title">Contact Us</h2>
-            <div class="contact-grid">
-                <div class="contact-card">
-                    <div class="contact-icon">
-                        <svg><use href="#icon-email"/></svg>
-                    </div>
-                    <h4>Support Email</h4>
-                    <a href="mailto:gamertrashbin@gmail.com">gamertrashbin@gmail.com</a>
-                </div>
-                <div class="contact-card">
-                    <div class="contact-icon">
-                        <svg><use href="#icon-bot"/></svg>
-                    </div>
-                    <h4>Official Telegram Bot</h4>
-                    <a href="https://t.me/KUTYSTORYBOT" target="_blank">@KUTYSTORYBOT</a>
-                </div>
-                <div class="contact-card">
-                    <div class="contact-icon">
-                        <svg><use href="#icon-chat"/></svg>
-                    </div>
-                    <h4>Telegram Support</h4>
-                    <a href="https://t.me/KUTYSTORE" target="_blank">@KUTYSTORE</a>
-                </div>
-                <div class="contact-card">
-                    <div class="contact-icon">
-                        <svg><use href="#icon-clock"/></svg>
-                    </div>
-                    <h4>Support Hours</h4>
-                    <p>24/7 Online Support</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Policies Section -->
-    <section class="section">
-        <h2 class="section-title">Our Policies</h2>
-        <div class="policies-grid">
-            <div class="policy-card">
-                <h4><svg><use href="#icon-privacy"/></svg> Privacy Policy</h4>
-                <ul>
-                    <li>• Customer information is kept secure.</li>
-                    <li>• Personal information is used only for order processing.</li>
-                    <li>• Payment information is processed securely.</li>
-                    <li>• We never sell customer information.</li>
-                </ul>
-            </div>
-            <div class="policy-card">
-                <h4><svg><use href="#icon-document"/></svg> Terms & Conditions</h4>
-                <ul>
-                    <li>• All products are digital books.</li>
-                    <li>• Customers must provide correct information.</li>
-                    <li>• Purchased books are for personal use.</li>
-                    <li>• Unauthorized redistribution is prohibited.</li>
-                </ul>
-            </div>
-            <div class="policy-card">
-                <h4><svg><use href="#icon-refund"/></svg> Refund Policy</h4>
-                <ul>
-                    <li>• Refund requests are reviewed according to our policy.</li>
-                    <li>• Technical issues eligible for refund or replacement.</li>
-                    <li>• Replacement option available.</li>
-                    <li>• Contact support for assistance.</li>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('home')">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('faq')">FAQ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('contact')">Contact</a></li>
+                    <li class="nav-item" id="loginNav"><a class="nav-link" href="#" onclick="showSection('admin-login')"><i class="bi bi-shield-lock me-1"></i>Admin Login</a></li>
+                    <li class="nav-item dropdown d-none" id="adminNav">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-speedometer2 me-1"></i>Admin</a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li><a class="dropdown-item" href="#" onclick="showSection('admin-dashboard')">Dashboard</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showSection('admin-products')">Products</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showSection('admin-durations')">Durations</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showSection('admin-prices')">Prices</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showSection('admin-keys')">License Keys</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showSection('admin-coupons')">Coupons</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showSection('admin-orders')">Orders</a></li>
+                            <li><a class="dropdown-item" href="#" onclick="showSection('admin-payments')">Payment Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
+                            <li><a class="dropdown-item text-danger" href="#" onclick="adminLogout()"><i class="bi bi-box-arrow-right me-1"></i>Logout</a></li>
+                        </ul>
+                    </li>
                 </ul>
             </div>
         </div>
-    </section>
+    </nav>
 
-    <!-- Footer -->
-    <footer>
-        <div class="footer-container">
-            <div class="footer-grid">
-                <div>
-                    <div class="footer-brand">
-                        <img src="logo.jpg" alt="KUTY STORY"> KUTY STORY
-                    </div>
-                    <p class="footer-desc">Your trusted digital bookstore on Telegram. Quality books, instant delivery, secure payments.</p>
-                </div>
-                <div class="footer-col">
-                    <h4>Quick Links</h4>
-                    <ul>
-                        <li><a href="#home">Home</a></li>
-                        <li><a href="#about">About Us</a></li>
-                        <li><a href="#howitworks">How It Works</a></li>
-                        <li><a href="#faq">FAQ</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Support</h4>
-                    <ul>
-                        <li><a href="#contact">Contact Us</a></li>
-                        <li><a href="https://t.me/KUTYSTORE" target="_blank">Telegram Support</a></li>
-                        <li><a href="mailto:gamertrashbin@gmail.com">Email Support</a></li>
-                    </ul>
-                </div>
-                <div class="footer-col">
-                    <h4>Connect</h4>
-                    <a href="https://t.me/KUTYSTORYBOT" target="_blank" class="footer-bot-btn">
-                        <svg><use href="#icon-bot"/></svg> Open Bot
-                    </a>
-                </div>
+    <!-- HOME PAGE -->
+    <div id="home" class="section">
+        <div class="container py-5">
+            <div class="text-center mb-5">
+                <h1 class="display-4 fw-bold text-dark">Premium License Keys</h1>
+                <p class="lead text-muted">Instant delivery. Trusted by thousands.</p>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 KUTY STORY. All Rights Reserved.</p>
-                <p style="margin-top: 8px;">Official Bot: <a href="https://t.me/KUTYSTORYBOT" target="_blank">@KUTYSTORYBOT</a> | Support: <a href="https://t.me/KUTYSTORE" target="_blank">@KUTYSTORE</a></p>
+
+            <div class="card purchase-card p-4">
+                <div class="card-body">
+                    <h4 class="mb-4 text-center"><i class="bi bi-cart3 me-2"></i>Purchase Panel</h4>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Select Product</label>
+                        <select class="form-select form-select-lg" id="productSelect" onchange="onProductChange()">
+                            <option value="">-- Select Product --</option>
+                        </select>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Select Duration</label>
+                        <select class="form-select form-select-lg" id="durationSelect" onchange="onDurationChange()" disabled>
+                            <option value="">-- Select Duration --</option>
+                        </select>
+                    </div>
+
+                    <div class="price-box mb-3">
+                        <div class="text-white-50 small">Price</div>
+                        <div id="priceDisplay"><span class="text-white">Select product & duration</span></div>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Coupon Code (Optional)</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control" id="couponInput" placeholder="Enter coupon code">
+                            <button class="btn btn-outline-primary" type="button" onclick="applyCoupon()">Apply</button>
+                        </div>
+                        <div id="couponMsg" class="mt-1 small"></div>
+                    </div>
+
+                    <div id="totalDisplay" class="text-center mb-3"></div>
+
+                    <button class="btn btn-primary w-100 btn-lg" id="purchaseBtn" onclick="initiatePayment()" disabled>
+                        <i class="bi bi-credit-card me-2"></i>Purchase Now
+                    </button>
+                </div>
             </div>
         </div>
-    </footer>
+    </div>
 
-    <script>
-        function toggleMenu() {
-            document.getElementById('mobileMenu').classList.toggle('active');
-        }
+    <!-- FAQ PAGE -->
+    <div id="faq" class="section d-none">
+        <div class="container py-5">
+            <h2 class="section-title text-center mb-4">Frequently Asked Questions</h2>
+            <div class="row justify-content-center">
+                <div class="col-md-8">
+                    <div class="accordion" id="faqAccordion">
+                        <div class="accordion-item">
+                            <h2 class="accordion-header"><button class="accordion-button" data-bs-toggle="collapse" data-bs-target="#faq1">How do I receive my license key?</button></h2>
+                            <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">After successful payment, your license key is displayed instantly on the success page. You can also copy it to your clipboard.</div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#faq2">What payment methods are accepted?</button></h2>
+                            <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">We accept all major payment methods via Razorpay including UPI, Credit/Debit cards, Net Banking, and Wallets.</div>
+                            </div>
+                        </div>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#faq3">Is there a refund policy?</button></h2>
+                            <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                                <div class="accordion-body">Due to the digital nature of license keys, all sales are final. Please ensure you select the correct product and duration before purchasing.</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        function toggleFaq(element) {
-            const item = element.parentElement;
-            const wasActive = item.classList.contains('active');
+    <!-- CONTACT PAGE -->
+    <div id="contact" class="section d-none">
+        <div class="container py-5">
+            <h2 class="section-title text-center mb-4">Contact Us</h2>
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card p-4">
+                        <div class="mb-3"><label class="form-label">Name</label><input type="text" class="form-control" placeholder="Your name"></div>
+                        <div class="mb-3"><label class="form-label">Email</label><input type="email" class="form-control" placeholder="your@email.com"></div>
+                        <div class="mb-3"><label class="form-label">Message</label><textarea class="form-control" rows="4" placeholder="Your message..."></textarea></div>
+                        <button class="btn btn-primary w-100">Send Message</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            document.querySelectorAll('.faq-item').forEach(faq => {
-                faq.classList.remove('active');
-            });
+    <!-- ADMIN LOGIN -->
+    <div id="admin-login" class="section d-none">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-md-4">
+                    <div class="card p-4">
+                        <div class="text-center mb-4">
+                            <i class="bi bi-shield-lock display-1 text-primary"></i>
+                            <h3 class="mt-3">Admin Login</h3>
+                        </div>
+                        <div class="mb-3"><label class="form-label">Username</label><input type="text" class="form-control" id="adminUser" placeholder="admin"></div>
+                        <div class="mb-3"><label class="form-label">Password</label><input type="password" class="form-control" id="adminPass" placeholder="••••••"></div>
+                        <button class="btn btn-primary w-100" onclick="adminLogin()">Login</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-            if (!wasActive) {
-                item.classList.add('active');
-            }
-        }
+    <!-- ADMIN DASHBOARD -->
+    <div id="admin-dashboard" class="section d-none">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12 p-4">
+                    <h3 class="section-title">Dashboard</h3>
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-4"><div class="stat-card"><div class="stat-number" id="dashTotalOrders">0</div><div class="text-muted">Total Orders</div></div></div>
+                        <div class="col-md-4"><div class="stat-card"><div class="stat-number" id="dashTotalSales">0</div><div class="text-muted">Total Sales</div></div></div>
+                        <div class="col-md-4"><div class="stat-card"><div class="stat-number" id="dashRevenue">₹0</div><div class="text-muted">Revenue</div></div></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header bg-white"><h5 class="mb-0">Recent Orders</h5></div>
+                        <div class="card-body p-0">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light"><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Status</th></tr></thead>
+                                <tbody id="recentOrdersTable"><tr><td colspan="5" class="text-center">Loading...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
 
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 600) {
-                document.getElementById('mobileMenu').classList.remove('active');
-            }
-        });
-    </script>
+    <!-- ADMIN PRODUCTS -->
+    <div id="admin-products" class="section d-none">
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="section-title mb-0">Product Management</h3>
+                <button class="btn btn-primary" onclick="openProductModal()"><i class="bi bi-plus-lg me-1"></i>Add Product</button>
+            </div>
+            <div class="card">
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light"><tr><th>Product Name</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody id="productsTable"><tr><td colspan="3" class="text-center">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN DURATIONS -->
+    <div id="admin-durations" class="section d-none">
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="section-title mb-0">Duration Management</h3>
+                <button class="btn btn-primary" onclick="openDurationModal()"><i class="bi bi-plus-lg me-1"></i>Add Duration</button>
+            </div>
+            <div class="card">
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light"><tr><th>Duration Name</th><th>Actions</th></tr></thead>
+                        <tbody id="durationsTable"><tr><td colspan="2" class="text-center">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN PRICES -->
+    <div id="admin-prices" class="section d-none">
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="section-title mb-0">Price Management</h3>
+                <button class="btn btn-primary" onclick="openPriceModal()"><i class="bi bi-plus-lg me-1"></i>Set Price</button>
+            </div>
+            <div class="card">
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light"><tr><th>Product</th><th>Duration</th><th>Price</th><th>Actions</th></tr></thead>
+                        <tbody id="pricesTable"><tr><td colspan="4" class="text-center">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN LICENSE KEYS -->
+    <div id="admin-keys" class="section d-none">
+        <div class="container-fluid p-4">
+            <h3 class="section-title">License Key Management</h3>
+
+            <div class="card mb-4">
+                <div class="card-header bg-white"><h5 class="mb-0">Import Keys</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <select class="form-select" id="keyProduct"><option value="">Select Product</option></select>
+                        </div>
+                        <div class="col-md-8">
+                            <textarea class="form-control" id="keysTextarea" rows="4" placeholder="Paste keys here (one per line)"></textarea>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <button class="btn btn-primary me-2" onclick="importKeys()"><i class="bi bi-upload me-1"></i>Import from Text</button>
+                        <div class="input-group mt-2" style="max-width: 400px;">
+                            <input type="text" class="form-control" id="singleKeyInput" placeholder="Or add single key">
+                            <button class="btn btn-outline-primary" onclick="addSingleKey()">Add Key</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <ul class="nav nav-tabs mb-3">
+                <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#activeKeys">Active Keys</a></li>
+                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#usedKeys">Used Keys</a></li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="activeKeys">
+                    <div class="card"><div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light"><tr><th>Product</th><th>Key</th><th>Added</th></tr></thead>
+                            <tbody id="activeKeysTable"><tr><td colspan="3" class="text-center">Loading...</td></tr></tbody>
+                        </table>
+                    </div></div>
+                </div>
+                <div class="tab-pane fade" id="usedKeys">
+                    <div class="card"><div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light"><tr><th>Product</th><th>Key</th><th>Used Date</th></tr></thead>
+                            <tbody id="usedKeysTable"><tr><td colspan="3" class="text-center">Loading...</td></tr></tbody>
+                        </table>
+                    </div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN COUPONS -->
+    <div id="admin-coupons" class="section d-none">
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="section-title mb-0">Coupon Management</h3>
+                <button class="btn btn-primary" onclick="openCouponModal()"><i class="bi bi-plus-lg me-1"></i>Create Coupon</button>
+            </div>
+            <div class="card">
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light"><tr><th>Code</th><th>Discount</th><th>Expiry</th><th>Actions</th></tr></thead>
+                        <tbody id="couponsTable"><tr><td colspan="4" class="text-center">Loading...</td></tr></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN ORDERS -->
+    <div id="admin-orders" class="section d-none">
+        <div class="container-fluid p-4">
+            <h3 class="section-title mb-4">Order Management</h3>
+            <div class="mb-3">
+                <input type="text" class="form-control" id="orderSearch" placeholder="Search orders..." onkeyup="searchOrders()">
+            </div>
+            <ul class="nav nav-tabs mb-3">
+                <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#paidOrders">Paid Orders</a></li>
+                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#failedOrders">Failed Orders</a></li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="paidOrders">
+                    <div class="card"><div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light"><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Key</th><th>Date</th></tr></thead>
+                            <tbody id="paidOrdersTable"><tr><td colspan="6" class="text-center">Loading...</td></tr></tbody>
+                        </table>
+                    </div></div>
+                </div>
+                <div class="tab-pane fade" id="failedOrders">
+                    <div class="card"><div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light"><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Key</th><th>Date</th></tr></thead>
+                            <tbody id="failedOrdersTable"><tr><td colspan="6" class="text-center">Loading...</td></tr></tbody>
+                        </table>
+                    </div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN PAYMENT SETTINGS -->
+    <div id="admin-payments" class="section d-none">
+        <div class="container-fluid p-4">
+            <h3 class="section-title mb-4">Payment Settings</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-credit-card me-2"></i>Razorpay</h5></div>
+                        <div class="card-body">
+                            <div class="mb-3"><label class="form-label">Key ID</label><input type="text" class="form-control" id="rzpKeyId" placeholder="rzp_test_..."></div>
+                            <div class="mb-3"><label class="form-label">Key Secret</label><input type="password" class="form-control" id="rzpKeySecret" placeholder="••••••"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-phone me-2"></i>UPI</h5></div>
+                        <div class="card-body">
+                            <div class="mb-3"><label class="form-label">UPI ID</label><input type="text" class="form-control" id="upiId" placeholder="yourname@upi"></div>
+                            <div class="mb-3"><label class="form-label">Payee Name</label><input type="text" class="form-control" id="upiName" placeholder="Your Name"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="btn btn-primary" onclick="savePaymentSettings()"><i class="bi bi-save me-1"></i>Save Settings</button>
+        </div>
+    </div>
+
+    <!-- SUCCESS PAGE -->
+    <div id="success-page" class="section d-none">
+        <div class="container py-5">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="success-box">
+                        <i class="bi bi-check-circle-fill display-1"></i>
+                        <h2 class="mt-3 mb-4">Payment Successful!</h2>
+                        <div class="text-start mb-3">
+                            <p><strong>Order ID:</strong> <span id="successOrderId"></span></p>
+                            <p><strong>Product:</strong> <span id="successProduct"></span></p>
+                            <p><strong>Duration:</strong> <span id="successDuration"></span></p>
+                            <p><strong>Amount Paid:</strong> <span id="successAmount"></span></p>
+                        </div>
+                        <div class="mb-4">
+                            <div class="text-white-50 small mb-2">Your License Key</div>
+                            <div class="key-display" id="successKey"></div>
+                        </div>
+                        <div class="d-flex gap-2 justify-content-center">
+                            <button class="btn btn-light" onclick="copyKey()"><i class="bi bi-clipboard me-1"></i>Copy Key</button>
+                            <button class="btn btn-light" onclick="downloadInvoice()"><i class="bi bi-download me-1"></i>Download Invoice</button>
+                        </div>
+                        <button class="btn btn-outline-light mt-3 w-100" onclick="showSection('home')">Buy Another</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+    <div class="modal fade" id="productModal"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="productModalTitle">Add Product</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <input type="hidden" id="productEditId">
+            <div class="mb-3"><label class="form-label">Product Name</label><input type="text" class="form-control" id="productName"></div>
+            <div class="form-check"><input class="form-check-input" type="checkbox" id="productEnabled" checked><label class="form-check-label">Enabled</label></div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" onclick="saveProduct()">Save</button></div>
+    </div></div></div>
+
+    <div class="modal fade" id="durationModal"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="durationModalTitle">Add Duration</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <input type="hidden" id="durationEditId">
+            <div class="mb-3"><label class="form-label">Duration Name</label><input type="text" class="form-control" id="durationName" placeholder="e.g. 30 Days"></div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" onclick="saveDuration()">Save</button></div>
+    </div></div></div>
+
+    <div class="modal fade" id="priceModal"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title" id="priceModalTitle">Set Price</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <input type="hidden" id="priceEditId">
+            <div class="mb-3"><label class="form-label">Product</label><select class="form-select" id="priceProduct"><option value="">Select Product</option></select></div>
+            <div class="mb-3"><label class="form-label">Duration</label><select class="form-select" id="priceDuration"><option value="">Select Duration</option></select></div>
+            <div class="mb-3"><label class="form-label">Price (₹)</label><input type="number" class="form-control" id="priceValue" min="1"></div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" onclick="savePrice()">Save</button></div>
+    </div></div></div>
+
+    <div class="modal fade" id="couponModal"><div class="modal-dialog"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">Create Coupon</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <div class="mb-3"><label class="form-label">Coupon Code</label><input type="text" class="form-control" id="couponCode" placeholder="SAVE20"></div>
+            <div class="mb-3"><label class="form-label">Type</label><select class="form-select" id="couponType"><option value="percentage">Percentage (%)</option><option value="fixed">Fixed Amount (₹)</option></select></div>
+            <div class="mb-3"><label class="form-label">Value</label><input type="number" class="form-control" id="couponValue" min="1"></div>
+            <div class="mb-3"><label class="form-label">Expiry Date (Optional)</label><input type="date" class="form-control" id="couponExpiry"></div>
+        </div>
+        <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" onclick="saveCoupon()">Create</button></div>
+    </div></div></div>
+
 </body>
 </html>
