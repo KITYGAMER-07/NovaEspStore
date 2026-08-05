@@ -235,6 +235,11 @@
         window.initiatePayment = async function() {
             if (!currentProduct || !currentDuration || finalAmount <= 0) return;
 
+            if (!appConfig.razorpayKeyId) {
+                alert('Payment gateway not configured. Please contact admin.');
+                return;
+            }
+
             const orderId = 'ORD' + Date.now();
 
             const options = {
@@ -243,7 +248,6 @@
                 currency: "INR",
                 name: currentProduct.name,
                 description: `${currentProduct.name} - ${currentDuration.name}`,
-                order_id: orderId,
                 handler: async function(response) {
                     await processSuccessPayment(response, orderId);
                 },
@@ -257,60 +261,69 @@
                 }
             };
 
-            const rzp = new Razorpay(options);
-            rzp.on('payment.failed', function(response) {
-                alert('Payment failed: ' + response.error.description);
-            });
-            rzp.open();
+            try {
+                const rzp = new Razorpay(options);
+                rzp.on('payment.failed', function(response) {
+                    alert('Payment failed: ' + (response.error?.description || 'Unknown error'));
+                });
+                rzp.open();
+            } catch (e) {
+                alert('Payment Error: ' + e.message);
+                console.error('Razorpay Error:', e);
+            }
         };
 
         async function processSuccessPayment(response, orderId) {
-            // Find unused license key matching product + duration
-            const keys = await getList('licenseKeys');
-            let assignedKey = null;
-            let keyDocId = null;
+            try {
+                // Find unused license key matching product + duration
+                const keys = await getList('licenseKeys');
+                let assignedKey = null;
+                let keyDocId = null;
 
-            for (const k of keys) {
-                if (k.productId === currentProduct.id && k.durationId === currentDuration.id && !k.used) {
-                    assignedKey = k.key;
-                    keyDocId = k.id;
-                    break;
+                for (const k of keys) {
+                    if (k.productId === currentProduct.id && k.durationId === currentDuration.id && !k.used) {
+                        assignedKey = k.key;
+                        keyDocId = k.id;
+                        break;
+                    }
                 }
+
+                if (keyDocId) {
+                    await updateData('licenseKeys/' + keyDocId, { used: true, usedAt: Date.now(), orderId: orderId });
+                }
+
+                // Save order
+                const orderData = {
+                    orderId: orderId,
+                    productId: currentProduct.id,
+                    productName: currentProduct.name,
+                    durationId: currentDuration.id,
+                    durationName: currentDuration.name,
+                    originalPrice: currentPrice,
+                    discountAmount: discountAmount,
+                    finalAmount: finalAmount,
+                    couponCode: currentCoupon ? currentCoupon.code : null,
+                    licenseKey: assignedKey,
+                    paymentId: response.razorpay_payment_id,
+                    status: 'paid',
+                    createdAt: Date.now()
+                };
+                await pushData('orders', orderData);
+
+                // Save payment record
+                await pushData('payments', {
+                    orderId: orderId,
+                    paymentId: response.razorpay_payment_id,
+                    amount: finalAmount,
+                    gateway: 'razorpay',
+                    status: 'success',
+                    createdAt: Date.now()
+                });
+            } catch (e) {
+                console.error('Post-payment error:', e);
             }
 
-            if (keyDocId) {
-                await updateData('licenseKeys/' + keyDocId, { used: true, usedAt: Date.now(), orderId: orderId });
-            }
-
-            // Save order
-            const orderData = {
-                orderId: orderId,
-                productId: currentProduct.id,
-                productName: currentProduct.name,
-                durationId: currentDuration.id,
-                durationName: currentDuration.name,
-                originalPrice: currentPrice,
-                discountAmount: discountAmount,
-                finalAmount: finalAmount,
-                couponCode: currentCoupon ? currentCoupon.code : null,
-                licenseKey: assignedKey,
-                paymentId: response.razorpay_payment_id,
-                status: 'paid',
-                createdAt: Date.now()
-            };
-            await pushData('orders', orderData);
-
-            // Save payment record
-            await pushData('payments', {
-                orderId: orderId,
-                paymentId: response.razorpay_payment_id,
-                amount: finalAmount,
-                gateway: 'razorpay',
-                status: 'success',
-                createdAt: Date.now()
-            });
-
-            // Show success
+            // Show success page regardless of DB errors
             document.getElementById('successOrderId').textContent = orderId;
             document.getElementById('successProduct').textContent = currentProduct.name;
             document.getElementById('successDuration').textContent = currentDuration.name;
