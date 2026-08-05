@@ -145,21 +145,14 @@
             if (product) {
                 currentProduct = { id: productId, ...product };
 
-                // Load durations with prices for this product
-                const prices = await getList('prices');
-                const durationIds = new Set();
-                prices.forEach(p => {
-                    if (p.productId === productId) {
-                        durationIds.add(p.durationId);
-                    }
-                });
+                // Load durations specific to this product
+                const durations = await getList('durations');
+                const productDurations = durations.filter(d => d.productId === productId);
 
-                for (const durId of durationIds) {
-                    const dur = await getData('durations/' + durId);
-                    if (dur) {
-                        durationSelect.innerHTML += `<option value="${durId}">${dur.name}</option>`;
-                    }
-                }
+                productDurations.forEach(dur => {
+                    const unitLabel = dur.unit ? dur.unit.charAt(0).toUpperCase() + dur.unit.slice(1) : 'Days';
+                    durationSelect.innerHTML += `<option value="${dur.id}">${dur.name} ${unitLabel}</option>`;
+                });
             }
         };
 
@@ -167,11 +160,13 @@
             const durationId = document.getElementById('durationSelect').value;
             if (!durationId || !currentProduct) return;
 
+            const durData = await getData('durations/' + durationId);
             const prices = await getList('prices');
             prices.forEach(p => {
                 if (p.productId === currentProduct.id && p.durationId === durationId) {
                     currentPrice = p.price;
-                    currentDuration = { id: durationId, name: document.getElementById('durationSelect').options[document.getElementById('durationSelect').selectedIndex].text };
+                    const unitLabel = durData?.unit ? durData.unit.charAt(0).toUpperCase() + durData.unit.slice(1) : '';
+                    currentDuration = { id: durationId, name: durData?.name + ' ' + unitLabel };
                 }
             });
 
@@ -479,39 +474,53 @@ Thank you for your purchase!
         // ==========================================
         async function loadAdminDurations() {
             const durations = await getList('durations');
+            const productsSnap = await getData('products');
+            const products = productsSnap || {};
             let html = '';
             durations.forEach(d => {
+                const prodName = products[d.productId]?.name || 'Unknown';
+                const unitLabel = d.unit ? d.unit.charAt(0).toUpperCase() + d.unit.slice(1) : 'Days';
                 html += `<tr>
+                    <td>${prodName}</td>
                     <td>${d.name}</td>
+                    <td><span class="badge bg-info">${unitLabel}</span></td>
                     <td>
-                        <button class="btn btn-sm btn-warning" onclick="editDuration('${d.id}', '${d.name}')"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-warning" onclick="editDuration('${d.id}', '${d.productId}', '${d.name}', '${d.unit || 'days'}')"><i class="bi bi-pencil"></i></button>
                         <button class="btn btn-sm btn-danger" onclick="deleteDuration('${d.id}')"><i class="bi bi-trash"></i></button>
                     </td>
                 </tr>`;
             });
-            document.getElementById('durationsTable').innerHTML = html || '<tr><td colspan="2" class="text-center">No durations</td></tr>';
+            document.getElementById('durationsTable').innerHTML = html || '<tr><td colspan="4" class="text-center">No durations</td></tr>';
         }
 
         window.saveDuration = async function() {
+            const productId = document.getElementById('durationProduct').value;
             const name = document.getElementById('durationName').value.trim();
+            const unit = document.getElementById('durationUnit').value;
             const editId = document.getElementById('durationEditId').value;
+            if (!productId) { alert('Select a product'); return; }
             if (!name) { alert('Enter duration name'); return; }
 
             if (editId) {
-                await updateData('durations/' + editId, { name });
+                await updateData('durations/' + editId, { productId, name, unit });
             } else {
-                await pushData('durations', { name, createdAt: Date.now() });
+                await pushData('durations', { productId, name, unit, createdAt: Date.now() });
             }
 
+            document.getElementById('durationProduct').value = '';
             document.getElementById('durationName').value = '';
+            document.getElementById('durationUnit').value = 'days';
             document.getElementById('durationEditId').value = '';
             document.getElementById('durationModalTitle').textContent = 'Add Duration';
             bootstrap.Modal.getInstance(document.getElementById('durationModal')).hide();
             loadAdminDurations();
         };
 
-        window.editDuration = function(id, name) {
+        window.editDuration = async function(id, productId, name, unit) {
+            await populateDurationProductDropdown();
+            document.getElementById('durationProduct').value = productId || '';
             document.getElementById('durationName').value = name;
+            document.getElementById('durationUnit').value = unit || 'days';
             document.getElementById('durationEditId').value = id;
             document.getElementById('durationModalTitle').textContent = 'Edit Duration';
             new bootstrap.Modal(document.getElementById('durationModal')).show();
@@ -524,12 +533,24 @@ Thank you for your purchase!
             }
         };
 
-        window.openDurationModal = function() {
+        window.openDurationModal = async function() {
+            await populateDurationProductDropdown();
+            document.getElementById('durationProduct').value = '';
             document.getElementById('durationName').value = '';
+            document.getElementById('durationUnit').value = 'days';
             document.getElementById('durationEditId').value = '';
             document.getElementById('durationModalTitle').textContent = 'Add Duration';
             new bootstrap.Modal(document.getElementById('durationModal')).show();
         };
+
+        async function populateDurationProductDropdown() {
+            const select = document.getElementById('durationProduct');
+            select.innerHTML = '<option value="">Select Product</option>';
+            const products = await getList('products');
+            products.forEach(p => {
+                if (p.enabled !== false) select.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+            });
+        }
 
         // ==========================================
         // ADMIN PRICES
@@ -545,10 +566,12 @@ Thank you for your purchase!
             let html = '';
             prices.forEach(p => {
                 const prodName = products[p.productId]?.name || 'Unknown';
-                const durName = durations[p.durationId]?.name || 'Unknown';
+                const dur = durations[p.durationId];
+                const durName = dur?.name || 'Unknown';
+                const durUnit = dur?.unit ? dur.unit.charAt(0).toUpperCase() + dur.unit.slice(1) : '';
                 html += `<tr>
                     <td>${prodName}</td>
-                    <td>${durName}</td>
+                    <td>${durName} ${durUnit}</td>
                     <td>₹${p.price}</td>
                     <td>
                         <button class="btn btn-sm btn-warning" onclick="editPrice('${p.id}', '${p.productId}', '${p.durationId}', ${p.price})"><i class="bi bi-pencil"></i></button>
@@ -569,12 +592,22 @@ Thank you for your purchase!
             products.forEach(d => {
                 if (d.enabled !== false) pSelect.innerHTML += `<option value="${d.id}">${d.name}</option>`;
             });
+        }
+
+        window.onPriceProductChange = async function() {
+            const productId = document.getElementById('priceProduct').value;
+            const dSelect = document.getElementById('priceDuration');
+            dSelect.innerHTML = '<option value="">Select Duration</option>';
+
+            if (!productId) return;
 
             const durations = await getList('durations');
-            durations.forEach(d => {
-                dSelect.innerHTML += `<option value="${d.id}">${d.name}</option>`;
+            const productDurations = durations.filter(d => d.productId === productId);
+            productDurations.forEach(d => {
+                const unitLabel = d.unit ? d.unit.charAt(0).toUpperCase() + d.unit.slice(1) : 'Days';
+                dSelect.innerHTML += `<option value="${d.id}">${d.name} ${unitLabel}</option>`;
             });
-        }
+        };
 
         window.savePrice = async function() {
             const productId = document.getElementById('priceProduct').value;
@@ -597,8 +630,10 @@ Thank you for your purchase!
             loadAdminPrices();
         };
 
-        window.editPrice = function(id, productId, durationId, price) {
+        window.editPrice = async function(id, productId, durationId, price) {
+            await populatePriceDropdowns();
             document.getElementById('priceProduct').value = productId;
+            await onPriceProductChange();
             document.getElementById('priceDuration').value = durationId;
             document.getElementById('priceValue').value = price;
             document.getElementById('priceEditId').value = id;
@@ -1028,7 +1063,7 @@ Thank you for your purchase!
             <div class="card">
                 <div class="card-body p-0">
                     <table class="table table-hover mb-0">
-                        <thead class="table-light"><tr><th>Duration Name</th><th>Actions</th></tr></thead>
+                        <thead class="table-light"><tr><th>Product</th><th>Duration</th><th>Unit</th><th>Actions</th></tr></thead>
                         <tbody id="durationsTable"><tr><td colspan="2" class="text-center">Loading...</td></tr></tbody>
                     </table>
                 </div>
@@ -1228,7 +1263,9 @@ Thank you for your purchase!
         <div class="modal-header"><h5 class="modal-title" id="durationModalTitle">Add Duration</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
             <input type="hidden" id="durationEditId">
-            <div class="mb-3"><label class="form-label">Duration Name</label><input type="text" class="form-control" id="durationName" placeholder="e.g. 30 Days"></div>
+            <div class="mb-3"><label class="form-label">Select Product</label><select class="form-select" id="durationProduct"><option value="">Select Product</option></select></div>
+            <div class="mb-3"><label class="form-label">Duration Name</label><input type="text" class="form-control" id="durationName" placeholder="e.g. 30"></div>
+            <div class="mb-3"><label class="form-label">Time Unit</label><select class="form-select" id="durationUnit"><option value="hours">Hours</option><option value="days">Days</option><option value="weeks">Weeks</option><option value="months">Months</option><option value="years">Years</option></select></div>
         </div>
         <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" onclick="saveDuration()">Save</button></div>
     </div></div></div>
@@ -1237,7 +1274,7 @@ Thank you for your purchase!
         <div class="modal-header"><h5 class="modal-title" id="priceModalTitle">Set Price</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
             <input type="hidden" id="priceEditId">
-            <div class="mb-3"><label class="form-label">Product</label><select class="form-select" id="priceProduct"><option value="">Select Product</option></select></div>
+            <div class="mb-3"><label class="form-label">Product</label><select class="form-select" id="priceProduct" onchange="onPriceProductChange()"><option value="">Select Product</option></select></div>
             <div class="mb-3"><label class="form-label">Duration</label><select class="form-select" id="priceDuration"><option value="">Select Duration</option></select></div>
             <div class="mb-3"><label class="form-label">Price (₹)</label><input type="number" class="form-control" id="priceValue" min="1"></div>
         </div>
