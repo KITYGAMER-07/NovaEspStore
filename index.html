@@ -349,13 +349,26 @@
                 console.error('Post-payment error:', e);
             }
 
+            // Store order details for invoice
+            window.lastOrder = {
+                orderId: orderId,
+                productName: currentProduct ? currentProduct.name : '',
+                durationName: currentDuration ? currentDuration.name : '',
+                licenseKey: assignedKey || 'No keys available - Contact Admin',
+                originalPrice: currentPrice || 0,
+                discountAmount: discountAmount || 0,
+                finalAmount: finalAmount || 0,
+                couponCode: currentCoupon ? currentCoupon.code : null,
+                paymentId: response.razorpay_payment_id,
+                date: new Date().toLocaleString()
+            };
+
             // Show success page regardless of DB errors
             document.getElementById('successOrderId').textContent = orderId;
             document.getElementById('successProduct').textContent = currentProduct.name;
             document.getElementById('successDuration').textContent = currentDuration.name;
             document.getElementById('successKey').textContent = assignedKey || 'No keys available - Contact Admin';
             document.getElementById('successAmount').textContent = '₹' + finalAmount;
-            document.getElementById('successAmount').setAttribute('data-amount', finalAmount);
 
             showSection('success-page');
         }
@@ -367,28 +380,51 @@
         };
 
         window.downloadInvoice = function() {
-            const orderId = document.getElementById('successOrderId').textContent;
-            const product = document.getElementById('successProduct').textContent;
-            const duration = document.getElementById('successDuration').textContent;
-            const key = document.getElementById('successKey').textContent;
-            const amountDisplay = document.getElementById('successAmount').textContent;
+            const order = window.lastOrder || {};
+            const orderId = order.orderId || document.getElementById('successOrderId').textContent || 'N/A';
+            const product = order.productName || document.getElementById('successProduct').textContent || 'N/A';
+            const duration = order.durationName || document.getElementById('successDuration').textContent || 'N/A';
+            const key = order.licenseKey || document.getElementById('successKey').textContent || 'N/A';
+            const originalPrice = order.originalPrice || 0;
+            const discountAmount = order.discountAmount || 0;
+            const finalAmount = order.finalAmount || 0;
+            const couponCode = order.couponCode || null;
+            const paymentId = order.paymentId || 'N/A';
+            const date = order.date || new Date().toLocaleString();
 
-            // Ensure amount is properly formatted with ₹ symbol
-            const amount = amountDisplay.includes('₹') ? amountDisplay : '₹' + amountDisplay;
+            let invoice = `
+===============================================
+              NOVAESP - INVOICE
+===============================================
+Order ID     : ${orderId}
+Payment ID   : ${paymentId}
+Date         : ${date}
+-----------------------------------------------
+PRODUCT DETAILS
+-----------------------------------------------
+Product      : ${product}
+Duration     : ${duration}
+License Key  : ${key}
+-----------------------------------------------
+PAYMENT DETAILS
+-----------------------------------------------
+Original Price : ₹${originalPrice}`;
 
-            const invoice = `=====================================
-         INVOICE
-=====================================
-Order ID: ${orderId}
-Date: ${new Date().toLocaleString()}
--------------------------------------
-Product: ${product}
-Duration: ${duration}
-License Key: ${key}
--------------------------------------
-Amount Paid: ${amount}
-=====================================
-Thank you for your purchase!`;
+            if (discountAmount > 0) {
+                invoice += `
+Discount       : -₹${discountAmount}`;
+                if (couponCode) {
+                    invoice += ` (Coupon: ${couponCode})`;
+                }
+            }
+
+            invoice += `
+-----------------------------------------------
+AMOUNT PAID    : ₹${finalAmount}
+===============================================
+Thank you for your purchase!
+===============================================
+            `;
 
             const blob = new Blob([invoice], { type: 'text/plain' });
             const url = URL.createObjectURL(blob);
@@ -943,6 +979,7 @@ Thank you for your purchase!`;
         .admin-sidebar .nav-link:hover, .admin-sidebar .nav-link.active { background: rgba(255,255,255,0.1); color: white; }
         .section-title { font-weight: 700; margin-bottom: 20px; color: #1a1a2e; }
     </style>
+<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
