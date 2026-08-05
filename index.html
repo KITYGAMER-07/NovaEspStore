@@ -274,11 +274,12 @@
         };
 
         async function processSuccessPayment(response, orderId) {
+            let assignedKey = null;
+            let keyDocId = null;
+
             try {
                 // Find unused license key matching product + duration
                 const keys = await getList('licenseKeys');
-                let assignedKey = null;
-                let keyDocId = null;
 
                 for (const k of keys) {
                     if (k.productId === currentProduct.id && k.durationId === currentDuration.id && !k.used) {
