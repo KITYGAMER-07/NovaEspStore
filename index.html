@@ -981,9 +981,28 @@ Thank you for your purchase!
         .section-title { font-weight: 700; margin-bottom: 20px; color: #1a1a2e; }
 
         /* === USER PANEL DARK THEME - UI REFERENCE MATCH === */
+        html, body {
+            height: 100%;
+            overflow-x: hidden;
+        }
+
         #home, #faq, #contact, #success-page, #admin-login {
             background: linear-gradient(180deg, #0d1a1a 0%, #0a0a0f 50%, #1a0a0a 100%);
             min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #home .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            padding-top: 20px;
+            padding-bottom: 20px;
         }
 
         #home .purchase-card {
@@ -994,6 +1013,8 @@ Thank you for your purchase!
             border-radius: 24px !important;
             box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05) !important;
             max-width: 420px;
+            width: 100%;
+            margin: 0 auto;
         }
 
         #home .purchase-card .card-body {
@@ -1408,42 +1429,30 @@ Thank you for your purchase!
         }
 
     
-        /* Prevent unwanted scrolling */
-        html, body {
-            overflow-x: hidden;
-            scroll-behavior: smooth;
-        }
-
-        .section {
+        #faq .container, #contact .container, #admin-login .container, #success-page .container {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
             min-height: 100vh;
-            overflow-y: auto;
-            overflow-x: hidden;
+            padding-top: 20px;
+            padding-bottom: 20px;
         }
 
-        /* Admin sections should not force scroll */
+        /* Prevent body scroll when not needed */
+        body {
+            overflow-y: auto;
+            background: #0a0a0f;
+        }
+
+        /* Admin sections should scroll if content overflows */
         #admin-dashboard, #admin-products, #admin-durations, 
         #admin-prices, #admin-keys, #admin-coupons, 
         #admin-orders, #admin-payments {
             min-height: calc(100vh - 56px);
             overflow-y: auto;
             overflow-x: hidden;
-        }
-
-        /* Tables should scroll internally if needed */
-        .table-responsive-wrapper {
-            overflow-x: auto;
-            -webkit-overflow-scrolling: touch;
-        }
-
-        /* Prevent modal from causing body scroll */
-        body.modal-open {
-            overflow: hidden;
-            padding-right: 0 !important;
-        }
-
-        /* Smooth section transitions */
-        .section {
-            transition: opacity 0.3s ease;
+            background: #f8f9fa;
         }
     </style>
 <base target="_blank">
@@ -1484,7 +1493,7 @@ Thank you for your purchase!
 
     <!-- HOME PAGE -->
     <div id="home" class="section">
-        <div class="container py-5">
+        <div class="container py-3">
             
 
             <div class="card purchase-card p-4">
@@ -1528,7 +1537,7 @@ Thank you for your purchase!
 
     <!-- FAQ PAGE -->
     <div id="faq" class="section d-none">
-        <div class="container py-5">
+        <div class="container py-3">
             <h2 class="section-title text-center mb-4">Frequently Asked Questions</h2>
             <div class="row justify-content-center">
                 <div class="col-md-8">
@@ -1559,7 +1568,7 @@ Thank you for your purchase!
 
     <!-- CONTACT PAGE -->
     <div id="contact" class="section d-none">
-        <div class="container py-5">
+        <div class="container py-3">
             <h2 class="section-title text-center mb-4">Contact Us</h2>
             <div class="row justify-content-center">
                 <div class="col-md-6">
@@ -1576,7 +1585,7 @@ Thank you for your purchase!
 
     <!-- ADMIN LOGIN -->
     <div id="admin-login" class="section d-none">
-        <div class="container py-5">
+        <div class="container py-3">
             <div class="row justify-content-center">
                 <div class="col-md-4">
                     <div class="card p-4">
@@ -1811,7 +1820,7 @@ Thank you for your purchase!
 
     <!-- SUCCESS PAGE -->
     <div id="success-page" class="section d-none">
-        <div class="container py-5">
+        <div class="container py-3">
             <div class="row justify-content-center">
                 <div class="col-md-6">
                     <div class="success-box">
