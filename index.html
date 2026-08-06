@@ -982,35 +982,36 @@ Thank you for your purchase!
         /* === USER PANEL DARK THEME - UI REFERENCE MATCH === */
         #home, #faq, #contact, #success-page, #admin-login {
             background: linear-gradient(180deg, #0d1a1a 0%, #0a0a0f 50%, #1a0a0a 100%);
-            min-height: auto;
-            height: auto;
+        }
+
+        /* HOME - No scroll, card at top, no gaps */
+        #home {
+            min-height: calc(100vh - 56px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            padding: 0;
+            margin: 0;
             overflow: hidden;
         }
 
-        /* Prevent body scroll on user pages */
-        body {
-            overflow-x: hidden;
-        }
-
-        /* Make home section fit content without scroll */
-        #home {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: calc(100vh - 56px);
-            padding: 20px 0;
-        }
-
         #home .container {
-            padding-top: 0;
-            padding-bottom: 0;
+            padding: 0 15px;
+            margin: 0 auto;
+            width: 100%;
         }
 
         #home .purchase-card {
-            margin: 0 auto;
+            margin-top: 0 !important;
+            margin-bottom: 0 !important;
         }
 
-        /* FAQ and Contact pages - no scroll */
+        #home .purchase-card .card-body {
+            padding: 24px !important;
+        }
+
+        /* FAQ and Contact pages */
         #faq, #contact, #admin-login {
             min-height: calc(100vh - 56px);
             display: flex;
@@ -1018,22 +1019,12 @@ Thank you for your purchase!
             justify-content: center;
         }
 
-        #faq .container, #contact .container, #admin-login .container {
-            padding-top: 20px;
-            padding-bottom: 20px;
-        }
-
-        /* Success page no scroll */
+        /* Success page */
         #success-page {
             min-height: calc(100vh - 56px);
             display: flex;
             align-items: center;
             justify-content: center;
-        }
-
-        #success-page .container {
-            padding-top: 20px;
-            padding-bottom: 20px;
         }
 
         #home .purchase-card {
@@ -1047,7 +1038,7 @@ Thank you for your purchase!
         }
 
         #home .purchase-card .card-body {
-            padding: 28px !important;
+            padding: 20px !important;
         }
 
         #home .purchase-card h4 {
@@ -1509,16 +1500,16 @@ Thank you for your purchase!
 
             <div class="card purchase-card p-4">
                 <div class="card-body">
-                    <h4 class="mb-4 text-center"><i class="bi bi-cart3 me-2"></i>NovaEsp Store</h4>
+                    <h4 class="mb-3 text-center"><i class="bi bi-cart3 me-2"></i>NovaEsp Store</h4>
 
-                    <div class="mb-3">
+                    <div class="mb-2">
                         <label class="form-label fw-semibold">Select Product</label>
                         <select class="form-select form-select-lg" id="productSelect" onchange="onProductChange()">
                             <option value="">Select Product</option>
                         </select>
                     </div>
 
-                    <div class="mb-3">
+                    <div class="mb-2">
                         <label class="form-label fw-semibold">Select Duration</label>
                         <select class="form-select form-select-lg" id="durationSelect" onchange="onDurationChange()" disabled>
                             <option value="">Select Duration</option>
@@ -1527,7 +1518,7 @@ Thank you for your purchase!
 
                     
 
-                    <div class="mb-3">
+                    <div class="mb-2">
                         <label class="form-label">Coupon Code (Optional)</label>
                         <div class="d-flex gap-2">
                             <input type="text" class="form-control flex-grow-1" id="couponInput" placeholder="Enter coupon code" style="border-radius: 14px;">
@@ -1536,7 +1527,7 @@ Thank you for your purchase!
                         <div id="couponMsg" class="mt-2 small"></div>
                     </div>
 
-                    <div id="totalDisplay" class="text-center mb-3"></div>
+                    <div id="totalDisplay" class="text-center mb-2"></div>
 
                     <button class="btn btn-primary w-100 btn-lg" id="purchaseBtn" onclick="initiatePayment()" disabled>
                         <i class="bi bi-credit-card me-2"></i>Purchase Now
