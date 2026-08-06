@@ -978,7 +978,436 @@ Thank you for your purchase!
         .admin-sidebar .nav-link { color: rgba(255,255,255,0.7); padding: 12px 20px; border-radius: 8px; margin: 2px 10px; }
         .admin-sidebar .nav-link:hover, .admin-sidebar .nav-link.active { background: rgba(255,255,255,0.1); color: white; }
         .section-title { font-weight: 700; margin-bottom: 20px; color: #1a1a2e; }
+
+        /* === USER PANEL DARK THEME - UI REFERENCE MATCH === */
+        #home, #faq, #contact, #success-page, #admin-login {
+            background: linear-gradient(180deg, #0d1a1a 0%, #0a0a0f 50%, #1a0a0a 100%);
+            min-height: 100vh;
+        }
+
+        #home .purchase-card {
+            background: rgba(15, 23, 42, 0.85) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08) !important;
+            border-radius: 24px !important;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05) !important;
+            max-width: 420px;
+        }
+
+        #home .purchase-card .card-body {
+            padding: 32px !important;
+        }
+
+        #home .purchase-card h4 {
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        #home .purchase-card h4 i {
+            color: #10b981;
+        }
+
+        #home .form-label {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+        }
+
+        #home .form-select, #home .form-control {
+            background: rgba(255,255,255,0.05) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            color: #fff !important;
+            border-radius: 14px !important;
+            padding: 14px 16px !important;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        #home .form-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='rgba(255,255,255,0.5)' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 16px center !important;
+            background-size: 16px 12px !important;
+            padding-right: 44px !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
+        }
+
+        #home .form-select:focus, #home .form-control:focus {
+            background: rgba(255,255,255,0.08) !important;
+            border-color: rgba(16, 185, 129, 0.4) !important;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+        }
+
+        #home .form-select option {
+            background: #0f172a;
+            color: #fff;
+        }
+
+        #home .form-select:disabled {
+            background: rgba(255,255,255,0.02) !important;
+            color: rgba(255,255,255,0.3) !important;
+        }
+
+        #home #purchaseBtn {
+            background: #fff !important;
+            color: #0a0a0f !important;
+            border: none !important;
+            border-radius: 50px !important;
+            padding: 16px 30px !important;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.3px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(255,255,255,0.15) !important;
+        }
+
+        #home #purchaseBtn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(255,255,255,0.25) !important;
+        }
+
+        #home #purchaseBtn:disabled {
+            background: rgba(255,255,255,0.1) !important;
+            color: rgba(255,255,255,0.3) !important;
+            box-shadow: none !important;
+        }
+
+        #home .btn-outline-primary {
+            border-color: rgba(255,255,255,0.2) !important;
+            color: rgba(255,255,255,0.7) !important;
+            border-radius: 12px !important;
+        }
+
+        #home .btn-outline-primary:hover {
+            background: rgba(255,255,255,0.1) !important;
+            border-color: rgba(255,255,255,0.3) !important;
+            color: #fff !important;
+        }
+
+        #home .coupon-apply-btn {
+            background: transparent !important;
+            border: 1.5px solid rgba(255,255,255,0.15) !important;
+            color: rgba(255,255,255,0.6) !important;
+            border-radius: 14px !important;
+            padding: 12px !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        #home .coupon-apply-btn:hover {
+            background: rgba(255,255,255,0.08) !important;
+            border-color: rgba(255,255,255,0.25) !important;
+            color: #fff !important;
+        }
+
+        #home #totalDisplay {
+            color: #fff;
+        }
+
+        #home #totalDisplay .h3 {
+            color: #10b981 !important;
+        }
+
+        #home #totalDisplay .text-muted {
+            color: rgba(255,255,255,0.4) !important;
+        }
+
+        #home #totalDisplay .text-success {
+            color: #34d399 !important;
+        }
+
+        /* Trust badge */
+        .trust-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: rgba(255,255,255,0.4);
+            font-size: 0.8rem;
+            margin-top: 16px;
+        }
+
+        .trust-badge i {
+            color: #10b981;
+        }
+
+        /* Telegram button */
+        .telegram-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.6);
+            padding: 10px 24px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .telegram-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .telegram-btn i {
+            color: #229ED9;
+        }
+
+        /* Footer */
+        .user-footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: rgba(255,255,255,0.25);
+            font-size: 0.75rem;
+        }
+
+        /* FAQ Page Dark */
+        #faq .section-title {
+            color: #fff;
+        }
+
+        #faq .accordion-item {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px !important;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        #faq .accordion-button {
+            background: transparent;
+            color: #fff;
+            font-weight: 600;
+            padding: 18px 24px;
+            border: none;
+            box-shadow: none;
+        }
+
+        #faq .accordion-button:not(.collapsed) {
+            background: rgba(16, 185, 129, 0.08);
+            color: #10b981;
+        }
+
+        #faq .accordion-button::after {
+            filter: invert(1);
+        }
+
+        #faq .accordion-body {
+            color: rgba(255,255,255,0.6);
+            padding: 0 24px 18px;
+        }
+
+        /* Contact Page Dark */
+        #contact .section-title {
+            color: #fff;
+        }
+
+        #contact .card {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px;
+        }
+
+        #contact .form-label {
+            color: rgba(255,255,255,0.5);
+        }
+
+        #contact .form-control {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            border-radius: 14px;
+            padding: 14px 16px;
+        }
+
+        #contact .form-control::placeholder {
+            color: rgba(255,255,255,0.25);
+        }
+
+        #contact .form-control:focus {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(16, 185, 129, 0.4);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+            color: #fff;
+        }
+
+        #contact .btn-primary {
+            border-radius: 50px;
+            background: #fff;
+            color: #0a0a0f;
+            border: none;
+            font-weight: 700;
+        }
+
+        /* Admin Login Dark */
+        #admin-login .section-title, #admin-login h3 {
+            color: #fff;
+        }
+
+        #admin-login .card {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px;
+        }
+
+        #admin-login .form-label {
+            color: rgba(255,255,255,0.5);
+        }
+
+        #admin-login .form-control {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            border-radius: 14px;
+            padding: 14px 16px;
+        }
+
+        #admin-login .form-control:focus {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(16, 185, 129, 0.4);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+            color: #fff;
+        }
+
+        #admin-login .btn-primary {
+            border-radius: 50px;
+            background: #fff;
+            color: #0a0a0f;
+            border: none;
+            font-weight: 700;
+        }
+
+        #admin-login .text-primary {
+            color: #10b981 !important;
+        }
+
+        /* Success Page Dark */
+        #success-page .success-box {
+            background: linear-gradient(135deg, #0f172a 0%, #1a1a2e 100%);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        #success-page .success-box i.bi-check-circle-fill {
+            color: #10b981;
+        }
+
+        #success-page .key-display {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #10b981;
+        }
+
+        #success-page .btn-light {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff;
+            border-radius: 12px;
+        }
+
+        #success-page .btn-light:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        #success-page .btn-outline-light {
+            border-radius: 50px;
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        /* Navbar enhancement for user pages */
+        .navbar {
+            background: rgba(10, 10, 15, 0.9) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .navbar-brand {
+            color: #fff !important;
+            font-weight: 700;
+            letter-spacing: 0.5px;
+        }
+
+        .navbar-brand img {
+            border-radius: 10px !important;
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.6) !important;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover {
+            color: #fff !important;
+        }
+
+        /* Store header text */
+        .store-header {
+            text-align: center;
+            padding: 20px 0 10px;
+        }
+
+        .store-header h1 {
+            color: #fff;
+            font-size: 1.1rem;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin: 0;
+        }
+
+        .store-header .sub-text {
+            color: rgba(255,255,255,0.4);
+            font-size: 0.85rem;
+            margin-top: 4px;
+        }
+
+        /* Hamburger menu for mobile */
+        .navbar-toggler {
+            border: none !important;
+        }
+
+        .dropdown-menu {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        .dropdown-item {
+            color: rgba(255,255,255,0.7);
+            border-radius: 8px;
+            margin: 2px 8px;
+            padding: 10px 16px;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(255,255,255,0.08);
+            color: #fff;
+        }
+
+        .dropdown-divider {
+            border-color: rgba(255,255,255,0.08);
+        }
+
     </style>
+<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
@@ -1046,12 +1475,12 @@ Thank you for your purchase!
                     
 
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Coupon Code (Optional)</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control" id="couponInput" placeholder="Enter coupon code">
-                            <button class="btn btn-outline-primary" type="button" onclick="applyCoupon()">Apply</button>
+                        <label class="form-label">Coupon Code (Optional)</label>
+                        <input type="text" class="form-control" id="couponInput" placeholder="Enter coupon code" style="border-radius: 14px;">
+                        <div class="mt-3">
+                            <button class="btn btn-outline-primary w-100 py-2" type="button" onclick="applyCoupon()" style="border-radius: 14px; border-width: 1.5px;">Apply Coupon</button>
                         </div>
-                        <div id="couponMsg" class="mt-1 small"></div>
+                        <div id="couponMsg" class="mt-2 small"></div>
                     </div>
 
                     <div id="totalDisplay" class="text-center mb-3"></div>
