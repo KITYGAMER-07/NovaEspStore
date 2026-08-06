@@ -982,7 +982,58 @@ Thank you for your purchase!
         /* === USER PANEL DARK THEME - UI REFERENCE MATCH === */
         #home, #faq, #contact, #success-page, #admin-login {
             background: linear-gradient(180deg, #0d1a1a 0%, #0a0a0f 50%, #1a0a0a 100%);
-            min-height: 100vh;
+            min-height: auto;
+            height: auto;
+            overflow: hidden;
+        }
+
+        /* Prevent body scroll on user pages */
+        body {
+            overflow-x: hidden;
+        }
+
+        /* Make home section fit content without scroll */
+        #home {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: calc(100vh - 56px);
+            padding: 20px 0;
+        }
+
+        #home .container {
+            padding-top: 0;
+            padding-bottom: 0;
+        }
+
+        #home .purchase-card {
+            margin: 0 auto;
+        }
+
+        /* FAQ and Contact pages - no scroll */
+        #faq, #contact, #admin-login {
+            min-height: calc(100vh - 56px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #faq .container, #contact .container, #admin-login .container {
+            padding-top: 20px;
+            padding-bottom: 20px;
+        }
+
+        /* Success page no scroll */
+        #success-page {
+            min-height: calc(100vh - 56px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        #success-page .container {
+            padding-top: 20px;
+            padding-bottom: 20px;
         }
 
         #home .purchase-card {
@@ -996,7 +1047,7 @@ Thank you for your purchase!
         }
 
         #home .purchase-card .card-body {
-            padding: 32px !important;
+            padding: 28px !important;
         }
 
         #home .purchase-card h4 {
@@ -1407,6 +1458,7 @@ Thank you for your purchase!
         }
 
     </style>
+<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
