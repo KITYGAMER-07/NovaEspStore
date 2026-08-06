@@ -804,6 +804,70 @@ Thank you for your purchase!
             const products = productsSnap || {};
             const durations = durationsSnap || {};
 
+            // ===== STOCK SUMMARY CALCULATION =====
+            const stockMap = {};
+            // Initialize stock map for all product+duration combos that have keys
+            keys.forEach(k => {
+                const comboKey = k.productId + '_' + k.durationId;
+                if (!stockMap[comboKey]) {
+                    stockMap[comboKey] = { total: 0, used: 0, active: 0 };
+                }
+                stockMap[comboKey].total++;
+                if (k.used) {
+                    stockMap[comboKey].used++;
+                } else {
+                    stockMap[comboKey].active++;
+                }
+            });
+
+            // Build stock summary HTML
+            let stockHtml = '';
+            const stockEntries = Object.entries(stockMap).sort((a, b) => b[1].active - a[1].active);
+
+            if (stockEntries.length === 0) {
+                stockHtml = '<div class="col-12 text-center text-white-50">No keys in stock</div>';
+            } else {
+                stockEntries.forEach(([comboKey, counts]) => {
+                    const [prodId, durId] = comboKey.split('_');
+                    const prodName = products[prodId]?.name || 'Unknown Product';
+                    const dur = durations[durId];
+                    const durName = dur ? `${dur.name} ${dur.unit ? dur.unit.charAt(0).toUpperCase() + dur.unit.slice(1) : ''}` : 'Unknown Duration';
+                    const lowStock = counts.active <= 2;
+                    const outOfStock = counts.active === 0;
+
+                    stockHtml += `
+                    <div class="col-md-4 col-lg-3">
+                        <div class="p-3" style="background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <div class="fw-bold text-white" style="font-size: 0.9rem;">${prodName}</div>
+                                    <div class="text-white-50" style="font-size: 0.75rem;">${durName}</div>
+                                </div>
+                                <span class="badge ${outOfStock ? 'bg-danger' : lowStock ? 'bg-warning text-dark' : 'bg-success'}" style="font-size: 0.7rem;">
+                                    ${outOfStock ? 'Out of Stock' : lowStock ? 'Low Stock' : 'In Stock'}
+                                </span>
+                            </div>
+                            <div class="d-flex gap-3 mt-2">
+                                <div class="text-center">
+                                    <div class="fw-bold ${counts.active > 0 ? 'text-success' : 'text-danger'}" style="font-size: 1.3rem;">${counts.active}</div>
+                                    <div class="text-white-50" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px;">Available</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="fw-bold text-white" style="font-size: 1.3rem;">${counts.used}</div>
+                                    <div class="text-white-50" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px;">Sold</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="fw-bold text-info" style="font-size: 1.3rem;">${counts.total}</div>
+                                    <div class="text-white-50" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px;">Total</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                });
+            }
+            document.getElementById('stockSummaryCards').innerHTML = stockHtml;
+            // ===== END STOCK SUMMARY =====
+
             let activeHtml = '', usedHtml = '';
             keys.forEach(k => {
                 const prodName = products[k.productId]?.name || 'Unknown';
@@ -1683,6 +1747,18 @@ Thank you for your purchase!
     <div id="admin-keys" class="section d-none">
         <div class="container-fluid p-4">
             <h3 class="section-title">License Key Management</h3>
+
+            <!-- STOCK SUMMARY -->
+            <div class="card mb-4 border-0" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px;">
+                <div class="card-header border-0" style="background: transparent; color: #fff;">
+                    <h5 class="mb-0"><i class="bi bi-box-seam me-2"></i>Stock Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3" id="stockSummaryCards">
+                        <div class="col-12 text-center text-white-50">Loading stock data...</div>
+                    </div>
+                </div>
+            </div>
 
             <div class="card mb-4">
                 <div class="card-header bg-white"><h5 class="mb-0">Import Keys</h5></div>
