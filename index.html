@@ -138,6 +138,9 @@
             currentProduct = null;
             currentDuration = null;
             currentPrice = 0;
+            currentCoupon = null;
+            document.getElementById('couponInput').value = '';
+            document.getElementById('couponMsg').innerHTML = '';
 
             if (!productId) {
                 durationSelect.disabled = true;
@@ -192,6 +195,17 @@
             }
 
             document.getElementById('purchaseBtn').disabled = false;
+
+            // Re-validate coupon if price changed
+            if (currentCoupon) {
+                const minOrder = parseFloat(currentCoupon.minOrderValue) || 0;
+                if (currentPrice < minOrder) {
+                    currentCoupon = null;
+                    document.getElementById('couponMsg').innerHTML = '<span class="text-warning"><i class="bi bi-exclamation-triangle"></i> Coupon removed - minimum order value not met for this duration</span>';
+                    document.getElementById('couponInput').value = '';
+                }
+            }
+
             calculateTotal();
         };
 
@@ -199,37 +213,61 @@
             const code = document.getElementById('couponInput').value.trim().toUpperCase();
             if (!code) {
                 currentCoupon = null;
+                document.getElementById('couponMsg').innerHTML = '';
+                calculateTotal();
+                return;
+            }
+
+            // If no product/duration selected yet, don't allow coupon
+            if (!currentProduct || !currentDuration || currentPrice <= 0) {
+                document.getElementById('couponMsg').innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Please select a product and duration first</span>';
+                currentCoupon = null;
                 calculateTotal();
                 return;
             }
 
             const coupons = await getList('coupons');
-            let found = false;
+            let matchedCoupon = null;
             let minOrderFail = false;
-            coupons.forEach(c => {
+            let expired = false;
+
+            for (const c of coupons) {
                 if (c.code === code) {
                     const now = new Date();
                     const expiry = c.expiryDate ? new Date(c.expiryDate) : null;
-                    if (!expiry || expiry > now) {
-                        const minOrder = c.minOrderValue || 0;
-                        if (currentPrice >= minOrder) {
-                            currentCoupon = { id: c.id, ...c };
-                            found = true;
-                        } else {
-                            minOrderFail = true;
-                        }
+                    // Set expiry to end of day for fair comparison
+                    if (expiry) {
+                        expiry.setHours(23, 59, 59, 999);
+                    }
+
+                    if (expiry && expiry < now) {
+                        expired = true;
+                        continue;
+                    }
+
+                    const minOrder = parseFloat(c.minOrderValue) || 0;
+                    if (currentPrice >= minOrder) {
+                        matchedCoupon = { id: c.id, ...c };
+                        break; // Found valid coupon, stop searching
+                    } else {
+                        minOrderFail = true;
+                        // Don't break - keep looking for another valid coupon
                     }
                 }
-            });
+            }
 
-            if (found) {
-                document.getElementById('couponMsg').innerHTML = '<span class="text-success"><i class="bi bi-check-circle"></i> Coupon applied!</span>';
+            if (matchedCoupon) {
+                currentCoupon = matchedCoupon;
+                document.getElementById('couponMsg').innerHTML = '<span class="text-success"><i class="bi bi-check-circle"></i> Coupon applied! You saved ₹' + (currentCoupon.type === 'percentage' ? Math.round(currentPrice * currentCoupon.value / 100) : currentCoupon.value) + '</span>';
             } else if (minOrderFail) {
-                document.getElementById('couponMsg').innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Minimum order value not met</span>';
                 currentCoupon = null;
+                document.getElementById('couponMsg').innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Minimum order value not met (₹' + currentPrice + ' < required ₹' + (coupons.find(c => c.code === code)?.minOrderValue || 0) + ')</span>';
+            } else if (expired) {
+                currentCoupon = null;
+                document.getElementById('couponMsg').innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Coupon has expired</span>';
             } else {
-                document.getElementById('couponMsg').innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Invalid or expired coupon</span>';
                 currentCoupon = null;
+                document.getElementById('couponMsg').innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Invalid coupon code</span>';
             }
             calculateTotal();
         };
@@ -1407,6 +1445,7 @@ Thank you for your purchase!
         }
 
     </style>
+<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
