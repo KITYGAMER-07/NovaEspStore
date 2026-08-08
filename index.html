@@ -1744,20 +1744,6 @@ Thank you for your purchase!
             border-bottom: 1px solid rgba(220, 38, 38, 0.1);
             color: #fff;
         }
-        /* Override any bg-white in admin panels */
-        .card-header.bg-white,
-        #admin-dashboard .card-header.bg-white,
-        #admin-products .card-header.bg-white,
-        #admin-durations .card-header.bg-white,
-        #admin-prices .card-header.bg-white,
-        #admin-keys .card-header.bg-white,
-        #admin-coupons .card-header.bg-white,
-        #admin-orders .card-header.bg-white,
-        #admin-payments .card-header.bg-white {
-            background: rgba(220, 38, 38, 0.08) !important;
-            color: #fff !important;
-        }
-        
 
         #admin-dashboard .card-header h5, #admin-products .card-header h5,
         #admin-durations .card-header h5, #admin-prices .card-header h5,
@@ -1784,47 +1770,39 @@ Thank you for your purchase!
             color: rgba(255,255,255,0.5) !important;
         }
 
+        /* ===== TABLE STYLES - FIXED FOR VISIBILITY ===== */
         .table {
-            color: rgba(255,255,255,0.9) !important;
+            color: rgba(255,255,255,0.95) !important;
+            --bs-table-color: rgba(255,255,255,0.95) !important;
         }
 
         .table tbody td {
-            color: rgba(255,255,255,0.9) !important;
+            color: rgba(255,255,255,0.95) !important;
+            --bs-table-color-state: rgba(255,255,255,0.95) !important;
             font-weight: 500;
             padding: 12px 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
-        }
-
-        .table {
-            color: rgba(255,255,255,0.9) !important;
-        }
-
-        .table td, .table th {
-            border-color: rgba(255,255,255,0.08) !important;
-        }
-
-        .table tbody tr td.text-center {
-            color: rgba(255,255,255,0.6) !important;
-            font-style: italic;
+            border-bottom: 1px solid rgba(255,255,255,0.08) !important;
+            vertical-align: middle;
         }
 
         .table thead th {
-            background: rgba(30, 0, 0, 0.85) !important;
-            color: #ef4444 !important;
-            font-weight: 700 !important;
-            border-bottom: 2px solid rgba(220, 38, 38, 0.3);
-            text-shadow: 0 0 5px rgba(239, 68, 68, 0.2);
-            font-size: 0.9rem;
-            letter-spacing: 0.5px;
+            background-color: rgba(15, 0, 0, 0.98) !important;
+            --bs-table-bg: rgba(15, 0, 0, 0.98) !important;
+            color: #ff4444 !important;
+            --bs-table-color: #ff4444 !important;
+            font-weight: 800 !important;
+            border-bottom: 2px solid rgba(220, 38, 38, 0.4) !important;
+            text-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
+            font-size: 0.85rem;
+            letter-spacing: 0.8px;
+            text-transform: uppercase;
             padding: 14px 16px;
-        }
-
-        .table tbody td {
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            vertical-align: middle;
         }
 
         .table-hover tbody tr:hover {
-            background: rgba(220, 38, 38, 0.12) !important;
+            background-color: rgba(220, 38, 38, 0.15) !important;
+            --bs-table-bg-state: rgba(220, 38, 38, 0.15) !important;
         }
 
         .table-hover tbody tr:hover td {
@@ -1993,15 +1971,33 @@ Thank you for your purchase!
             color: rgba(255,255,255,0.3) !important;
         }
 
-        .table-light {
-            background: rgba(30, 0, 0, 0.7) !important;
-            color: #fff !important;
+        /* Override Bootstrap table-light with DARK theme */
+        .table-light,
+        .table > thead.table-light > tr,
+        .table > thead.table-light > tr > th,
+        .table > thead.table-light > tr > td,
+        .table > tbody > tr.table-light > td,
+        .table > tbody > tr.table-light > th {
+            background-color: rgba(15, 0, 0, 0.98) !important;
+            --bs-table-bg: rgba(15, 0, 0, 0.98) !important;
+            color: #ff4444 !important;
+            --bs-table-color: #ff4444 !important;
+            --bs-table-color-state: #ff4444 !important;
+            border-color: rgba(220, 38, 38, 0.2) !important;
+            --bs-table-border-color: rgba(220, 38, 38, 0.2) !important;
         }
 
-        .table-light th {
-            color: #ef4444 !important;
-            font-weight: 700 !important;
-            background: rgba(30, 0, 0, 0.7) !important;
+        .table tbody tr td.text-center {
+            color: rgba(255,255,255,0.7) !important;
+        }
+
+        .table code {
+            color: #ff6b6b;
+            background: rgba(220, 38, 38, 0.15);
+            padding: 3px 8px;
+            border-radius: 6px;
+            font-size: 0.85em;
+            font-weight: 600;
         }
 
         code {
