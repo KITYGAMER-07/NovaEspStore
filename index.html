@@ -3,1677 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NovaEsp Store</title>
+    <title>NovaEsp</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <style>
-        :root {
-            --black-deep: #050505;
-            --black: #080808;
-            --charcoal: #111111;
-            --dark-gray: #181818;
-            --red: #E50914;
-            --red-bright: #FF1A1A;
-            --red-dark: #8B0000;
-            --white: #FFFFFF;
-            --white-muted: rgba(255,255,255,0.55);
-            --glass: rgba(255,255,255,0.04);
-            --glass-strong: rgba(255,255,255,0.06);
-            --glass-red: rgba(229,9,20,0.10);
-            --border: rgba(255,255,255,0.08);
-            --border-red: rgba(229,9,20,0.35);
-        }
-        * { box-sizing: border-box; }
-        body {
-            background: var(--black-deep);
-            color: var(--white);
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-            min-height: 100vh;
-            overflow-x: hidden;
-            -webkit-font-smoothing: antialiased;
-        }
-        body::before {
-            content: '';
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background:
-                radial-gradient(ellipse at 20% 20%, rgba(229,9,20,0.06) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 80%, rgba(139,0,0,0.04) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 50%, rgba(229,9,20,0.02) 0%, transparent 60%);
-            pointer-events: none;
-            z-index: -1;
-        }
-        ::-webkit-scrollbar { width: 8px; }
-        ::-webkit-scrollbar-track { background: var(--black); }
-        ::-webkit-scrollbar-thumb { background: var(--dark-gray); border-radius: 4px; }
-        ::-webkit-scrollbar-thumb:hover { background: #333; }
-        h1,h2,h3,h4,h5,h6 { font-weight: 700; letter-spacing: -0.02em; }
-        .text-muted { color: var(--white-muted) !important; }
-        .text-red { color: var(--red) !important; }
-        .font-mono { font-family: 'SF Mono', Monaco, monospace; }
-
-        /* Glass Card */
-        .glass-card {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03);
-            transition: transform 0.2s ease, box-shadow 0.2s ease;
-        }
-        .glass-card:hover { transform: translateY(-1px); }
-
-        /* Navbar */
-        .main-navbar {
-            position: fixed;
-            top: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            width: calc(100% - 40px);
-            max-width: 1200px;
-            z-index: 1030;
-            background: rgba(8,8,8,0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 12px 24px;
-            box-shadow: 0 4px 30px rgba(0,0,0,0.3);
-        }
-        .main-navbar .navbar-brand {
-            color: #fff !important;
-            font-weight: 800;
-            font-size: 1.3rem;
-            letter-spacing: -0.5px;
-        }
-        .main-navbar .navbar-brand img {
-            border-radius: 10px;
-            width: 32px;
-            height: 32px;
-            object-fit: cover;
-        }
-        .main-navbar .nav-link {
-            color: rgba(255,255,255,0.6) !important;
-            font-weight: 500;
-            font-size: 0.9rem;
-            padding: 8px 16px !important;
-            border-radius: 10px;
-            transition: all 0.2s ease;
-            margin: 0 2px;
-        }
-        .main-navbar .nav-link:hover, .main-navbar .nav-link.active {
-            color: #fff !important;
-            background: rgba(255,255,255,0.05);
-        }
-        .main-navbar .nav-link i { margin-right: 6px; }
-        .navbar-toggler {
-            border: none !important;
-            padding: 4px;
-            color: #fff;
-        }
-        .navbar-toggler:focus { box-shadow: none; }
-        .dropdown-menu {
-            background: rgba(17,17,17,0.95);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-            padding: 8px;
-            margin-top: 8px !important;
-        }
-        .dropdown-item {
-            color: rgba(255,255,255,0.7);
-            border-radius: 10px;
-            padding: 10px 16px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.15s ease;
-        }
-        .dropdown-item:hover, .dropdown-item:focus {
-            background: rgba(255,255,255,0.06);
-            color: #fff;
-        }
-        .dropdown-divider { border-color: var(--border); margin: 8px; }
-
-        /* Sections */
-        .section { min-height: 100vh; padding-top: 100px; padding-bottom: 60px; }
-
-        /* Home / Store */
-        .hero-title {
-            font-size: 2.5rem;
-            font-weight: 800;
-            background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            margin-bottom: 12px;
-        }
-        .hero-subtitle {
-            color: var(--white-muted);
-            font-size: 1.05rem;
-            font-weight: 400;
-        }
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 8px;
-            background: rgba(16,185,129,0.1);
-            border: 1px solid rgba(16,185,129,0.2);
-            color: #34d399;
-            padding: 6px 14px;
-            border-radius: 50px;
-            font-size: 0.8rem;
-            font-weight: 600;
-            letter-spacing: 0.3px;
-        }
-        .status-dot {
-            width: 6px;
-            height: 6px;
-            background: #34d399;
-            border-radius: 50%;
-            box-shadow: 0 0 8px rgba(16,185,129,0.4);
-            animation: pulse 2s infinite;
-        }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
-        }
-        .store-icon {
-            width: 56px;
-            height: 56px;
-            background: var(--glass-red);
-            border: 1px solid var(--border-red);
-            border-radius: 16px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.5rem;
-            color: var(--red);
-        }
-        .form-label-small {
-            display: block;
-            color: var(--white-muted);
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            margin-bottom: 10px;
-        }
-        .glass-select, .glass-input {
-            width: 100%;
-            background: rgba(255,255,255,0.04) !important;
-            border: 1px solid var(--border) !important;
-            color: #fff !important;
-            border-radius: 16px !important;
-            padding: 16px 20px !important;
-            font-size: 0.95rem;
-            font-weight: 600;
-            appearance: none;
-            -webkit-appearance: none;
-            transition: all 0.2s ease;
-        }
-        .glass-select {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='rgba(255,255,255,0.4)' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
-            background-repeat: no-repeat !important;
-            background-position: right 18px center !important;
-            background-size: 16px 12px !important;
-            padding-right: 48px !important;
-        }
-        .glass-select:focus, .glass-input:focus {
-            border-color: var(--border-red) !important;
-            box-shadow: 0 0 0 4px rgba(229,9,20,0.08) !important;
-            outline: none;
-            background: rgba(255,255,255,0.06) !important;
-        }
-        .glass-select option, .glass-select optgroup {
-            background: var(--charcoal);
-            color: #fff;
-            padding: 12px;
-        }
-        .glass-select:disabled {
-            opacity: 0.4;
-            cursor: not-allowed;
-        }
-        .coupon-toggle {
-            width: 100%;
-            background: transparent;
-            border: 1px dashed var(--border);
-            color: var(--white-muted);
-            padding: 14px;
-            border-radius: 14px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            transition: all 0.2s ease;
-            text-align: center;
-            cursor: pointer;
-        }
-        .coupon-toggle:hover {
-            border-color: var(--border-red);
-            color: #fff;
-            background: var(--glass-red);
-        }
-        #totalDisplay .h3, #totalDisplay h3 {
-            font-size: 2rem;
-            font-weight: 800;
-            color: #fff !important;
-            margin-top: 8px;
-        }
-        #totalDisplay .text-decoration-line-through {
-            color: rgba(255,255,255,0.3) !important;
-            font-size: 1.1rem;
-        }
-        #totalDisplay .text-success {
-            color: #34d399 !important;
-            font-size: 0.9rem;
-            font-weight: 600;
-        }
-        .btn-red {
-            background: var(--red);
-            color: #fff;
-            border: none;
-            border-radius: 16px;
-            padding: 16px 32px;
-            font-weight: 700;
-            font-size: 1rem;
-            letter-spacing: 0.2px;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 24px rgba(229,9,20,0.35);
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .btn-red:hover:not(:disabled) {
-            background: var(--red-bright);
-            transform: translateY(-2px);
-            box-shadow: 0 8px 32px rgba(229,9,20,0.45);
-        }
-        .btn-red:disabled {
-            background: rgba(255,255,255,0.08) !important;
-            color: rgba(255,255,255,0.3) !important;
-            box-shadow: none !important;
-            cursor: not-allowed;
-            transform: none !important;
-        }
-        .btn-glass {
-            background: var(--glass);
-            border: 1px solid var(--border);
-            color: rgba(255,255,255,0.9);
-            border-radius: 14px;
-            padding: 12px 24px;
-            font-weight: 600;
-            font-size: 0.9rem;
-            transition: all 0.2s ease;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        .btn-glass:hover {
-            background: var(--glass-strong);
-            border-color: rgba(255,255,255,0.15);
-            color: #fff;
-        }
-        .btn-sm-glass { padding: 8px 16px; font-size: 0.8rem; }
-        .trust-badges {
-            display: flex;
-            justify-content: center;
-            gap: 16px;
-            flex-wrap: wrap;
-        }
-        .trust-item {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            color: var(--white-muted);
-            font-size: 0.8rem;
-            font-weight: 500;
-        }
-        .trust-item i { color: var(--red); font-size: 0.9rem; }
-        .telegram-btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            background: var(--glass);
-            border: 1px solid var(--border);
-            color: rgba(255,255,255,0.7);
-            padding: 12px 28px;
-            border-radius: 50px;
-            text-decoration: none;
-            font-size: 0.9rem;
-            font-weight: 600;
-            transition: all 0.2s ease;
-        }
-        .telegram-btn:hover {
-            background: var(--glass-strong);
-            border-color: rgba(255,255,255,0.15);
-            color: #fff;
-        }
-        .telegram-btn i { color: #229ED9; }
-
-        /* Success Page */
-        .success-card { padding: 48px 40px !important; }
-        .success-icon { font-size: 4rem; color: #34d399; line-height: 1; }
-        .success-card h2 { font-weight: 800; font-size: 1.8rem; }
-        .detail-list {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 4px;
-        }
-        .detail-item {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 18px;
-            border-bottom: 1px solid rgba(255,255,255,0.04);
-            font-size: 0.9rem;
-        }
-        .detail-item:last-child { border-bottom: none; }
-        .detail-item span:first-child { color: var(--white-muted); }
-        .detail-item span:last-child { font-weight: 600; color: #fff; }
-        .key-section { text-align: center; }
-        .key-box {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            padding: 20px;
-            font-family: 'SF Mono', Monaco, monospace;
-            font-size: 1.1rem;
-            color: var(--red);
-            font-weight: 700;
-            letter-spacing: 1px;
-            word-break: break-all;
-        }
-        .btn-apk {
-            background: #3ddc84;
-            color: #000;
-            font-weight: 700;
-            border-radius: 14px;
-            padding: 14px;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            transition: all 0.2s ease;
-        }
-        .btn-apk:hover { background: #4ee895; transform: translateY(-1px); }
-
-        /* FAQ */
-        .section-title { font-size: 2rem; font-weight: 800; margin-bottom: 12px; }
-        .glass-accordion .accordion-item {
-            background: var(--glass);
-            border: 1px solid var(--border);
-            border-radius: 20px !important;
-            margin-bottom: 12px;
-            overflow: hidden;
-        }
-        .glass-accordion .accordion-button {
-            background: transparent;
-            color: #fff;
-            font-weight: 600;
-            padding: 22px 24px;
-            font-size: 1rem;
-            box-shadow: none;
-            border: none;
-        }
-        .glass-accordion .accordion-button:not(.collapsed) {
-            background: var(--glass-red);
-            color: #fff;
-            box-shadow: none;
-        }
-        .glass-accordion .accordion-button::after {
-            filter: invert(1);
-            opacity: 0.5;
-        }
-        .glass-accordion .accordion-body {
-            color: var(--white-muted);
-            padding: 0 24px 24px;
-            font-size: 0.95rem;
-            line-height: 1.7;
-        }
-
-        /* Contact */
-        .contact-icon {
-            width: 64px;
-            height: 64px;
-            background: var(--glass-red);
-            border: 1px solid var(--border-red);
-            border-radius: 20px;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.8rem;
-            color: var(--red);
-            margin-bottom: 20px;
-        }
-
-        /* Admin Sidebar */
-        .admin-sidebar {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 260px;
-            height: 100vh;
-            background: rgba(8,8,8,0.95);
-            backdrop-filter: blur(30px);
-            -webkit-backdrop-filter: blur(30px);
-            border-right: 1px solid var(--border);
-            z-index: 1040;
-            display: flex;
-            flex-direction: column;
-            padding: 24px 16px;
-            overflow-y: auto;
-            transition: transform 0.3s ease;
-        }
-        .sidebar-brand {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 0 12px 24px;
-            border-bottom: 1px solid var(--border);
-            margin-bottom: 20px;
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: #fff;
-        }
-        .sidebar-brand i { color: var(--red); font-size: 1.4rem; }
-        .nav-section {
-            color: var(--white-muted);
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            padding: 16px 12px 8px;
-        }
-        .sidebar-nav { flex: 1; }
-        .sidebar-nav .nav-link {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: rgba(255,255,255,0.6);
-            padding: 12px 14px;
-            border-radius: 12px;
-            margin: 2px 0;
-            font-size: 0.9rem;
-            font-weight: 500;
-            text-decoration: none;
-            transition: all 0.15s ease;
-            border: 1px solid transparent;
-            position: relative;
-        }
-        .sidebar-nav .nav-link i { font-size: 1.1rem; width: 20px; text-align: center; }
-        .sidebar-nav .nav-link:hover {
-            background: rgba(255,255,255,0.04);
-            color: #fff;
-        }
-        .sidebar-nav .nav-link.active {
-            background: var(--glass-red);
-            border-color: var(--border-red);
-            color: #fff;
-            box-shadow: 0 4px 20px rgba(229,9,20,0.15);
-        }
-        .sidebar-nav .nav-link.active::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            width: 3px;
-            height: 24px;
-            background: var(--red);
-            border-radius: 0 3px 3px 0;
-        }
-        .sidebar-footer {
-            padding-top: 16px;
-            border-top: 1px solid var(--border);
-            margin-top: auto;
-        }
-        .logout-btn {
-            width: 100%;
-            background: transparent;
-            border: 1px solid var(--border);
-            color: rgba(255,255,255,0.6);
-            padding: 12px;
-            border-radius: 12px;
-            font-size: 0.9rem;
-            font-weight: 600;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s ease;
-            cursor: pointer;
-        }
-        .logout-btn:hover {
-            background: rgba(229,9,20,0.1);
-            border-color: var(--border-red);
-            color: var(--red);
-        }
-
-        /* Admin Topbar */
-        .admin-topbar {
-            position: fixed;
-            top: 0;
-            left: 260px;
-            right: 0;
-            height: 64px;
-            background: rgba(5,5,5,0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid var(--border);
-            z-index: 1030;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 0 32px;
-        }
-        .topbar-title {
-            font-size: 1.3rem;
-            font-weight: 700;
-            margin: 0;
-        }
-        .mobile-menu-btn {
-            display: none;
-            background: var(--glass);
-            border: 1px solid var(--border);
-            color: #fff;
-            width: 40px;
-            height: 40px;
-            border-radius: 10px;
-            align-items: center;
-            justify-content: center;
-            font-size: 1.2rem;
-            cursor: pointer;
-        }
-        .topbar-profile {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            color: var(--white-muted);
-            font-size: 0.9rem;
-            font-weight: 500;
-        }
-        .topbar-profile i { font-size: 1.4rem; color: #fff; }
-
-        /* Admin Sections */
-        .admin-section {
-            margin-left: 260px;
-            min-height: 100vh;
-            padding: 84px 32px 32px;
-        }
-        .page-title {
-            font-size: 1.6rem;
-            font-weight: 800;
-            margin-bottom: 28px;
-        }
-        .stat-card {
-            background: var(--glass);
-            backdrop-filter: blur(20px);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 28px;
-            position: relative;
-            overflow: hidden;
-            transition: transform 0.2s ease;
-        }
-        .stat-card:hover { transform: translateY(-2px); }
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 3px;
-            background: linear-gradient(90deg, var(--red), transparent);
-        }
-        .stat-label {
-            font-size: 0.75rem;
-            color: var(--white-muted);
-            text-transform: uppercase;
-            letter-spacing: 1.2px;
-            font-weight: 600;
-        }
-        .stat-value {
-            font-size: 2.2rem;
-            font-weight: 800;
-            color: #fff;
-            margin-top: 8px;
-            letter-spacing: -1px;
-        }
-        .card-header-glass {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 24px 28px;
-            border-bottom: 1px solid var(--border);
-            flex-wrap: wrap;
-            gap: 16px;
-        }
-        .card-header-glass h5 { font-weight: 700; font-size: 1.1rem; margin: 0; }
-        .glass-table {
-            width: 100%;
-            border-collapse: separate;
-            border-spacing: 0;
-            margin-bottom: 0;
-        }
-        .glass-table th {
-            background: rgba(255,255,255,0.02);
-            color: var(--white-muted);
-            font-size: 0.7rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            padding: 16px 20px;
-            text-align: left;
-            border-bottom: 1px solid var(--border);
-            white-space: nowrap;
-        }
-        .glass-table td {
-            padding: 16px 20px;
-            border-bottom: 1px solid rgba(255,255,255,0.03);
-            color: rgba(255,255,255,0.85);
-            font-size: 0.9rem;
-            vertical-align: middle;
-        }
-        .glass-table tbody tr:hover td {
-            background: rgba(255,255,255,0.02);
-        }
-        .glass-table tbody tr:last-child td { border-bottom: none; }
-        .glass-table code {
-            background: rgba(255,255,255,0.05);
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-size: 0.85rem;
-            color: var(--red);
-            border: 1px solid rgba(229,9,20,0.15);
-        }
-        .badge-glass {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 12px;
-            border-radius: 8px;
-            font-size: 0.75rem;
-            font-weight: 700;
-            letter-spacing: 0.3px;
-        }
-        .badge-success {
-            background: rgba(16,185,129,0.1);
-            color: #34d399;
-            border: 1px solid rgba(16,185,129,0.2);
-        }
-        .badge-danger {
-            background: rgba(229,9,20,0.1);
-            color: var(--red-bright);
-            border: 1px solid rgba(229,9,20,0.25);
-        }
-        .badge-warning {
-            background: rgba(245,158,11,0.1);
-            color: #fbbf24;
-            border: 1px solid rgba(245,158,11,0.2);
-        }
-        .badge-info {
-            background: rgba(255,255,255,0.05);
-            color: rgba(255,255,255,0.7);
-            border: 1px solid var(--border);
-        }
-        .badge-secondary {
-            background: rgba(255,255,255,0.05);
-            color: var(--white-muted);
-            border: 1px solid var(--border);
-        }
-        .stock-card {
-            background: var(--glass);
-            border: 1px solid var(--border);
-            border-radius: 20px;
-            padding: 24px;
-            transition: all 0.2s ease;
-            height: 100%;
-        }
-        .stock-card:hover {
-            border-color: rgba(255,255,255,0.12);
-            transform: translateY(-2px);
-        }
-        .stock-card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: 20px;
-        }
-        .stock-card-title {
-            font-weight: 700;
-            font-size: 0.95rem;
-            color: #fff;
-            margin-bottom: 4px;
-        }
-        .stock-card-subtitle {
-            font-size: 0.8rem;
-            color: var(--white-muted);
-        }
-        .stock-count { display: flex; gap: 20px; }
-        .stock-count-item { text-align: center; }
-        .stock-count-value {
-            font-size: 1.6rem;
-            font-weight: 800;
-            color: #fff;
-            line-height: 1;
-        }
-        .stock-count-value.active { color: #34d399; }
-        .stock-count-value.danger { color: var(--red); }
-        .stock-count-value.warning { color: #fbbf24; }
-        .stock-count-label {
-            font-size: 0.65rem;
-            color: var(--white-muted);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-top: 6px;
-            font-weight: 600;
-        }
-        .glass-tabs {
-            border-bottom: 1px solid var(--border);
-            gap: 4px;
-        }
-        .glass-tabs .nav-link {
-            color: var(--white-muted);
-            font-weight: 600;
-            font-size: 0.85rem;
-            padding: 12px 20px;
-            border: none;
-            border-radius: 12px 12px 0 0;
-            background: transparent;
-            transition: all 0.2s ease;
-        }
-        .glass-tabs .nav-link:hover {
-            color: #fff;
-            background: rgba(255,255,255,0.03);
-        }
-        .glass-tabs .nav-link.active {
-            color: #fff;
-            background: var(--glass-red);
-            border-bottom: 2px solid var(--red);
-        }
-        .tab-content { padding-top: 24px; }
-        .modal-content {
-            background: rgba(17,17,17,0.98);
-            backdrop-filter: blur(40px);
-            -webkit-backdrop-filter: blur(40px);
-            border: 1px solid var(--border);
-            border-radius: 24px;
-            color: #fff;
-            box-shadow: 0 25px 80px rgba(0,0,0,0.6);
-        }
-        .modal-header {
-            border-bottom: 1px solid var(--border);
-            padding: 24px 28px;
-        }
-        .modal-title { font-weight: 700; font-size: 1.2rem; }
-        .modal-body { padding: 24px 28px; }
-        .modal-footer {
-            border-top: 1px solid var(--border);
-            padding: 20px 28px;
-        }
-        .btn-close {
-            filter: invert(1);
-            opacity: 0.4;
-            width: 32px;
-            height: 32px;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-        }
-        .btn-close:hover { opacity: 0.8; background: rgba(255,255,255,0.05); }
-        .form-check-input {
-            background-color: rgba(255,255,255,0.05);
-            border-color: var(--border);
-            width: 1.2em;
-            height: 1.2em;
-        }
-        .form-check-input:checked {
-            background-color: var(--red);
-            border-color: var(--red);
-        }
-        .form-check-label { color: rgba(255,255,255,0.8); font-size: 0.9rem; }
-        .alert-glass {
-            background: rgba(255,255,255,0.03);
-            border: 1px solid var(--border);
-            color: var(--white-muted);
-            border-radius: 14px;
-        }
-        .alert-warning-glass {
-            background: rgba(245,158,11,0.08);
-            border: 1px solid rgba(245,158,11,0.2);
-            color: #fbbf24;
-            border-radius: 14px;
-        }
-        #home, #faq, #contact, #success-page, #admin-login {
-            background: var(--black-deep);
-        }
-        .sidebar-overlay {
-            display: none;
-            position: fixed;
-            inset: 0;
-            background: rgba(0,0,0,0.6);
-            z-index: 1035;
-            backdrop-filter: blur(4px);
-        }
-        .sidebar-overlay.show { display: block; }
-
-        @media (max-width: 991px) {
-            .admin-sidebar { transform: translateX(-100%); }
-            .admin-sidebar.show { transform: translateX(0); }
-            .admin-section {
-                margin-left: 0;
-                padding: 80px 20px 20px;
-            }
-            .admin-topbar { left: 0; }
-            .mobile-menu-btn { display: inline-flex; }
-            .hero-title { font-size: 2rem; }
-            .main-navbar {
-                width: calc(100% - 24px);
-                top: 12px;
-            }
-            .section { padding-top: 90px; }
-        }
-        @media (max-width: 576px) {
-            .hero-title { font-size: 1.7rem; }
-            .stat-value { font-size: 1.8rem; }
-            .glass-card { border-radius: 20px; }
-            .success-card { padding: 32px 24px !important; }
-            .trust-badges { gap: 12px; }
-            .trust-item { font-size: 0.75rem; }
-            .admin-section { padding: 76px 16px 16px; }
-            .card-header-glass { padding: 20px; }
-            .glass-table th, .glass-table td { padding: 12px 16px; }
-            .main-navbar { padding: 10px 16px; }
-            .main-navbar .navbar-brand { font-size: 1.1rem; }
-        }
-    </style>
-<base target="_blank">
-</head>
-<body>
-
-<!-- NAVBAR -->
-<nav class="navbar navbar-expand-lg main-navbar">
-    <div class="container-fluid">
-        <a class="navbar-brand" href="#" onclick="showSection('home'); return false;">
-            <img src="logo.jpg" alt="NovaEsp" class="me-2">NovaEsp
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-            <span class="navbar-toggler-icon" style="filter:brightness(0) invert(1);"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarNav">
-            <ul class="navbar-nav ms-auto align-items-center">
-                <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('home'); return false;"><i class="bi bi-house-door"></i>Home</a></li>
-                <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('faq'); return false;"><i class="bi bi-question-circle"></i>FAQ</a></li>
-                <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('contact'); return false;"><i class="bi bi-envelope"></i>Contact</a></li>
-                <li class="nav-item" id="loginNav"><a class="nav-link" href="#" onclick="showSection('admin-login'); return false;"><i class="bi bi-shield-lock"></i>Admin</a></li>
-                <li class="nav-item dropdown d-none" id="adminNav">
-                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-speedometer2"></i>Admin</a>
-                    <ul class="dropdown-menu dropdown-menu-end">
-                        <li><a class="dropdown-item" href="#" onclick="showSection('admin-dashboard'); return false;">Dashboard</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="showSection('admin-products'); return false;">Products</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="showSection('admin-durations'); return false;">Durations</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="showSection('admin-prices'); return false;">Pricing</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="showSection('admin-keys'); return false;">License Keys</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="showSection('admin-coupons'); return false;">Coupons</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="showSection('admin-orders'); return false;">Orders</a></li>
-                        <li><a class="dropdown-item" href="#" onclick="showSection('admin-payments'); return false;">Settings</a></li>
-                        <li><hr class="dropdown-divider"></li>
-                        <li><a class="dropdown-item text-danger" href="#" onclick="adminLogout(); return false;"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
-                    </ul>
-                </li>
-            </ul>
-        </div>
-    </div>
-</nav>
-
-<!-- HOME / STORE PAGE -->
-<div id="home" class="section">
-    <div class="container py-4">
-        <div class="row justify-content-center">
-            <div class="col-lg-5 col-md-8">
-                <div class="text-center mb-4">
-                    <div class="status-badge mb-3"><span class="status-dot"></span>All Systems Operational</div>
-                    <h1 class="hero-title">NovaEsp Online Shop</h1>
-                    <p class="hero-subtitle">Instant delivery. Secure payment. Simple activation.</p>
-                </div>
-                <div class="glass-card">
-                    <div class="card-body p-4 p-md-5">
-                        <div class="text-center mb-4">
-                            <div class="store-icon"><i class="bi bi-cart3"></i></div>
-                            <h4 class="mt-3 mb-1">NovaEsp Store</h4>
-                            <p class="text-muted" style="font-size:0.85rem;">Select your product below</p>
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label-small">Select Product</label>
-                            <select class="form-select glass-select" id="productSelect" onchange="onProductChange()">
-                                <option value="">Select Product</option>
-                            </select>
-                        </div>
-                        <div class="mb-4">
-                            <label class="form-label-small">Select Duration</label>
-                            <select class="form-select glass-select" id="durationSelect" onchange="onDurationChange()" disabled>
-                                <option value="">Select Duration</option>
-                            </select>
-                        </div>
-                        <div class="mb-4">
-                            <button class="coupon-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#couponCollapse">
-                                <i class="bi bi-ticket-perforated me-2"></i>Have a coupon?
-                            </button>
-                            <div class="collapse" id="couponCollapse">
-                                <div class="mt-3">
-                                    <div class="d-flex gap-2">
-                                        <input type="text" class="form-control glass-input" id="couponInput" placeholder="Enter coupon code">
-                                        <button class="btn btn-glass" type="button" onclick="applyCoupon()" style="white-space:nowrap;">Apply</button>
-                                    </div>
-                                    <div id="couponMsg" class="mt-2 small"></div>
-                                </div>
-                            </div>
-                        </div>
-                        <div id="totalDisplay" class="text-center mb-4"></div>
-                        <button class="btn btn-red w-100" id="purchaseBtn" onclick="initiatePayment()" disabled>
-                            Buy Now <i class="bi bi-arrow-right"></i>
-                        </button>
-                        <div class="trust-badges mt-4">
-                            <div class="trust-item"><i class="bi bi-lightning-charge-fill"></i> Instant</div>
-                            <div class="trust-item"><i class="bi bi-shield-check"></i> Secure</div>
-                            <div class="trust-item"><i class="bi bi-key-fill"></i> Auto Key</div>
-                        </div>
-                    </div>
-                </div>
-                <div class="text-center mt-4">
-                    <a href="https://t.me/KITYGAMER" target="_blank" class="telegram-btn">
-                        <i class="bi bi-telegram"></i> Contact Support
-                    </a>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- FAQ PAGE -->
-<div id="faq" class="section d-none">
-    <div class="container py-4">
-        <div class="row justify-content-center">
-            <div class="col-md-8 col-lg-6">
-                <div class="text-center mb-5">
-                    <h2 class="section-title">Frequently Asked Questions</h2>
-                    <p class="text-muted">Everything you need to know</p>
-                </div>
-                <div class="accordion glass-accordion" id="faqAccordion">
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
-                                How do I receive my license key?
-                            </button>
-                        </h2>
-                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">After successful payment, your license key is displayed instantly on the success page. You can also copy it to your clipboard.</div>
-                        </div>
-                    </div>
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
-                                What payment methods are accepted?
-                            </button>
-                        </h2>
-                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">We accept all major payment methods via Razorpay including UPI, Credit/Debit cards, Net Banking, and Wallets.</div>
-                        </div>
-                    </div>
-                    <div class="accordion-item">
-                        <h2 class="accordion-header">
-                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
-                                Is there a refund policy?
-                            </button>
-                        </h2>
-                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                            <div class="accordion-body">Due to the digital nature of license keys, all sales are final. Please ensure you select the correct product and duration before purchasing.</div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- CONTACT PAGE -->
-<div id="contact" class="section d-none">
-    <div class="container py-4">
-        <div class="row justify-content-center">
-            <div class="col-md-6 col-lg-5">
-                <div class="text-center mb-5">
-                    <div class="contact-icon"><i class="bi bi-headset"></i></div>
-                    <h2 class="section-title">Contact Us</h2>
-                    <p class="text-muted">We're here to help</p>
-                </div>
-                <div class="glass-card p-4 p-md-5">
-                    <div class="mb-3">
-                        <label class="form-label-small">Name</label>
-                        <input type="text" class="form-control glass-input" placeholder="Your name">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label-small">Email</label>
-                        <input type="email" class="form-control glass-input" placeholder="your@email.com">
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label-small">Message</label>
-                        <textarea class="form-control glass-input" rows="4" placeholder="Your message..."></textarea>
-                    </div>
-                    <button class="btn btn-red w-100">Send Message</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ADMIN LOGIN -->
-<div id="admin-login" class="section d-none">
-    <div class="container py-4">
-        <div class="row justify-content-center">
-            <div class="col-md-5 col-lg-4">
-                <div class="text-center mb-4">
-                    <div class="contact-icon"><i class="bi bi-shield-lock-fill"></i></div>
-                    <h2 class="section-title">Admin Login</h2>
-                    <p class="text-muted">Secure access only</p>
-                </div>
-                <div class="glass-card p-4 p-md-5">
-                    <div class="mb-3">
-                        <label class="form-label-small">Username</label>
-                        <input type="text" class="form-control glass-input" id="adminUser" placeholder="admin">
-                    </div>
-                    <div class="mb-4">
-                        <label class="form-label-small">Password</label>
-                        <input type="password" class="form-control glass-input" id="adminPass" placeholder="••••••">
-                    </div>
-                    <button class="btn btn-red w-100" onclick="adminLogin()">Login</button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ADMIN SIDEBAR -->
-<aside id="adminSidebar" class="admin-sidebar d-none">
-    <div class="sidebar-brand">
-        <i class="bi bi-shield-lock-fill"></i>
-        <span>Admin Panel</span>
-    </div>
-    <nav class="sidebar-nav">
-        <div class="nav-section">Overview</div>
-        <a href="#" class="nav-link" data-section="admin-dashboard" onclick="showSection('admin-dashboard'); return false;">
-            <i class="bi bi-speedometer2"></i> Dashboard
-        </a>
-        <div class="nav-section">Store</div>
-        <a href="#" class="nav-link" data-section="admin-products" onclick="showSection('admin-products'); return false;">
-            <i class="bi bi-box-seam"></i> Products
-        </a>
-        <a href="#" class="nav-link" data-section="admin-durations" onclick="showSection('admin-durations'); return false;">
-            <i class="bi bi-clock-history"></i> Durations
-        </a>
-        <a href="#" class="nav-link" data-section="admin-prices" onclick="showSection('admin-prices'); return false;">
-            <i class="bi bi-tag"></i> Pricing
-        </a>
-        <div class="nav-section">Inventory</div>
-        <a href="#" class="nav-link" data-section="admin-keys" onclick="showSection('admin-keys'); return false;">
-            <i class="bi bi-key"></i> License Keys
-        </a>
-        <div class="nav-section">Sales</div>
-        <a href="#" class="nav-link" data-section="admin-orders" onclick="showSection('admin-orders'); return false;">
-            <i class="bi bi-receipt"></i> Orders
-        </a>
-        <a href="#" class="nav-link" data-section="admin-coupons" onclick="showSection('admin-coupons'); return false;">
-            <i class="bi bi-ticket-perforated"></i> Coupons
-        </a>
-        <div class="nav-section">System</div>
-        <a href="#" class="nav-link" data-section="admin-payments" onclick="showSection('admin-payments'); return false;">
-            <i class="bi bi-gear"></i> Settings
-        </a>
-    </nav>
-    <div class="sidebar-footer">
-        <button class="logout-btn" onclick="adminLogout()">
-            <i class="bi bi-box-arrow-right"></i> Logout
-        </button>
-    </div>
-</aside>
-<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
-
-<!-- ADMIN TOPBAR -->
-<div id="adminTopbar" class="admin-topbar d-none">
-    <div class="d-flex align-items-center gap-3">
-        <button class="mobile-menu-btn" onclick="toggleSidebar()">
-            <i class="bi bi-list"></i>
-        </button>
-        <h4 class="topbar-title" id="pageTitle">Dashboard</h4>
-    </div>
-    <div class="topbar-profile">
-        <span class="d-none d-sm-inline">Administrator</span>
-        <i class="bi bi-person-circle"></i>
-    </div>
-</div>
-
-<!-- ADMIN DASHBOARD -->
-<div id="admin-dashboard" class="section admin-section d-none">
-    <div class="container-fluid">
-        <h3 class="page-title">Dashboard</h3>
-        <div class="row g-4 mb-4">
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <div class="stat-label">Total Orders</div>
-                    <div class="stat-value" id="dashTotalOrders">0</div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <div class="stat-label">Total Sales</div>
-                    <div class="stat-value" id="dashTotalSales">0</div>
-                </div>
-            </div>
-            <div class="col-md-4">
-                <div class="stat-card">
-                    <div class="stat-label">Revenue</div>
-                    <div class="stat-value" id="dashRevenue">₹0</div>
-                </div>
-            </div>
-        </div>
-        <div class="glass-card">
-            <div class="card-header-glass">
-                <h5>Recent Orders</h5>
-            </div>
-            <div class="table-responsive">
-                <table class="glass-table mb-0">
-                    <thead>
-                        <tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Status</th></tr>
-                    </thead>
-                    <tbody id="recentOrdersTable">
-                        <tr><td colspan="5" class="text-center py-4 text-muted">Loading...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ADMIN PRODUCTS -->
-<div id="admin-products" class="section admin-section d-none">
-    <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="page-title mb-0">Product Management</h3>
-            <button class="btn btn-red btn-sm" onclick="openProductModal()">
-                <i class="bi bi-plus-lg me-1"></i>Add Product
-            </button>
-        </div>
-        <div class="glass-card">
-            <div class="table-responsive">
-                <table class="glass-table mb-0">
-                    <thead>
-                        <tr><th>Product Name</th><th>Status</th><th class="text-end">Actions</th></tr>
-                    </thead>
-                    <tbody id="productsTable">
-                        <tr><td colspan="3" class="text-center py-4 text-muted">Loading...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ADMIN DURATIONS -->
-<div id="admin-durations" class="section admin-section d-none">
-    <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="page-title mb-0">Duration Management</h3>
-            <button class="btn btn-red btn-sm" onclick="openDurationModal()">
-                <i class="bi bi-plus-lg me-1"></i>Add Duration
-            </button>
-        </div>
-        <div class="glass-card">
-            <div class="table-responsive">
-                <table class="glass-table mb-0">
-                    <thead>
-                        <tr><th>Product</th><th>Duration</th><th>Unit</th><th class="text-end">Actions</th></tr>
-                    </thead>
-                    <tbody id="durationsTable">
-                        <tr><td colspan="4" class="text-center py-4 text-muted">Loading...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ADMIN PRICES -->
-<div id="admin-prices" class="section admin-section d-none">
-    <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="page-title mb-0">Price Management</h3>
-            <button class="btn btn-red btn-sm" onclick="openPriceModal()">
-                <i class="bi bi-plus-lg me-1"></i>Set Price
-            </button>
-        </div>
-        <div class="glass-card">
-            <div class="table-responsive">
-                <table class="glass-table mb-0">
-                    <thead>
-                        <tr><th>Product</th><th>Duration</th><th>Price</th><th class="text-end">Actions</th></tr>
-                    </thead>
-                    <tbody id="pricesTable">
-                        <tr><td colspan="4" class="text-center py-4 text-muted">Loading...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ADMIN LICENSE KEYS -->
-<div id="admin-keys" class="section admin-section d-none">
-    <div class="container-fluid">
-        <h3 class="page-title">License Key Management</h3>
-        <div class="glass-card mb-4" style="background: linear-gradient(135deg, rgba(229,9,20,0.05) 0%, rgba(8,8,8,0.5) 100%);">
-            <div class="card-header-glass">
-                <h5><i class="bi bi-box-seam me-2 text-red"></i>Stock Summary</h5>
-            </div>
-            <div class="p-4">
-                <div class="row g-3" id="stockSummaryCards">
-                    <div class="col-12 text-center text-muted py-4">Loading stock data...</div>
-                </div>
-            </div>
-        </div>
-        <div class="glass-card mb-4">
-            <div class="card-header-glass">
-                <h5>Import Keys</h5>
-            </div>
-            <div class="p-4">
-                <div class="row g-3">
-                    <div class="col-md-4">
-                        <label class="form-label-small">Select Product</label>
-                        <select class="form-select glass-select" id="keyProduct" onchange="onKeyProductChange()">
-                            <option value="">Select Product</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label-small">Select Duration</label>
-                        <select class="form-select glass-select" id="keyDuration">
-                            <option value="">Select Duration</option>
-                        </select>
-                    </div>
-                    <div class="col-md-4">
-                        <label class="form-label-small">Or add single key</label>
-                        <div class="input-group">
-                            <input type="text" class="form-control glass-input" id="singleKeyInput" placeholder="Enter single key">
-                            <button class="btn btn-glass" onclick="addSingleKey()">Add</button>
-                        </div>
-                    </div>
-                </div>
-                <div class="mt-3">
-                    <label class="form-label-small">Paste keys (one per line)</label>
-                    <textarea class="form-control glass-input" id="keysTextarea" rows="4" placeholder="Paste keys here (one per line)"></textarea>
-                    <button class="btn btn-red mt-3" onclick="importKeys()">
-                        <i class="bi bi-upload me-2"></i>Import Keys
-                    </button>
-                </div>
-            </div>
-        </div>
-        <ul class="nav nav-tabs glass-tabs mb-0">
-            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#activeKeys">Active Keys</a></li>
-            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#usedKeys">Used Keys</a></li>
-        </ul>
-        <div class="tab-content">
-            <div class="tab-pane fade show active" id="activeKeys">
-                <div class="glass-card">
-                    <div class="table-responsive">
-                        <table class="glass-table mb-0">
-                            <thead>
-                                <tr><th>Product</th><th>Duration</th><th>Key</th><th>Added</th><th class="text-end">Actions</th></tr>
-                            </thead>
-                            <tbody id="activeKeysTable">
-                                <tr><td colspan="5" class="text-center py-4 text-muted">Loading...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="tab-pane fade" id="usedKeys">
-                <div class="glass-card">
-                    <div class="table-responsive">
-                        <table class="glass-table mb-0">
-                            <thead>
-                                <tr><th>Product</th><th>Duration</th><th>Key</th><th>Used Date</th><th class="text-end">Actions</th></tr>
-                            </thead>
-                            <tbody id="usedKeysTable">
-                                <tr><td colspan="5" class="text-center py-4 text-muted">Loading...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ADMIN COUPONS -->
-<div id="admin-coupons" class="section admin-section d-none">
-    <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="page-title mb-0">Coupon Management</h3>
-            <button class="btn btn-red btn-sm" onclick="openCouponModal()">
-                <i class="bi bi-plus-lg me-1"></i>Create Coupon
-            </button>
-        </div>
-        <div class="glass-card">
-            <div class="table-responsive">
-                <table class="glass-table mb-0">
-                    <thead>
-                        <tr><th>Code</th><th>Discount</th><th>Min Order</th><th>Expiry</th><th class="text-end">Actions</th></tr>
-                    </thead>
-                    <tbody id="couponsTable">
-                        <tr><td colspan="5" class="text-center py-4 text-muted">Loading...</td></tr>
-                    </tbody>
-                </table>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ADMIN ORDERS -->
-<div id="admin-orders" class="section admin-section d-none">
-    <div class="container-fluid">
-        <h3 class="page-title mb-4">Order Management</h3>
-        <div class="glass-card mb-4 p-3">
-            <div class="input-group">
-                <span class="input-group-text bg-transparent border-0 text-muted"><i class="bi bi-search"></i></span>
-                <input type="text" class="form-control glass-input border-0" id="orderSearch" placeholder="Search orders..." onkeyup="searchOrders()">
-            </div>
-        </div>
-        <ul class="nav nav-tabs glass-tabs mb-0">
-            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#paidOrders">Paid Orders</a></li>
-            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#failedOrders">Failed Orders</a></li>
-        </ul>
-        <div class="tab-content">
-            <div class="tab-pane fade show active" id="paidOrders">
-                <div class="glass-card">
-                    <div class="table-responsive">
-                        <table class="glass-table mb-0">
-                            <thead>
-                                <tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Key</th><th>Date</th></tr>
-                            </thead>
-                            <tbody id="paidOrdersTable">
-                                <tr><td colspan="6" class="text-center py-4 text-muted">Loading...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-            <div class="tab-pane fade" id="failedOrders">
-                <div class="glass-card">
-                    <div class="table-responsive">
-                        <table class="glass-table mb-0">
-                            <thead>
-                                <tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Key</th><th>Date</th></tr>
-                            </thead>
-                            <tbody id="failedOrdersTable">
-                                <tr><td colspan="6" class="text-center py-4 text-muted">Loading...</td></tr>
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- ADMIN PAYMENT SETTINGS -->
-<div id="admin-payments" class="section admin-section d-none">
-    <div class="container-fluid">
-        <h3 class="page-title mb-4">Payment & Admin Settings</h3>
-        <div class="row g-4">
-            <div class="col-md-6">
-                <div class="glass-card h-100">
-                    <div class="card-header-glass">
-                        <h5><i class="bi bi-credit-card me-2 text-red"></i>Razorpay</h5>
-                    </div>
-                    <div class="p-4">
-                        <label class="form-label-small">Razorpay Key ID</label>
-                        <input type="text" class="form-control glass-input mb-0" id="rzpKeyId" placeholder="rzp_test_...">
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="glass-card h-100" style="border-color: rgba(245,158,11,0.2);">
-                    <div class="card-header-glass">
-                        <h5><i class="bi bi-shield-lock me-2" style="color:#fbbf24;"></i>Admin Credentials</h5>
-                    </div>
-                    <div class="p-4">
-                        <div class="mb-3">
-                            <label class="form-label-small">Username</label>
-                            <input type="text" class="form-control glass-input" id="adminUsername" placeholder="admin">
-                        </div>
-                        <div class="mb-3">
-                            <label class="form-label-small">Password</label>
-                            <input type="password" class="form-control glass-input" id="adminPassword" placeholder="••••••">
-                        </div>
-                        <div class="alert alert-warning-glass py-2 small mb-0 d-flex align-items-center gap-2">
-                            <i class="bi bi-exclamation-triangle"></i> <span>Stored as plain text. Use strong values.</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="glass-card h-100" style="border-color: rgba(34,158,217,0.2);">
-                    <div class="card-header-glass">
-                        <h5><i class="bi bi-phone me-2" style="color:#229ED9;"></i>APK Download</h5>
-                    </div>
-                    <div class="p-4">
-                        <label class="form-label-small">GitHub APK URL</label>
-                        <input type="url" class="form-control glass-input" id="apkUrl" placeholder="https://github.com/.../app.apk">
-                        <div class="form-text text-muted mt-2" style="font-size:0.8rem;">Paste the GitHub release APK link here. Customers will see a download button after purchase.</div>
-                        <div class="mt-3" id="apkPreviewBox" style="display:none;">
-                            <label class="form-label-small">Current Link</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control glass-input" id="apkUrlPreview" readonly>
-                                <a id="apkUrlLink" href="#" target="_blank" class="btn btn-glass"><i class="bi bi-box-arrow-up-right"></i></a>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="mt-4">
-            <button class="btn btn-red" onclick="savePaymentSettings()">
-                <i class="bi bi-save me-2"></i>Save All Settings
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- SUCCESS PAGE -->
-<div id="success-page" class="section d-none">
-    <div class="container py-4">
-        <div class="row justify-content-center">
-            <div class="col-md-6 col-lg-5">
-                <div class="glass-card success-card text-center">
-                    <div class="success-icon mb-3"><i class="bi bi-check-circle-fill"></i></div>
-                    <h2 class="mb-1">Payment Successful</h2>
-                    <p class="text-muted mb-4">Your license key is ready</p>
-                    <div class="detail-list text-start mb-4">
-                        <div class="detail-item"><span>Order ID</span><span id="successOrderId" class="font-mono"></span></div>
-                        <div class="detail-item"><span>Product</span><span id="successProduct"></span></div>
-                        <div class="detail-item"><span>Duration</span><span id="successDuration"></span></div>
-                        <div class="detail-item"><span>Amount Paid</span><span id="successAmount" class="text-red"></span></div>
-                    </div>
-                    <div class="key-section mb-4">
-                        <div class="text-muted mb-2" style="font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;">Your License Key</div>
-                        <div class="key-box" id="successKey"></div>
-                        <button class="btn btn-glass mt-2 w-100" onclick="copyKey()">
-                            <i class="bi bi-clipboard me-2"></i>Copy Key
-                        </button>
-                    </div>
-                    <div class="mb-3" id="apkDownloadCard" style="display:none;">
-                        <a id="apkDownloadBtn" href="#" target="_blank" class="btn btn-apk w-100">
-                            <i class="bi bi-download me-2"></i>Download APK
-                        </a>
-                    </div>
-                    <div class="d-flex gap-2 mb-2">
-                        <button class="btn btn-glass flex-fill" onclick="downloadInvoice()">
-                            <i class="bi bi-receipt me-2"></i>Invoice
-                        </button>
-                        <button class="btn btn-red flex-fill" onclick="showSection('home')">
-                            Buy Another
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-
-<!-- MODALS -->
-<div class="modal fade" id="productModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="productModalTitle">Add Product</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="productEditId">
-                <div class="mb-3">
-                    <label class="form-label-small">Product Name</label>
-                    <input type="text" class="form-control glass-input" id="productName">
-                </div>
-                <div class="form-check">
-                    <input class="form-check-input" type="checkbox" id="productEnabled" checked>
-                    <label class="form-check-label">Enabled</label>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-glass" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-red" onclick="saveProduct()">Save</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="durationModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="durationModalTitle">Add Duration</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="durationEditId">
-                <div class="mb-3">
-                    <label class="form-label-small">Select Product</label>
-                    <select class="form-select glass-select" id="durationProduct">
-                        <option value="">Select Product</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label-small">Duration Name</label>
-                    <input type="text" class="form-control glass-input" id="durationName" placeholder="e.g. 30">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label-small">Time Unit</label>
-                    <select class="form-select glass-select" id="durationUnit">
-                        <option value="hours">Hours</option>
-                        <option value="days">Days</option>
-                        <option value="weeks">Weeks</option>
-                        <option value="months">Months</option>
-                        <option value="years">Years</option>
-                    </select>
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-glass" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-red" onclick="saveDuration()">Save</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="priceModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="priceModalTitle">Set Price</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <input type="hidden" id="priceEditId">
-                <div class="mb-3">
-                    <label class="form-label-small">Product</label>
-                    <select class="form-select glass-select" id="priceProduct" onchange="onPriceProductChange()">
-                        <option value="">Select Product</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label-small">Duration</label>
-                    <select class="form-select glass-select" id="priceDuration">
-                        <option value="">Select Duration</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label-small">Price (₹)</label>
-                    <input type="number" class="form-control glass-input" id="priceValue" min="1">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-glass" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-red" onclick="savePrice()">Save</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<div class="modal fade" id="couponModal" tabindex="-1">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Create Coupon</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label class="form-label-small">Coupon Code</label>
-                    <input type="text" class="form-control glass-input" id="couponCode" placeholder="SAVE20">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label-small">Type</label>
-                    <select class="form-select glass-select" id="couponType">
-                        <option value="percentage">Percentage (%)</option>
-                        <option value="fixed">Fixed Amount (₹)</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label class="form-label-small">Value</label>
-                    <input type="number" class="form-control glass-input" id="couponValue" min="1">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label-small">Min Order Value (₹)</label>
-                    <input type="number" class="form-control glass-input" id="couponMinOrder" min="0" placeholder="0 = Any amount">
-                </div>
-                <div class="mb-3">
-                    <label class="form-label-small">Expiry Date (Optional)</label>
-                    <input type="date" class="form-control glass-input" id="couponExpiry">
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-glass" data-bs-dismiss="modal">Cancel</button>
-                <button type="button" class="btn btn-red" onclick="saveCoupon()">Create</button>
-            </div>
-        </div>
-    </div>
-</div>
-
-<script type="module">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, get, set, push, update, remove, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         // ==========================================
-        // FIREBASE CONFIG - REPLACE WITH YOURSa
+        // FIREBASE CONFIG - SAME AS ORIGINAL
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyDKupV0toRbcPDDW8sLd9JNrbVVMDkfb2E",
@@ -1768,8 +110,17 @@
         // NAVIGATION
         // ==========================================
         window.showSection = function(sectionId) {
+            // Hide all sections first
             document.querySelectorAll('.section').forEach(s => s.classList.add('d-none'));
-            document.getElementById(sectionId).classList.remove('d-none');
+            // Show target section
+            const target = document.getElementById(sectionId);
+            if (target) {
+                target.classList.remove('d-none');
+                // Scroll to top for admin pages
+                if (sectionId.startsWith('admin-') || sectionId === 'success-page') {
+                    window.scrollTo({ top: 0, behavior: 'smooth' });
+                }
+            }
             if (sectionId === 'admin-dashboard') loadAdminDashboard();
             if (sectionId === 'admin-products') loadAdminProducts();
             if (sectionId === 'admin-durations') loadAdminDurations();
@@ -1793,13 +144,44 @@
                     select.innerHTML += `<option value="${p.id}">${p.name}</option>`;
                 }
             });
+
+            // Also load product showcase cards
+            loadProductShowcase(products);
         }
+
+        // Load product showcase cards
+        async function loadProductShowcase(products) {
+            const container = document.getElementById('productShowcaseCards');
+            if (!container) return;
+            let html = '';
+            products.forEach((p, idx) => {
+                if (p.enabled !== false) {
+                    html += `
+                    <div class="product-showcase-card" onclick="selectProductFromCard('${p.id}')" data-product-id="${p.id}">
+                        <div class="psc-icon"><i class="bi bi-key-fill"></i></div>
+                        <div class="psc-name">${p.name}</div>
+                        <div class="psc-status"><span class="psc-dot"></span> Available</div>
+                    </div>`;
+                }
+            });
+            container.innerHTML = html || '<div class="text-center text-muted">No products available</div>';
+        }
+
+        window.selectProductFromCard = async function(productId) {
+            document.getElementById('productSelect').value = productId;
+            await onProductChange();
+            // Scroll to purchase console
+            document.getElementById('purchase-console').scrollIntoView({ behavior: 'smooth', block: 'center' });
+            // Update card selection visual
+            document.querySelectorAll('.product-showcase-card').forEach(c => c.classList.remove('selected'));
+            const card = document.querySelector(`.product-showcase-card[data-product-id="${productId}"]`);
+            if (card) card.classList.add('selected');
+        };
 
         window.onProductChange = async function() {
             const productId = document.getElementById('productSelect').value;
             const durationSelect = document.getElementById('durationSelect');
             durationSelect.innerHTML = '<option value="">Select Duration</option>';
-            // price display removed
             document.getElementById('purchaseBtn').disabled = true;
             currentProduct = null;
             currentDuration = null;
@@ -1807,6 +189,16 @@
             currentCoupon = null;
             document.getElementById('couponInput').value = '';
             document.getElementById('couponMsg').innerHTML = '';
+            document.getElementById('planCardsContainer').innerHTML = '';
+            document.getElementById('orderSummaryBox').classList.add('d-none');
+            document.getElementById('stickySummary').classList.add('d-none');
+
+            // Update product showcase selection
+            document.querySelectorAll('.product-showcase-card').forEach(c => c.classList.remove('selected'));
+            if (productId) {
+                const card = document.querySelector(`.product-showcase-card[data-product-id="${productId}"]`);
+                if (card) card.classList.add('selected');
+            }
 
             if (!productId) {
                 durationSelect.disabled = true;
@@ -1826,7 +218,46 @@
                     durationSelect.innerHTML += `<option value="${dur.id}">${dur.name} ${unitLabel}</option>`;
                 });
                 durationSelect.disabled = false;
+
+                // Also build plan cards
+                buildPlanCards(productDurations);
             }
+        };
+
+        async function buildPlanCards(durations) {
+            const container = document.getElementById('planCardsContainer');
+            if (!container) return;
+            const prices = await getList('prices');
+            const keys = await getList('licenseKeys');
+
+            let html = '';
+            for (const dur of durations) {
+                const priceObj = prices.find(p => p.productId === currentProduct.id && p.durationId === dur.id);
+                const price = priceObj ? priceObj.price : null;
+                const hasKeys = keys.some(k => k.productId === currentProduct.id && k.durationId === dur.id && !k.used);
+                const unitLabel = dur.unit ? dur.unit.charAt(0).toUpperCase() + dur.unit.slice(1) : 'Days';
+
+                html += `
+                <div class="plan-card ${!hasKeys ? 'plan-unavailable' : ''}" 
+                     onclick="selectPlanFromCard('${dur.id}', ${price || 0}, '${dur.name} ${unitLabel}', ${hasKeys})"
+                     data-duration-id="${dur.id}">
+                    <div class="plan-duration">${dur.name}</div>
+                    <div class="plan-unit">${unitLabel}</div>
+                    <div class="plan-price">${price ? '₹' + price : 'N/A'}</div>
+                    
+                </div>`;
+            }
+            container.innerHTML = html || '<div class="text-center text-muted">No plans available</div>';
+        }
+
+        window.selectPlanFromCard = async function(durationId, price, durationName, hasKeys) {
+            if (!hasKeys) return;
+            document.getElementById('durationSelect').value = durationId;
+            await onDurationChange();
+            // Update plan card visuals
+            document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+            const card = document.querySelector(`.plan-card[data-duration-id="${durationId}"]`);
+            if (card) card.classList.add('selected');
         };
 
         window.onDurationChange = async function() {
@@ -1848,6 +279,8 @@
             if (!priceFound) {
                 document.getElementById('totalDisplay').innerHTML = '<span class="text-danger fw-bold"><i class="bi bi-x-circle"></i> Price not set for this combination</span>';
                 document.getElementById('purchaseBtn').disabled = true;
+                document.getElementById('orderSummaryBox').classList.add('d-none');
+                document.getElementById('stickySummary').classList.add('d-none');
                 return;
             }
 
@@ -1857,10 +290,19 @@
             if (!availableKey) {
                 document.getElementById('totalDisplay').innerHTML = '<span class="text-danger fw-bold"><i class="bi bi-x-circle"></i> Not available. Choose another duration</span>';
                 document.getElementById('purchaseBtn').disabled = true;
+                document.getElementById('orderSummaryBox').classList.add('d-none');
+                document.getElementById('stickySummary').classList.add('d-none');
                 return;
             }
 
             document.getElementById('purchaseBtn').disabled = false;
+            document.getElementById('orderSummaryBox').classList.remove('d-none');
+            document.getElementById('stickySummary').classList.remove('d-none');
+
+            // Update plan card visuals
+            document.querySelectorAll('.plan-card').forEach(c => c.classList.remove('selected'));
+            const card = document.querySelector(`.plan-card[data-duration-id="${durationId}"]`);
+            if (card) card.classList.add('selected');
 
             // Re-validate coupon if price changed
             if (currentCoupon) {
@@ -1873,7 +315,25 @@
             }
 
             calculateTotal();
+            updateOrderSummary();
+            updateStickySummary();
         };
+
+        function updateOrderSummary() {
+            const box = document.getElementById('orderSummaryBox');
+            if (!box || !currentProduct || !currentDuration) return;
+            document.getElementById('osProduct').textContent = currentProduct.name;
+            document.getElementById('osPlan').textContent = currentDuration.name;
+            document.getElementById('osSubtotal').textContent = '₹' + currentPrice;
+        }
+
+        function updateStickySummary() {
+            const sticky = document.getElementById('stickySummary');
+            if (!sticky || !currentProduct || !currentDuration) return;
+            document.getElementById('ssProduct').textContent = currentProduct.name;
+            document.getElementById('ssPlan').textContent = currentDuration.name;
+            document.getElementById('ssTotal').textContent = '₹' + finalAmount;
+        }
 
         window.applyCoupon = async function() {
             const code = document.getElementById('couponInput').value.trim().toUpperCase();
@@ -1881,14 +341,17 @@
                 currentCoupon = null;
                 document.getElementById('couponMsg').innerHTML = '';
                 calculateTotal();
+                updateOrderSummary();
+                updateStickySummary();
                 return;
             }
 
-            // If no product/duration selected yet, don't allow coupon
             if (!currentProduct || !currentDuration || currentPrice <= 0) {
                 document.getElementById('couponMsg').innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Please select a product and duration first</span>';
                 currentCoupon = null;
                 calculateTotal();
+                updateOrderSummary();
+                updateStickySummary();
                 return;
             }
 
@@ -1901,7 +364,6 @@
                 if (c.code === code) {
                     const now = new Date();
                     const expiry = c.expiryDate ? new Date(c.expiryDate) : null;
-                    // Set expiry to end of day for fair comparison
                     if (expiry) {
                         expiry.setHours(23, 59, 59, 999);
                     }
@@ -1914,10 +376,9 @@
                     const minOrder = parseFloat(c.minOrderValue) || 0;
                     if (currentPrice >= minOrder) {
                         matchedCoupon = { id: c.id, ...c };
-                        break; // Found valid coupon, stop searching
+                        break;
                     } else {
                         minOrderFail = true;
-                        // Don't break - keep looking for another valid coupon
                     }
                 }
             }
@@ -1936,6 +397,8 @@
                 document.getElementById('couponMsg').innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Invalid coupon code</span>';
             }
             calculateTotal();
+            updateOrderSummary();
+            updateStickySummary();
         };
 
         function calculateTotal() {
@@ -1951,10 +414,10 @@
 
             let html = '';
             if (currentCoupon) {
-                html += `<div class="text-decoration-line-through text-muted">₹${currentPrice}</div>`;
-                html += `<div class="text-success">Discount: -₹${discountAmount}</div>`;
+                html += `<div class="os-row"><span class="os-label">Subtotal</span><span class="os-value strikethrough">₹${currentPrice}</span></div>`;
+                html += `<div class="os-row"><span class="os-label">Discount</span><span class="os-value discount">-₹${discountAmount}</span></div>`;
             }
-            html += `<div class="h3 text-primary fw-bold">Total: ₹${finalAmount}</div>`;
+            html += `<div class="os-row total"><span class="os-label">Total</span><span class="os-value">₹${finalAmount}</span></div>`;
             document.getElementById('totalDisplay').innerHTML = html;
         }
 
@@ -1986,7 +449,7 @@
                     contact: ""
                 },
                 theme: {
-                    color: "#0d6efd"
+                    color: "#E50914"
                 }
             };
 
@@ -2007,7 +470,6 @@
             let keyDocId = null;
 
             try {
-                // Find unused license key matching product + duration
                 const keys = await getList('licenseKeys');
 
                 for (const k of keys) {
@@ -2022,7 +484,6 @@
                     await updateData('licenseKeys/' + keyDocId, { used: true, usedAt: Date.now(), orderId: orderId });
                 }
 
-                // Save order
                 const orderData = {
                     orderId: orderId,
                     productId: currentProduct.id,
@@ -2040,7 +501,6 @@
                 };
                 await pushData('orders', orderData);
 
-                // Save payment record
                 await pushData('payments', {
                     orderId: orderId,
                     paymentId: response.razorpay_payment_id,
@@ -2053,7 +513,6 @@
                 console.error('Post-payment error:', e);
             }
 
-            // Store order details for invoice
             window.lastOrder = {
                 orderId: orderId,
                 productName: currentProduct ? currentProduct.name : '',
@@ -2067,14 +526,12 @@
                 date: new Date().toLocaleString()
             };
 
-            // Show success page regardless of DB errors
             document.getElementById('successOrderId').textContent = orderId;
             document.getElementById('successProduct').textContent = currentProduct.name;
             document.getElementById('successDuration').textContent = currentDuration.name;
             document.getElementById('successKey').textContent = assignedKey || 'No keys available - Contact Admin';
             document.getElementById('successAmount').textContent = '₹' + finalAmount;
 
-            // Show APK download if URL is configured
             if (appConfig.apkUrl) {
                 document.getElementById('apkDownloadCard').style.display = 'block';
                 document.getElementById('apkDownloadBtn').href = appConfig.apkUrl;
@@ -2083,6 +540,8 @@
             }
 
             showSection('success-page');
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
         window.copyKey = function() {
@@ -2348,7 +807,6 @@ Thank you for your purchase!
             });
         }
 
-
         window.onKeyProductChange = async function() {
             const productId = document.getElementById('keyProduct').value;
             const dSelect = document.getElementById('keyDuration');
@@ -2480,7 +938,6 @@ Thank you for your purchase!
 
             // ===== STOCK SUMMARY CALCULATION =====
             const stockMap = {};
-            // Initialize stock map for all product+duration combos that have keys
             keys.forEach(k => {
                 const comboKey = k.productId + '_' + k.durationId;
                 if (!stockMap[comboKey]) {
@@ -2494,7 +951,6 @@ Thank you for your purchase!
                 }
             });
 
-            // Build stock summary HTML
             let stockHtml = '';
             const stockEntries = Object.entries(stockMap).sort((a, b) => b[1].active - a[1].active);
 
@@ -2540,7 +996,6 @@ Thank you for your purchase!
                 });
             }
             document.getElementById('stockSummaryCards').innerHTML = stockHtml;
-            // ===== END STOCK SUMMARY =====
 
             let activeHtml = '', usedHtml = '';
             keys.forEach(k => {
@@ -2560,7 +1015,6 @@ Thank you for your purchase!
             document.getElementById('activeKeysTable').innerHTML = activeHtml || '<tr><td colspan="5" class="text-center">No active keys</td></tr>';
             document.getElementById('usedKeysTable').innerHTML = usedHtml || '<tr><td colspan="5" class="text-center">No used keys</td></tr>';
 
-            // Populate product dropdown for key import
             const kSelect = document.getElementById('keyProduct');
             kSelect.innerHTML = '<option value="">Select Product</option>';
             const productsList = await getList('products');
@@ -2747,58 +1201,1552 @@ Thank you for your purchase!
         // ==========================================
         // INITIALIZE
         // ==========================================
+        // Mobile menu functions
+        window.toggleMobileMenu = function() {
+            const menu = document.getElementById('mobileMenu');
+            const icon = document.getElementById('menuIcon');
+            if (menu.classList.contains('show')) {
+                menu.classList.remove('show');
+                icon.className = 'bi bi-list';
+            } else {
+                menu.classList.add('show');
+                icon.className = 'bi bi-x-lg';
+            }
+        };
+        window.closeMobileMenu = function() {
+            const menu = document.getElementById('mobileMenu');
+            const icon = document.getElementById('menuIcon');
+            menu.classList.remove('show');
+            icon.className = 'bi bi-list';
+        };
+        window.toggleAdminMobileMenu = function() {
+            const menu = document.getElementById('adminMobileMenu');
+            const icon = document.getElementById('adminMenuIcon');
+            if (menu.classList.contains('show')) {
+                menu.classList.remove('show');
+                icon.className = 'bi bi-list';
+            } else {
+                menu.classList.add('show');
+                icon.className = 'bi bi-x-lg';
+            }
+        };
+        window.closeAdminMobileMenu = function() {
+            const menu = document.getElementById('adminMobileMenu');
+            const icon = document.getElementById('adminMenuIcon');
+            menu.classList.remove('show');
+            icon.className = 'bi bi-list';
+        };
+
         document.addEventListener('DOMContentLoaded', async () => {
             await loadAppConfig();
             loadHomeProducts();
+
+            // Smooth scroll for nav links
+            document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+                anchor.addEventListener('click', function(e) {
+                    const href = this.getAttribute('href');
+                    if (href && href.startsWith('#') && href.length > 1) {
+                        e.preventDefault();
+                        const target = document.querySelector(href);
+                        if (target) target.scrollIntoView({ behavior: 'smooth' });
+                    }
+                });
+            });
+
+            // Navbar scroll effect
+            window.addEventListener('scroll', () => {
+                const nav = document.querySelector('.floating-nav');
+                if (nav) {
+                    if (window.scrollY > 50) {
+                        nav.classList.add('scrolled');
+                    } else {
+                        nav.classList.remove('scrolled');
+                    }
+                }
+            });
+
+            // Close mobile menu when clicking outside
+            document.addEventListener('click', function(e) {
+                const nav = document.getElementById('mainNav');
+                const toggle = document.getElementById('menuToggle');
+                const menu = document.getElementById('mobileMenu');
+                if (nav && toggle && menu && !nav.contains(e.target)) {
+                    closeMobileMenu();
+                }
+                const adminNav = document.getElementById('adminNav');
+                const adminMenu = document.getElementById('adminMobileMenu');
+                if (adminNav && adminMenu && !adminNav.contains(e.target)) {
+                    closeAdminMobileMenu();
+                }
+            });
         });
     </script>
-
-<script>
-    // UI Helpers - do not modify Firebase logic above
-    function toggleSidebar() {
-        document.getElementById('adminSidebar').classList.toggle('show');
-        document.getElementById('sidebarOverlay').classList.toggle('show');
-    }
-
-    const _origShowSection = window.showSection;
-    window.showSection = function(sectionId) {
-        if (typeof _origShowSection === 'function') {
-            _origShowSection(sectionId);
+    <style>
+        :root {
+            --deep-black: #050505;
+            --black: #080808;
+            --charcoal: #111111;
+            --dark-gray: #181818;
+            --primary-red: #E50914;
+            --bright-red: #FF1A1A;
+            --dark-red: #8B0000;
+            --white: #FFFFFF;
+            --muted-white: rgba(255,255,255,0.55);
+            --glass-bg: rgba(255,255,255,0.04);
+            --glass-bg-hover: rgba(255,255,255,0.06);
+            --glass-border: rgba(255,255,255,0.08);
+            --red-glass: rgba(229,9,20,0.10);
+            --red-border: rgba(229,9,20,0.35);
         }
-        // Update sidebar active state
-        document.querySelectorAll('.sidebar-nav .nav-link').forEach(function(l) {
-            l.classList.toggle('active', l.dataset.section === sectionId);
-        });
-        // Update page title
-        var titles = {
-            'admin-dashboard': 'Dashboard',
-            'admin-products': 'Products',
-            'admin-durations': 'Durations',
-            'admin-prices': 'Pricing',
-            'admin-keys': 'License Keys',
-            'admin-coupons': 'Coupons',
-            'admin-orders': 'Orders',
-            'admin-payments': 'Settings'
-        };
-        if (titles[sectionId]) {
-            var pt = document.getElementById('pageTitle');
-            if (pt) pt.textContent = titles[sectionId];
-        }
-        // Show/hide admin chrome
-        var adminSections = ['admin-dashboard','admin-products','admin-durations','admin-prices','admin-keys','admin-coupons','admin-orders','admin-payments'];
-        var isAdmin = adminSections.indexOf(sectionId) !== -1;
-        var sb = document.getElementById('adminSidebar');
-        var tb = document.getElementById('adminTopbar');
-        if (sb) sb.classList.toggle('d-none', !isAdmin);
-        if (tb) tb.classList.toggle('d-none', !isAdmin);
-        // Close mobile sidebar
-        if (sb) sb.classList.remove('show');
-        var so = document.getElementById('sidebarOverlay');
-        if (so) so.classList.remove('show');
-        // Scroll to top
-        window.scrollTo(0, 0);
-    };
-</script>
 
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background: var(--deep-black);
+            color: var(--white);
+            font-family: 'Inter', 'Manrope', -apple-system, sans-serif;
+            overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* ===== BACKGROUND EFFECTS ===== */
+        .bg-gradient-orbs {
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            z-index: 0;
+            pointer-events: none;
+            overflow: hidden;
+        }
+        .bg-gradient-orbs::before {
+            content: '';
+            position: absolute;
+            width: 600px; height: 600px;
+            top: -200px; right: -100px;
+            background: radial-gradient(circle, rgba(229,9,20,0.08) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(80px);
+        }
+        .bg-gradient-orbs::after {
+            content: '';
+            position: absolute;
+            width: 500px; height: 500px;
+            bottom: -150px; left: -100px;
+            background: radial-gradient(circle, rgba(229,9,20,0.05) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(100px);
+        }
+
+        /* ===== FLOATING NAVBAR ===== */
+        .floating-nav {
+            position: fixed;
+            top: 16px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 1000;
+            width: calc(100% - 32px);
+            max-width: 1200px;
+            background: rgba(5,5,5,0.7);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 12px 24px;
+            transition: all 0.3s ease;
+        }
+        .floating-nav.scrolled {
+            background: rgba(5,5,5,0.9);
+            border-color: var(--red-border);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+        }
+        .nav-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--white);
+            font-weight: 800;
+            font-size: 1.1rem;
+            letter-spacing: -0.5px;
+            text-decoration: none;
+        }
+        .nav-brand img {
+            width: 32px; height: 32px;
+            border-radius: 8px;
+            object-fit: cover;
+        }
+        .nav-links {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .nav-link-item {
+            color: var(--muted-white);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 500;
+            padding: 8px 16px;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .nav-link-item:hover {
+            color: var(--white);
+            background: var(--glass-bg-hover);
+        }
+        .nav-link-item.active {
+            color: var(--primary-red);
+            background: var(--red-glass);
+        }
+        .nav-cta {
+            background: var(--primary-red);
+            color: var(--white);
+            border: none;
+            border-radius: 10px;
+            padding: 10px 24px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .nav-cta:hover {
+            background: var(--bright-red);
+            transform: translateY(-1px);
+        }
+        .navbar-toggler-custom {
+            background: none;
+            border: 1px solid var(--glass-border);
+            border-radius: 10px;
+            padding: 8px 12px;
+            color: var(--white);
+            cursor: pointer;
+        }
+
+        /* ===== HERO SECTION ===== */
+        .hero-section {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            padding: 120px 0 80px;
+            position: relative;
+            z-index: 1;
+        }
+
+
+        .hero-title {
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 800;
+            line-height: 1.1;
+            letter-spacing: -1.5px;
+            margin-bottom: 20px;
+            color: var(--white);
+        }
+        .hero-title span {
+            color: var(--primary-red);
+        }
+        .hero-subtitle {
+            font-size: 1.1rem;
+            color: var(--muted-white);
+            line-height: 1.6;
+            margin-bottom: 32px;
+            max-width: 480px;
+        }
+        .trust-indicators {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-top: 32px;
+        }
+        .trust-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted-white);
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .trust-item i {
+            color: var(--primary-red);
+            font-size: 1.1rem;
+        }
+
+        /* ===== PURCHASE CONSOLE ===== */
+        .purchase-console {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 32px;
+        }
+        .console-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin-bottom: 4px;
+            color: var(--white);
+        }
+        .console-subtitle {
+            font-size: 0.85rem;
+            color: var(--muted-white);
+            margin-bottom: 24px;
+        }
+        .step-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--primary-red);
+            margin-bottom: 12px;
+            display: block;
+        }
+
+        /* Product Cards in Console */
+        .product-cards-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+        .product-card-select {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 16px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .product-card-select:hover {
+            background: var(--glass-bg-hover);
+            border-color: var(--red-border);
+        }
+        .product-card-select.selected {
+            background: var(--red-glass);
+            border-color: var(--primary-red);
+        }
+        .product-card-select .pc-icon {
+            width: 40px; height: 40px;
+            background: var(--charcoal);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary-red);
+            font-size: 1.1rem;
+        }
+        .product-card-select .pc-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--white);
+        }
+        .product-card-select .pc-status {
+            margin-left: auto;
+            font-size: 0.75rem;
+            color: var(--muted-white);
+        }
+        .product-card-select.selected .pc-status {
+            color: var(--primary-red);
+        }
+
+        /* Plan Cards */
+        .plan-cards-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        .plan-card {
+            padding: 16px 12px;
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 14px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .plan-card:hover:not(.plan-unavailable) {
+            background: var(--glass-bg-hover);
+            border-color: var(--red-border);
+            transform: translateY(-2px);
+        }
+        .plan-card.selected {
+            background: var(--red-glass);
+            border-color: var(--primary-red);
+        }
+        .plan-card.plan-unavailable {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .plan-card .plan-duration {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--white);
+        }
+        .plan-card .plan-unit {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--muted-white);
+            margin-top: 2px;
+        }
+        .plan-card .plan-price {
+            font-size: 1rem;
+            font-weight: 700;
+            color: var(--primary-red);
+            margin-top: 6px;
+        }
+                /* Coupon Section */
+        .coupon-toggle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            color: var(--muted-white);
+            font-size: 0.85rem;
+            cursor: pointer;
+            padding: 8px 0;
+            transition: color 0.2s;
+        }
+        .coupon-toggle:hover { color: var(--white); }
+        .coupon-toggle i { color: var(--primary-red); }
+        .coupon-expand {
+            display: none;
+            gap: 8px;
+            margin-top: 8px;
+        }
+        .coupon-expand.show { display: flex; }
+
+        /* Order Summary */
+        .order-summary-box {
+            background: var(--charcoal);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 16px;
+        }
+        .os-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 6px 0;
+            font-size: 0.9rem;
+        }
+        .os-row .os-label { color: var(--muted-white); }
+        .os-row .os-value { color: var(--white); font-weight: 600; }
+        .os-row .os-value.strikethrough {
+            text-decoration: line-through;
+            color: var(--muted-white);
+        }
+        .os-row .os-value.discount { color: var(--primary-red); }
+        .os-row.total {
+            border-top: 1px solid var(--glass-border);
+            margin-top: 8px;
+            padding-top: 12px;
+        }
+        .os-row.total .os-label { font-weight: 700; font-size: 1rem; }
+        .os-row.total .os-value { font-weight: 800; font-size: 1.2rem; color: var(--primary-red); }
+
+        /* BUY NOW Button */
+        .btn-buy-now {
+            width: 100%;
+            background: var(--primary-red);
+            color: var(--white);
+            border: none;
+            border-radius: 14px;
+            padding: 16px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            margin-top: 16px;
+        }
+        .btn-buy-now:hover:not(:disabled) {
+            background: var(--bright-red);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(229,9,20,0.3);
+        }
+        .btn-buy-now:active:not(:disabled) {
+            transform: translateY(0);
+        }
+        .btn-buy-now:disabled {
+            background: var(--dark-gray);
+            color: var(--muted-white);
+            cursor: not-allowed;
+        }
+
+        /* ===== SUCCESS PAGE ===== */
+        .success-console {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 24px;
+            padding: 48px 32px;
+            text-align: center;
+            max-width: 560px;
+            margin: 0 auto;
+        }
+        .success-icon {
+            width: 80px; height: 80px;
+            background: var(--red-glass);
+            border: 1px solid var(--red-border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 24px;
+            color: var(--primary-red);
+            font-size: 2.5rem;
+        }
+        .success-title {
+            font-size: 1.8rem;
+            font-weight: 800;
+            color: var(--white);
+            margin-bottom: 8px;
+        }
+        .success-subtitle {
+            color: var(--muted-white);
+            margin-bottom: 32px;
+        }
+        .success-details {
+            text-align: left;
+            background: var(--charcoal);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 24px;
+            margin-bottom: 24px;
+        }
+        .success-details p {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+        .success-details p:last-child { margin-bottom: 0; }
+        .success-details .sd-label { color: var(--muted-white); }
+        .success-details .sd-value { color: var(--white); font-weight: 600; }
+        .key-display-box {
+            background: var(--charcoal);
+            border: 1px solid var(--red-border);
+            border-radius: 14px;
+            padding: 20px;
+            margin-bottom: 24px;
+        }
+        .key-display-box .kd-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: var(--muted-white);
+            margin-bottom: 8px;
+        }
+        .key-display-box .kd-value {
+            font-family: 'SF Mono', 'Fira Code', monospace;
+            font-size: 1.1rem;
+            color: var(--primary-red);
+            word-break: break-all;
+            font-weight: 600;
+        }
+        .success-buttons {
+            display: flex;
+            gap: 12px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn-glass {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            color: var(--white);
+            border-radius: 12px;
+            padding: 12px 24px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-glass:hover {
+            background: var(--glass-bg-hover);
+            border-color: var(--red-border);
+        }
+        .btn-glass-primary {
+            background: var(--primary-red);
+            border: none;
+            color: var(--white);
+        }
+        .btn-glass-primary:hover {
+            background: var(--bright-red);
+        }
+
+        /* ===== STICKY ORDER SUMMARY ===== */
+        .sticky-summary {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: rgba(5,5,5,0.95);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-top: 1px solid var(--glass-border);
+            padding: 16px 24px;
+            z-index: 999;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .sticky-summary-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .sticky-summary-info .ss-text {
+            font-size: 0.85rem;
+            color: var(--muted-white);
+        }
+        .sticky-summary-info .ss-price {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: var(--primary-red);
+        }
+        .sticky-summary .btn-buy-now-sm {
+            background: var(--primary-red);
+            color: var(--white);
+            border: none;
+            border-radius: 12px;
+            padding: 12px 28px;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .sticky-summary .btn-buy-now-sm:hover {
+            background: var(--bright-red);
+        }
+
+        /* ===== ADMIN PANEL STYLES ===== */
+        .admin-section {
+            background: var(--deep-black);
+            min-height: 100vh;
+            padding-top: 80px;
+        }
+        .admin-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            overflow: hidden;
+        }
+        .admin-card-header {
+            background: var(--charcoal);
+            border-bottom: 1px solid var(--glass-border);
+            padding: 20px 24px;
+        }
+        .admin-card-header h5 {
+            color: var(--white);
+            font-weight: 700;
+            margin: 0;
+        }
+        .admin-table {
+            color: var(--white);
+        }
+        .admin-table thead {
+            background: var(--charcoal);
+        }
+        .admin-table th {
+            color: var(--muted-white);
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--glass-border);
+            padding: 14px 16px;
+        }
+        .admin-table td {
+            border-bottom: 1px solid var(--glass-border);
+            padding: 14px 16px;
+            font-size: 0.9rem;
+            color: var(--white);
+            vertical-align: middle;
+        }
+        .admin-table tbody tr:hover {
+            background: var(--glass-bg-hover);
+        }
+        .admin-stat-card {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 24px;
+            text-align: center;
+        }
+        .admin-stat-card .stat-num {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: var(--primary-red);
+            margin-bottom: 4px;
+        }
+        .admin-stat-card .stat-label {
+            font-size: 0.85rem;
+            color: var(--muted-white);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        /* ===== FORM INPUTS ===== */
+        .form-input-dark {
+            background: var(--glass-bg) !important;
+            border: 1px solid var(--glass-border) !important;
+            color: var(--white) !important;
+            border-radius: 12px !important;
+            padding: 12px 16px !important;
+            font-size: 0.95rem;
+            transition: all 0.2s ease;
+        }
+        .form-input-dark:focus {
+            background: var(--glass-bg-hover) !important;
+            border-color: var(--red-border) !important;
+            box-shadow: 0 0 0 3px rgba(229,9,20,0.1) !important;
+            color: var(--white) !important;
+            outline: none;
+        }
+        .form-input-dark::placeholder {
+            color: rgba(255,255,255,0.25);
+        }
+        .form-select-dark {
+            background: var(--glass-bg) !important;
+            border: 1px solid var(--glass-border) !important;
+            color: var(--white) !important;
+            border-radius: 12px !important;
+            padding: 12px 16px !important;
+            font-size: 0.95rem;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='rgba(255,255,255,0.5)' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 14px center !important;
+            background-size: 14px 10px !important;
+            padding-right: 40px !important;
+        }
+        .form-select-dark:focus {
+            background: var(--glass-bg-hover) !important;
+            border-color: var(--red-border) !important;
+            box-shadow: 0 0 0 3px rgba(229,9,20,0.1) !important;
+            color: var(--white) !important;
+            outline: none;
+        }
+        .form-select-dark option {
+            background: var(--charcoal);
+            color: var(--white);
+        }
+        .form-label-dark {
+            color: var(--muted-white);
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 8px;
+        }
+
+        /* ===== MODAL STYLES ===== */
+        .modal-content-dark {
+            background: var(--charcoal);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
+            color: var(--white);
+        }
+        .modal-header-dark {
+            border-bottom: 1px solid var(--glass-border);
+            padding: 20px 24px;
+        }
+        .modal-header-dark .btn-close {
+            filter: invert(1);
+            opacity: 0.5;
+        }
+        .modal-header-dark .btn-close:hover { opacity: 1; }
+        .modal-body-dark { padding: 24px; }
+        .modal-footer-dark {
+            border-top: 1px solid var(--glass-border);
+            padding: 16px 24px;
+        }
+
+        /* ===== SECTION SPACING ===== */
+        .page-section {
+            padding: 80px 0;
+            position: relative;
+            z-index: 1;
+        }
+        .page-section:nth-child(even) {
+            background: linear-gradient(180deg, transparent 0%, rgba(229,9,20,0.02) 50%, transparent 100%);
+        }
+
+        /* ===== MOBILE MENU ===== */
+        .mobile-menu {
+            display: none;
+            flex-direction: column;
+            gap: 4px;
+            margin-top: 12px;
+            padding-top: 12px;
+            border-top: 1px solid var(--glass-border);
+            animation: slideDown 0.25s ease;
+        }
+        .mobile-menu.show {
+            display: flex;
+        }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .mobile-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--muted-white);
+            text-decoration: none;
+            font-size: 0.95rem;
+            font-weight: 500;
+            padding: 12px 16px;
+            border-radius: 12px;
+            transition: all 0.2s ease;
+        }
+        .mobile-link:hover, .mobile-link.active {
+            color: var(--white);
+            background: var(--red-glass);
+        }
+        .mobile-link i {
+            color: var(--primary-red);
+            font-size: 1.1rem;
+            width: 24px;
+        }
+        .mobile-cta {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            background: var(--primary-red);
+            color: var(--white);
+            font-weight: 700;
+            font-size: 0.95rem;
+            padding: 14px;
+            border-radius: 12px;
+            margin-top: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        .mobile-cta:hover {
+            background: var(--bright-red);
+        }
+
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 991px) {
+            .hero-section { padding: 100px 0 60px; }
+            .hero-title { font-size: 2.2rem; }
+            .plan-cards-container { grid-template-columns: repeat(2, 1fr); }
+            .how-steps { flex-direction: column; }
+            .how-arrow { transform: rotate(90deg); }
+            .floating-nav { width: calc(100% - 20px); padding: 10px 16px; }
+            .nav-links { display: none !important; }
+        }
+        @media (max-width: 576px) {
+            .purchase-console { padding: 20px; border-radius: 16px; }
+            .plan-cards-container { grid-template-columns: 1fr; }
+            .product-showcase-cards { grid-template-columns: 1fr; }
+            .success-console { padding: 32px 20px; }
+            .success-buttons { flex-direction: column; }
+            .btn-glass { width: 100%; justify-content: center; }
+            .footer-links { flex-direction: column; gap: 12px; }
+        }
+
+        /* ===== UTILITY ===== */
+        .text-red { color: var(--primary-red) !important; }
+        .bg-red-glass { background: var(--red-glass); }
+        .border-red { border-color: var(--red-border) !important; }
+        .d-none { display: none !important; }
+    </style>
+<base target="_self">
+<base target="_blank">
+</head>
+<body>
+    <!-- BACKGROUND ORBS -->
+    <div class="bg-gradient-orbs"></div>
+
+    <!-- FLOATING NAVBAR -->
+    <nav class="floating-nav" id="mainNav">
+        <div class="d-flex align-items-center justify-content-between">
+            <a class="nav-brand" href="javascript:void(0)" onclick="window.scrollTo({top:0,behavior:'smooth'});">
+                <img src="logo.jpg" alt="NovaEsp">NovaEsp
+            </a>
+            <div class="nav-links d-none d-lg-flex" id="navLinks">
+                <a class="nav-link-item" href="javascript:void(0)" onclick="showSection('admin-login');"><i class="bi bi-shield-lock me-1"></i>Admin</a>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <button class="nav-cta d-none d-lg-block" onclick="document.getElementById('purchase-console').scrollIntoView({behavior:'smooth',block:'center'});">Buy Now</button>
+                <button class="navbar-toggler-custom d-lg-none" id="menuToggle" onclick="toggleMobileMenu()">
+                    <i class="bi bi-list" id="menuIcon"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile Dropdown Menu -->
+        <div class="mobile-menu d-lg-none" id="mobileMenu">
+            <a class="mobile-link" href="javascript:void(0)" onclick="showSection('admin-login'); closeMobileMenu();">
+                <i class="bi bi-shield-lock"></i>Admin Login
+            </a>
+            <div class="mobile-cta" onclick="document.getElementById('purchase-console').scrollIntoView({behavior:'smooth',block:'center'}); closeMobileMenu();">
+                <i class="bi bi-cart3"></i>Buy Now
+            </div>
+        </div>
+    </nav>
+
+    <!-- ADMIN NAV (hidden by default) -->
+    <div class="floating-nav d-none" id="adminNav" style="top: 16px; z-index: 1001;">
+        <div class="d-flex align-items-center justify-content-between">
+            <a class="nav-brand" href="#" onclick="showSection('admin-dashboard'); return false;">
+                <img src="logo.jpg" alt="NovaEsp">NovaEsp Admin
+            </a>
+            <div class="nav-links d-none d-lg-flex">
+                <a class="nav-link-item" href="#" onclick="showSection('admin-dashboard'); return false;">Dashboard</a>
+                <a class="nav-link-item" href="#" onclick="showSection('admin-products'); return false;">Products</a>
+                <a class="nav-link-item" href="#" onclick="showSection('admin-durations'); return false;">Durations</a>
+                <a class="nav-link-item" href="#" onclick="showSection('admin-prices'); return false;">Prices</a>
+                <a class="nav-link-item" href="#" onclick="showSection('admin-keys'); return false;">Keys</a>
+                <a class="nav-link-item" href="#" onclick="showSection('admin-coupons'); return false;">Coupons</a>
+                <a class="nav-link-item" href="#" onclick="showSection('admin-orders'); return false;">Orders</a>
+                <a class="nav-link-item" href="#" onclick="showSection('admin-payments'); return false;">Settings</a>
+                <a class="nav-link-item text-danger" href="#" onclick="adminLogout(); return false;"><i class="bi bi-box-arrow-right me-1"></i>Logout</a>
+            </div>
+            <button class="navbar-toggler-custom d-lg-none" onclick="toggleAdminMobileMenu()">
+                <i class="bi bi-list" id="adminMenuIcon"></i>
+            </button>
+        </div>
+        <!-- Admin Mobile Dropdown Menu -->
+        <div class="mobile-menu d-lg-none" id="adminMobileMenu">
+            <a class="mobile-link" href="#" onclick="showSection('admin-dashboard'); closeAdminMobileMenu(); return false;"><i class="bi bi-speedometer2"></i>Dashboard</a>
+            <a class="mobile-link" href="#" onclick="showSection('admin-products'); closeAdminMobileMenu(); return false;"><i class="bi bi-box"></i>Products</a>
+            <a class="mobile-link" href="#" onclick="showSection('admin-durations'); closeAdminMobileMenu(); return false;"><i class="bi bi-clock"></i>Durations</a>
+            <a class="mobile-link" href="#" onclick="showSection('admin-prices'); closeAdminMobileMenu(); return false;"><i class="bi bi-tag"></i>Prices</a>
+            <a class="mobile-link" href="#" onclick="showSection('admin-keys'); closeAdminMobileMenu(); return false;"><i class="bi bi-key"></i>Keys</a>
+            <a class="mobile-link" href="#" onclick="showSection('admin-coupons'); closeAdminMobileMenu(); return false;"><i class="bi bi-ticket-perforated"></i>Coupons</a>
+            <a class="mobile-link" href="#" onclick="showSection('admin-orders'); closeAdminMobileMenu(); return false;"><i class="bi bi-cart"></i>Orders</a>
+            <a class="mobile-link" href="#" onclick="showSection('admin-payments'); closeAdminMobileMenu(); return false;"><i class="bi bi-gear"></i>Settings</a>
+            <a class="mobile-link text-danger" href="#" onclick="adminLogout(); closeAdminMobileMenu(); return false;"><i class="bi bi-box-arrow-right"></i>Logout</a>
+        </div>
+    </div>
+
+    <!-- ===== HOME / STORE SECTION ===== -->
+    <div id="home" class="section">
+        <section class="hero-section">
+            <div class="container">
+                <div class="row align-items-center g-5">
+                    <!-- LEFT: Hero Text -->
+                    <div class="col-lg-6">
+                        <h1 class="hero-title">NovaEsp<br><span>Online Store</span></h1>
+                        <p class="hero-subtitle">Instant delivery. Secure payment. Simple activation. Get your license keys in seconds with our online store.</p>
+                        <div class="trust-indicators">
+                            <div class="trust-item"><i class="bi bi-lightning-charge-fill"></i>Instant Delivery</div>
+                            <div class="trust-item"><i class="bi bi-shield-check"></i>Secure Payment</div>
+                            <div class="trust-item"><i class="bi bi-check-circle-fill"></i>Auto Delivery</div>
+                        </div>
+                    </div>
+                    <!-- RIGHT: Purchase Console -->
+                    <div class="col-lg-6">
+                        <div class="purchase-console" id="purchase-console">
+                            <div class="console-title">Build Your Order</div>
+                            <div class="console-subtitle">Select a product and plan to get started</div>
+
+                            <!-- STEP 01: SELECT PRODUCT -->
+                            <span class="step-label">STEP 01 — SELECT PRODUCT</span>
+                            <select class="form-select-dark w-100 mb-3" id="productSelect" onchange="onProductChange()">
+                                <option value="">Select Product</option>
+                            </select>
+
+                            <!-- STEP 02: SELECT PLAN -->
+                            <span class="step-label">STEP 02 — SELECT PLAN</span>
+                            <div class="plan-cards-container" id="planCardsContainer">
+                                <!-- Dynamically populated -->
+                            </div>
+                            <select class="form-select-dark w-100 d-none" id="durationSelect" onchange="onDurationChange()">
+                                <option value="">Select Duration</option>
+                            </select>
+
+                            <!-- STEP 03: COUPON -->
+                            <div class="mt-3">
+                                <div class="coupon-toggle" onclick="document.getElementById('couponExpand').classList.toggle('show')">
+                                    <i class="bi bi-ticket-perforated"></i>
+                                    <span>Have a coupon?</span>
+                                    <i class="bi bi-chevron-down ms-auto"></i>
+                                </div>
+                                <div class="coupon-expand" id="couponExpand">
+                                    <input type="text" class="form-input-dark flex-grow-1" id="couponInput" placeholder="Enter coupon code" style="border-radius: 12px;">
+                                    <button class="btn-glass" onclick="applyCoupon()" style="white-space: nowrap;">Apply</button>
+                                </div>
+                                <div id="couponMsg" class="mt-2 small"></div>
+                            </div>
+
+                            <!-- STEP 04: ORDER SUMMARY -->
+                            <div class="order-summary-box d-none" id="orderSummaryBox">
+                                <div class="os-row"><span class="os-label">Product</span><span class="os-value" id="osProduct">-</span></div>
+                                <div class="os-row"><span class="os-label">Plan</span><span class="os-value" id="osPlan">-</span></div>
+                                <div class="os-row"><span class="os-label">Subtotal</span><span class="os-value" id="osSubtotal">₹0</span></div>
+                                <div id="totalDisplay"></div>
+                            </div>
+
+                            <button class="btn-buy-now" id="purchaseBtn" onclick="initiatePayment()" disabled>
+                                <i class="bi bi-credit-card"></i>BUY NOW →
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        
+    </div>
+
+
+
+
+
+
+
+
+
+
+
+    <!-- ===== STICKY ORDER SUMMARY (BOTTOM) ===== -->
+    <div class="sticky-summary d-none" id="stickySummary">
+        <div class="sticky-summary-info">
+            <div class="ss-text">
+                <span id="ssProduct">-</span> • <span id="ssPlan">-</span>
+            </div>
+            <div class="ss-price" id="ssTotal">₹0</div>
+        </div>
+        <button class="btn-buy-now-sm" onclick="initiatePayment()">BUY NOW →</button>
+    </div>
+
+    <!-- ===== ADMIN LOGIN ===== -->
+    <div id="admin-login" class="section d-none">
+        <div class="admin-section">
+            <div class="container d-flex align-items-center justify-content-center" style="min-height:calc(100vh - 80px);">
+                <div class="row justify-content-center w-100">
+                    <div class="col-md-5 col-lg-4">
+                        <div class="purchase-console text-center" style="max-width:400px;margin:0 auto;">
+                            <div class="success-icon" style="width:64px;height:64px;font-size:1.8rem;margin-bottom:20px;">
+                                <i class="bi bi-shield-lock"></i>
+                            </div>
+                            <h2 style="font-weight:800;margin-bottom:4px;color:var(--white);">Admin Login</h2>
+                            <p style="color:var(--muted-white);font-size:0.9rem;margin-bottom:24px;">Secure access to management panel</p>
+                            <div class="mb-3">
+                                <label class="form-label-dark">Username</label>
+                                <input type="text" class="form-input-dark w-100" id="adminUser" placeholder="Enter username">
+                            </div>
+                            <div class="mb-4">
+                                <label class="form-label-dark">Password</label>
+                                <input type="password" class="form-input-dark w-100" id="adminPass" placeholder="Enter password">
+                            </div>
+                            <button class="btn-buy-now" onclick="adminLogin()">
+                                <i class="bi bi-box-arrow-in-right"></i>Login
+                            </button>
+                            <button class="btn-glass w-100 mt-2" onclick="showSection('home')">
+                                <i class="bi bi-arrow-left"></i>Back to Store
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== SUCCESS PAGE ===== -->
+    <div id="success-page" class="section d-none">
+        <div class="admin-section">
+            <div class="container py-5">
+                <div class="success-console">
+                    <div class="success-icon">
+                        <i class="bi bi-check-lg"></i>
+                    </div>
+                    <h2 class="success-title">Payment Successful</h2>
+                    <p class="success-subtitle">Your license key is ready</p>
+
+                    <div class="success-details">
+                        <p><span class="sd-label">Order ID</span><span class="sd-value" id="successOrderId"></span></p>
+                        <p><span class="sd-label">Product</span><span class="sd-value" id="successProduct"></span></p>
+                        <p><span class="sd-label">Duration</span><span class="sd-value" id="successDuration"></span></p>
+                        <p><span class="sd-label">Amount Paid</span><span class="sd-value" id="successAmount"></span></p>
+                    </div>
+
+                    <div class="key-display-box">
+                        <div class="kd-label">Your License Key</div>
+                        <div class="kd-value" id="successKey"></div>
+                    </div>
+
+                    <!-- APK Download -->
+                    <div class="mb-4" id="apkDownloadCard" style="display:none;">
+                        <div style="background:var(--charcoal);border:1px solid var(--glass-border);border-radius:16px;padding:20px;">
+                            <div class="d-flex align-items-center gap-3 mb-3">
+                                <img src="logo.jpg" alt="App" style="width:48px;height:48px;border-radius:12px;object-fit:cover;">
+                                <div class="text-start">
+                                    <div style="font-weight:700;color:var(--white);">Download APK</div>
+                                    <div style="font-size:0.8rem;color:var(--muted-white);">Get the latest Android app</div>
+                                </div>
+                            </div>
+                            <a id="apkDownloadBtn" href="#" target="_blank" class="btn-glass btn-glass-primary w-100" style="text-decoration:none;">
+                                <i class="bi bi-download"></i>Download APK
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="success-buttons">
+                        <button class="btn-glass" onclick="copyKey()">
+                            <i class="bi bi-clipboard"></i>Copy Key
+                        </button>
+                        <button class="btn-glass" onclick="downloadInvoice()">
+                            <i class="bi bi-receipt"></i>Invoice
+                        </button>
+                        <a href="#" class="btn-glass btn-glass-primary" onclick="showSection('home'); window.scrollTo({top:0,behavior:'smooth'}); return false;" style="text-decoration:none;">
+                            <i class="bi bi-cart-plus"></i>Buy Another
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ADMIN DASHBOARD ===== -->
+    <div id="admin-dashboard" class="section d-none">
+        <div class="admin-section">
+            <div class="container-fluid p-4">
+                <h2 class="section-heading mb-4">Dashboard</h2>
+                <div class="row g-4 mb-4">
+                    <div class="col-md-4">
+                        <div class="admin-stat-card">
+                            <div class="stat-num" id="dashTotalOrders">0</div>
+                            <div class="stat-label">Total Orders</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="admin-stat-card">
+                            <div class="stat-num" id="dashTotalSales">0</div>
+                            <div class="stat-label">Total Sales</div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="admin-stat-card">
+                            <div class="stat-num" id="dashRevenue">₹0</div>
+                            <div class="stat-label">Revenue</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="admin-card">
+                    <div class="admin-card-header"><h5><i class="bi bi-clock-history me-2"></i>Recent Orders</h5></div>
+                    <div class="p-0">
+                        <table class="admin-table w-100">
+                            <thead><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Status</th></tr></thead>
+                            <tbody id="recentOrdersTable"><tr><td colspan="5" class="text-center" style="padding:40px;color:var(--muted-white);">Loading...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ADMIN PRODUCTS ===== -->
+    <div id="admin-products" class="section d-none">
+        <div class="admin-section">
+            <div class="container-fluid p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="section-heading mb-0">Product Management</h2>
+                    <button class="btn-glass btn-glass-primary" onclick="openProductModal()">
+                        <i class="bi bi-plus-lg me-1"></i>Add Product
+                    </button>
+                </div>
+                <div class="admin-card">
+                    <div class="p-0">
+                        <table class="admin-table w-100">
+                            <thead><tr><th>Product Name</th><th>Status</th><th>Actions</th></tr></thead>
+                            <tbody id="productsTable"><tr><td colspan="3" class="text-center" style="padding:40px;color:var(--muted-white);">Loading...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ADMIN DURATIONS ===== -->
+    <div id="admin-durations" class="section d-none">
+        <div class="admin-section">
+            <div class="container-fluid p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="section-heading mb-0">Duration Management</h2>
+                    <button class="btn-glass btn-glass-primary" onclick="openDurationModal()">
+                        <i class="bi bi-plus-lg me-1"></i>Add Duration
+                    </button>
+                </div>
+                <div class="admin-card">
+                    <div class="p-0">
+                        <table class="admin-table w-100">
+                            <thead><tr><th>Product</th><th>Duration</th><th>Unit</th><th>Actions</th></tr></thead>
+                            <tbody id="durationsTable"><tr><td colspan="4" class="text-center" style="padding:40px;color:var(--muted-white);">Loading...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ADMIN PRICES ===== -->
+    <div id="admin-prices" class="section d-none">
+        <div class="admin-section">
+            <div class="container-fluid p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="section-heading mb-0">Price Management</h2>
+                    <button class="btn-glass btn-glass-primary" onclick="openPriceModal()">
+                        <i class="bi bi-plus-lg me-1"></i>Set Price
+                    </button>
+                </div>
+                <div class="admin-card">
+                    <div class="p-0">
+                        <table class="admin-table w-100">
+                            <thead><tr><th>Product</th><th>Duration</th><th>Price</th><th>Actions</th></tr></thead>
+                            <tbody id="pricesTable"><tr><td colspan="4" class="text-center" style="padding:40px;color:var(--muted-white);">Loading...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ADMIN LICENSE KEYS ===== -->
+    <div id="admin-keys" class="section d-none">
+        <div class="admin-section">
+            <div class="container-fluid p-4">
+                <h2 class="section-heading mb-4">License Key Management</h2>
+
+                <!-- STOCK SUMMARY -->
+                <div class="admin-card mb-4">
+                    <div class="admin-card-header"><h5><i class="bi bi-box-seam me-2"></i>Stock Summary</h5></div>
+                    <div class="card-body p-4">
+                        <div class="row g-3" id="stockSummaryCards">
+                            <div class="col-12 text-center" style="color:var(--muted-white);padding:40px;">Loading stock data...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- IMPORT KEYS -->
+                <div class="admin-card mb-4">
+                    <div class="admin-card-header"><h5><i class="bi bi-upload me-2"></i>Import Keys</h5></div>
+                    <div class="card-body p-4">
+                        <div class="row g-3">
+                            <div class="col-md-4">
+                                <label class="form-label-dark">Select Product</label>
+                                <select class="form-select-dark w-100" id="keyProduct" onchange="onKeyProductChange()"><option value="">Select Product</option></select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label-dark">Select Duration</label>
+                                <select class="form-select-dark w-100" id="keyDuration"><option value="">Select Duration</option></select>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label-dark">Add Single Key</label>
+                                <div class="d-flex gap-2">
+                                    <input type="text" class="form-input-dark flex-grow-1" id="singleKeyInput" placeholder="Enter key">
+                                    <button class="btn-glass" onclick="addSingleKey()">Add</button>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <label class="form-label-dark">Paste keys (one per line)</label>
+                            <textarea class="form-input-dark w-100" id="keysTextarea" rows="4" placeholder="Paste keys here (one per line)"></textarea>
+                            <button class="btn-glass btn-glass-primary mt-2" onclick="importKeys()">
+                                <i class="bi bi-upload me-1"></i>Import Keys
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <ul class="nav nav-tabs mb-3" style="border-bottom:1px solid var(--glass-border);">
+                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#activeKeys" style="color:var(--white);border:none;background:var(--red-glass);border-radius:10px 10px 0 0;">Active Keys</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#usedKeys" style="color:var(--muted-white);border:none;background:transparent;border-radius:10px 10px 0 0;">Used Keys</a></li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="activeKeys">
+                        <div class="admin-card"><div class="p-0">
+                            <table class="admin-table w-100">
+                                <thead><tr><th>Product</th><th>Duration</th><th>Key</th><th>Added</th><th>Actions</th></tr></thead>
+                                <tbody id="activeKeysTable"><tr><td colspan="5" class="text-center" style="padding:40px;color:var(--muted-white);">Loading...</td></tr></tbody>
+                            </table>
+                        </div></div>
+                    </div>
+                    <div class="tab-pane fade" id="usedKeys">
+                        <div class="admin-card"><div class="p-0">
+                            <table class="admin-table w-100">
+                                <thead><tr><th>Product</th><th>Duration</th><th>Key</th><th>Used Date</th><th>Actions</th></tr></thead>
+                                <tbody id="usedKeysTable"><tr><td colspan="5" class="text-center" style="padding:40px;color:var(--muted-white);">Loading...</td></tr></tbody>
+                            </table>
+                        </div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ADMIN COUPONS ===== -->
+    <div id="admin-coupons" class="section d-none">
+        <div class="admin-section">
+            <div class="container-fluid p-4">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h2 class="section-heading mb-0">Coupon Management</h2>
+                    <button class="btn-glass btn-glass-primary" onclick="openCouponModal()">
+                        <i class="bi bi-plus-lg me-1"></i>Create Coupon
+                    </button>
+                </div>
+                <div class="admin-card">
+                    <div class="p-0">
+                        <table class="admin-table w-100">
+                            <thead><tr><th>Code</th><th>Discount</th><th>Min Order</th><th>Expiry</th><th>Actions</th></tr></thead>
+                            <tbody id="couponsTable"><tr><td colspan="5" class="text-center" style="padding:40px;color:var(--muted-white);">Loading...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ADMIN ORDERS ===== -->
+    <div id="admin-orders" class="section d-none">
+        <div class="admin-section">
+            <div class="container-fluid p-4">
+                <h2 class="section-heading mb-4">Order Management</h2>
+                <div class="mb-3">
+                    <input type="text" class="form-input-dark w-100" id="orderSearch" placeholder="Search orders..." onkeyup="searchOrders()">
+                </div>
+                <ul class="nav nav-tabs mb-3" style="border-bottom:1px solid var(--glass-border);">
+                    <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#paidOrders" style="color:var(--white);border:none;background:var(--red-glass);border-radius:10px 10px 0 0;">Paid Orders</a></li>
+                    <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#failedOrders" style="color:var(--muted-white);border:none;background:transparent;border-radius:10px 10px 0 0;">Failed Orders</a></li>
+                </ul>
+                <div class="tab-content">
+                    <div class="tab-pane fade show active" id="paidOrders">
+                        <div class="admin-card"><div class="p-0">
+                            <table class="admin-table w-100">
+                                <thead><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Key</th><th>Date</th></tr></thead>
+                                <tbody id="paidOrdersTable"><tr><td colspan="6" class="text-center" style="padding:40px;color:var(--muted-white);">Loading...</td></tr></tbody>
+                            </table>
+                        </div></div>
+                    </div>
+                    <div class="tab-pane fade" id="failedOrders">
+                        <div class="admin-card"><div class="p-0">
+                            <table class="admin-table w-100">
+                                <thead><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Key</th><th>Date</th></tr></thead>
+                                <tbody id="failedOrdersTable"><tr><td colspan="6" class="text-center" style="padding:40px;color:var(--muted-white);">Loading...</td></tr></tbody>
+                            </table>
+                        </div></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== ADMIN PAYMENT SETTINGS ===== -->
+    <div id="admin-payments" class="section d-none">
+        <div class="admin-section">
+            <div class="container-fluid p-4">
+                <h2 class="section-heading mb-4">Payment & Admin Settings</h2>
+                <div class="row g-4">
+                    <div class="col-md-6">
+                        <div class="admin-card">
+                            <div class="admin-card-header"><h5><i class="bi bi-credit-card me-2"></i>Razorpay</h5></div>
+                            <div class="card-body p-4">
+                                <div class="mb-3">
+                                    <label class="form-label-dark">Razorpay Key ID</label>
+                                    <input type="text" class="form-input-dark w-100" id="rzpKeyId" placeholder="rzp_test_...">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="admin-card" style="border-color:var(--red-border);">
+                            <div class="admin-card-header"><h5><i class="bi bi-shield-lock me-2"></i>Admin Credentials</h5></div>
+                            <div class="card-body p-4">
+                                <div class="mb-3">
+                                    <label class="form-label-dark">Username</label>
+                                    <input type="text" class="form-input-dark w-100" id="adminUsername" placeholder="admin">
+                                </div>
+                                <div class="mb-3">
+                                    <label class="form-label-dark">Password</label>
+                                    <input type="password" class="form-input-dark w-100" id="adminPassword" placeholder="••••••">
+                                </div>
+                                <div class="alert" style="background:var(--red-glass);border:1px solid var(--red-border);color:var(--primary-red);padding:10px 14px;border-radius:10px;font-size:0.85rem;">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>Stored as plain text. Use strong values.
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row g-4 mt-2">
+                    <div class="col-md-6">
+                        <div class="admin-card" style="border-color:rgba(59,130,246,0.3);">
+                            <div class="admin-card-header"><h5><i class="bi bi-phone me-2"></i>APK Download Settings</h5></div>
+                            <div class="card-body p-4">
+                                <div class="mb-3">
+                                    <label class="form-label-dark">GitHub APK Download URL</label>
+                                    <input type="url" class="form-input-dark w-100" id="apkUrl" placeholder="https://github.com/.../app.apk">
+                                    <div class="form-text" style="color:var(--muted-white);font-size:0.8rem;margin-top:6px;">Paste the GitHub release APK link here.</div>
+                                </div>
+                                <div class="mb-0" id="apkPreviewBox" style="display:none;">
+                                    <label class="form-label-dark">Current APK Link</label>
+                                    <div class="d-flex gap-2">
+                                        <input type="text" class="form-input-dark flex-grow-1" id="apkUrlPreview" readonly>
+                                        <a id="apkUrlLink" href="#" target="_blank" class="btn-glass"><i class="bi bi-box-arrow-up-right"></i></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <button class="btn-glass btn-glass-primary mt-4" onclick="savePaymentSettings()">
+                    <i class="bi bi-save me-1"></i>Save All Settings
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- ===== MODALS ===== -->
+    <div class="modal fade" id="productModal">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-dark">
+                <div class="modal-header modal-header-dark">
+                    <h5 class="modal-title" id="productModalTitle" style="font-weight:700;color:var(--white);">Add Product</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body modal-body-dark">
+                    <input type="hidden" id="productEditId">
+                    <div class="mb-3">
+                        <label class="form-label-dark">Product Name</label>
+                        <input type="text" class="form-input-dark w-100" id="productName">
+                    </div>
+                    <div class="form-check">
+                        <input class="form-check-input" type="checkbox" id="productEnabled" checked style="background:var(--charcoal);border-color:var(--glass-border);">
+                        <label class="form-check-label" style="color:var(--muted-white);font-size:0.9rem;">Enabled</label>
+                    </div>
+                </div>
+                <div class="modal-footer modal-footer-dark">
+                    <button class="btn-glass" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn-glass btn-glass-primary" onclick="saveProduct()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="durationModal">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-dark">
+                <div class="modal-header modal-header-dark">
+                    <h5 class="modal-title" id="durationModalTitle" style="font-weight:700;color:var(--white);">Add Duration</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body modal-body-dark">
+                    <input type="hidden" id="durationEditId">
+                    <div class="mb-3">
+                        <label class="form-label-dark">Select Product</label>
+                        <select class="form-select-dark w-100" id="durationProduct"><option value="">Select Product</option></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label-dark">Duration Name</label>
+                        <input type="text" class="form-input-dark w-100" id="durationName" placeholder="e.g. 30">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label-dark">Time Unit</label>
+                        <select class="form-select-dark w-100" id="durationUnit">
+                            <option value="hours">Hours</option>
+                            <option value="days">Days</option>
+                            <option value="weeks">Weeks</option>
+                            <option value="months">Months</option>
+                            <option value="years">Years</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="modal-footer modal-footer-dark">
+                    <button class="btn-glass" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn-glass btn-glass-primary" onclick="saveDuration()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="priceModal">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-dark">
+                <div class="modal-header modal-header-dark">
+                    <h5 class="modal-title" id="priceModalTitle" style="font-weight:700;color:var(--white);">Set Price</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body modal-body-dark">
+                    <input type="hidden" id="priceEditId">
+                    <div class="mb-3">
+                        <label class="form-label-dark">Product</label>
+                        <select class="form-select-dark w-100" id="priceProduct" onchange="onPriceProductChange()"><option value="">Select Product</option></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label-dark">Duration</label>
+                        <select class="form-select-dark w-100" id="priceDuration"><option value="">Select Duration</option></select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label-dark">Price (₹)</label>
+                        <input type="number" class="form-input-dark w-100" id="priceValue" min="1">
+                    </div>
+                </div>
+                <div class="modal-footer modal-footer-dark">
+                    <button class="btn-glass" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn-glass btn-glass-primary" onclick="savePrice()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="couponModal">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content modal-content-dark">
+                <div class="modal-header modal-header-dark">
+                    <h5 class="modal-title" style="font-weight:700;color:var(--white);">Create Coupon</h5>
+                    <button class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body modal-body-dark">
+                    <div class="mb-3">
+                        <label class="form-label-dark">Coupon Code</label>
+                        <input type="text" class="form-input-dark w-100" id="couponCode" placeholder="SAVE20">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label-dark">Type</label>
+                        <select class="form-select-dark w-100" id="couponType">
+                            <option value="percentage">Percentage (%)</option>
+                            <option value="fixed">Fixed Amount (₹)</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label-dark">Value</label>
+                        <input type="number" class="form-input-dark w-100" id="couponValue" min="1">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label-dark">Min Order Value (₹)</label>
+                        <input type="number" class="form-input-dark w-100" id="couponMinOrder" min="0" placeholder="0 = Any amount">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label-dark">Expiry Date (Optional)</label>
+                        <input type="date" class="form-input-dark w-100" id="couponExpiry">
+                    </div>
+                </div>
+                <div class="modal-footer modal-footer-dark">
+                    <button class="btn-glass" data-bs-dismiss="modal">Cancel</button>
+                    <button class="btn-glass btn-glass-primary" onclick="saveCoupon()">Create</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
