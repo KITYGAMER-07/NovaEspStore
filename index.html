@@ -1093,55 +1093,193 @@ Thank you for your purchase!
         });
     </script>
     <style>
-        body { background: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
-        .navbar { box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        .card { border: none; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
-        .purchase-card { max-width: 500px; margin: 0 auto; }
-        .btn-primary { border-radius: 10px; padding: 12px 30px; font-weight: 600; }
-        .form-select, .form-control { border-radius: 10px; padding: 12px; }
-        .price-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; padding: 20px; text-align: center; }
-        .success-box { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; border-radius: 16px; padding: 40px; text-align: center; }
-        .key-display { background: rgba(255,255,255,0.2); border-radius: 10px; padding: 15px; font-family: monospace; font-size: 1.2rem; word-break: break-all; }
-        .stat-card { background: white; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
-        .stat-number { font-size: 2rem; font-weight: 700; color: #0d6efd; }
-        .admin-sidebar { min-height: calc(100vh - 56px); background: #1a1a2e; color: white; }
-        .admin-sidebar .nav-link { color: rgba(255,255,255,0.7); padding: 12px 20px; border-radius: 8px; margin: 2px 10px; }
-        .admin-sidebar .nav-link:hover, .admin-sidebar .nav-link.active { background: rgba(255,255,255,0.1); color: white; }
-        .section-title { font-weight: 700; margin-bottom: 20px; color: #1a1a2e; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
-        /* === USER PANEL DARK THEME - UI REFERENCE MATCH === */
-        #home, #faq, #contact, #success-page, #admin-login {
-            background: linear-gradient(180deg, #0d1a1a 0%, #0a0a0f 50%, #1a0a0a 100%);
-            min-height: 100vh;
+        body { 
+            background: #0a0a0a; 
+            font-family: 'Inter', 'Segoe UI', sans-serif; 
+            color: #e0e0e0;
         }
 
+        /* ===== GLOBAL GLASSMORPHISM ===== */
+        .glass {
+            background: rgba(20, 0, 0, 0.4) !important;
+            backdrop-filter: blur(24px) saturate(180%);
+            -webkit-backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(220, 38, 38, 0.15) !important;
+            box-shadow: 
+                0 8px 32px rgba(0, 0, 0, 0.5),
+                inset 0 1px 0 rgba(255, 255, 255, 0.05),
+                0 0 60px rgba(220, 38, 38, 0.05) !important;
+        }
+
+        .glass-strong {
+            background: rgba(30, 0, 0, 0.6) !important;
+            backdrop-filter: blur(32px) saturate(200%);
+            -webkit-backdrop-filter: blur(32px) saturate(200%);
+            border: 1px solid rgba(220, 38, 38, 0.2) !important;
+            box-shadow: 
+                0 12px 40px rgba(0, 0, 0, 0.6),
+                inset 0 1px 0 rgba(255, 255, 255, 0.08),
+                0 0 80px rgba(220, 38, 38, 0.08) !important;
+        }
+
+        /* ===== NAVBAR ===== */
+        .navbar { 
+            background: rgba(10, 0, 0, 0.85) !important;
+            backdrop-filter: blur(20px) saturate(150%);
+            -webkit-backdrop-filter: blur(20px) saturate(150%);
+            border-bottom: 1px solid rgba(220, 38, 38, 0.2);
+            box-shadow: 0 4px 30px rgba(0,0,0,0.4), 0 0 40px rgba(220, 38, 38, 0.05);
+        }
+
+        .navbar-brand {
+            color: #fff !important;
+            font-weight: 800;
+            letter-spacing: 1px;
+            font-size: 1.3rem;
+            text-shadow: 0 0 20px rgba(220, 38, 38, 0.5);
+        }
+
+        .navbar-brand img {
+            border-radius: 10px !important;
+            box-shadow: 0 0 15px rgba(220, 38, 38, 0.3);
+        }
+
+        .nav-link {
+            color: rgba(255,255,255,0.6) !important;
+            font-weight: 500;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-link:hover {
+            color: #ef4444 !important;
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
+        }
+
+        .nav-link::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #ef4444, transparent);
+            transition: all 0.3s ease;
+            transform: translateX(-50%);
+        }
+
+        .nav-link:hover::after {
+            width: 80%;
+        }
+
+        /* ===== DROPDOWN ===== */
+        .dropdown-menu {
+            background: rgba(15, 0, 0, 0.95) !important;
+            backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(220, 38, 38, 0.2);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 40px rgba(220, 38, 38, 0.08);
+        }
+
+        .dropdown-item {
+            color: rgba(255,255,255,0.7);
+            border-radius: 10px;
+            margin: 3px 10px;
+            padding: 10px 16px;
+            transition: all 0.2s ease;
+        }
+
+        .dropdown-item:hover {
+            background: rgba(220, 38, 38, 0.15) !important;
+            color: #fff;
+        }
+
+        .dropdown-divider {
+            border-color: rgba(220, 38, 38, 0.15);
+        }
+
+        /* ===== SECTION BACKGROUNDS ===== */
+        #home, #faq, #contact, #success-page, #admin-login {
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(139, 0, 0, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(220, 38, 38, 0.08) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(30, 0, 0, 0.3) 0%, transparent 70%),
+                linear-gradient(180deg, #0a0a0a 0%, #0d0000 30%, #0a0a0a 70%, #0d0000 100%);
+            min-height: 100vh;
+            position: relative;
+        }
+
+        #home::before, #faq::before, #contact::before, #success-page::before, #admin-login::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: 
+                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23dc2626' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        #home .container, #faq .container, #contact .container, #success-page .container, #admin-login .container {
+            position: relative;
+            z-index: 1;
+        }
+
+        /* ===== HOME PURCHASE CARD ===== */
         #home .purchase-card {
-            background: rgba(15, 23, 42, 0.85) !important;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.08) !important;
+            background: rgba(20, 0, 0, 0.5) !important;
+            margin: 0 auto;
+            backdrop-filter: blur(30px) saturate(180%);
+            -webkit-backdrop-filter: blur(30px) saturate(180%);
+            border: 1px solid rgba(220, 38, 38, 0.2) !important;
             border-radius: 24px !important;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05) !important;
+            box-shadow: 
+                0 8px 32px rgba(0,0,0,0.5),
+                inset 0 1px 0 rgba(255,255,255,0.05),
+                0 0 60px rgba(220, 38, 38, 0.06) !important;
             max-width: 420px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #home .purchase-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(220, 38, 38, 0.08) 0%, transparent 70%);
+            pointer-events: none;
         }
 
         #home .purchase-card .card-body {
             padding: 32px !important;
+            position: relative;
+            z-index: 1;
         }
 
         #home .purchase-card h4 {
             color: #fff;
             font-size: 1.5rem;
-            font-weight: 700;
+            font-weight: 800;
             letter-spacing: -0.5px;
+            text-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
         }
 
         #home .purchase-card h4 i {
-            color: #10b981;
+            color: #ef4444;
+            text-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
         }
 
-        #home .form-label {
-            color: rgba(255,255,255,0.5);
+        /* ===== FORM ELEMENTS ===== */
+        #home .form-label, #contact .form-label, #admin-login .form-label {
+            color: rgba(255,255,255,0.4);
             font-size: 0.7rem;
             font-weight: 600;
             text-transform: uppercase;
@@ -1149,18 +1287,20 @@ Thank you for your purchase!
             margin-bottom: 8px;
         }
 
-        #home .form-select, #home .form-control {
-            background: rgba(255,255,255,0.05) !important;
-            border: 1px solid rgba(255,255,255,0.1) !important;
+        #home .form-select, #home .form-control,
+        #contact .form-control, #admin-login .form-control {
+            background: rgba(255,255,255,0.04) !important;
+            border: 1px solid rgba(220, 38, 38, 0.15) !important;
             color: #fff !important;
             border-radius: 14px !important;
             padding: 14px 16px !important;
             font-size: 0.95rem;
             font-weight: 500;
+            transition: all 0.3s ease;
         }
 
         #home .form-select {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='rgba(255,255,255,0.5)' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='%23ef4444' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
             background-repeat: no-repeat !important;
             background-position: right 16px center !important;
             background-size: 16px 12px !important;
@@ -1170,15 +1310,25 @@ Thank you for your purchase!
             appearance: none !important;
         }
 
-        #home .form-select:focus, #home .form-control:focus {
-            background: rgba(255,255,255,0.08) !important;
-            border-color: rgba(16, 185, 129, 0.4) !important;
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+        #home .form-select:focus, #home .form-control:focus,
+        #contact .form-control:focus, #admin-login .form-control:focus {
+            background: rgba(255,255,255,0.06) !important;
+            border-color: rgba(239, 68, 68, 0.5) !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1), 0 0 20px rgba(239, 68, 68, 0.1) !important;
+            outline: none;
         }
 
         #home .form-select option {
-            background: #0f172a;
+            background: #1a0505;
             color: #fff;
+        }
+
+        #home .form-select, #home .form-select:focus {
+            color: #fff !important;
+        }
+
+        #home .form-select option:first-child {
+            color: rgba(255,255,255,0.5);
         }
 
         #home .form-select:disabled {
@@ -1186,96 +1336,127 @@ Thank you for your purchase!
             color: rgba(255,255,255,0.3) !important;
         }
 
+        #contact .form-control::placeholder, #admin-login .form-control::placeholder {
+            color: rgba(255,255,255,0.2);
+        }
+
+        #home .form-control::placeholder {
+            color: rgba(255,255,255,0.5) !important;
+        }
+
+        #home .form-control::-webkit-input-placeholder {
+            color: rgba(255,255,255,0.5) !important;
+        }
+
+        #home .form-control::-moz-placeholder {
+            color: rgba(255,255,255,0.5) !important;
+        }
+
+        #home .form-control:-ms-input-placeholder {
+            color: rgba(255,255,255,0.5) !important;
+        }
+
+        /* ===== BUTTONS ===== */
         #home #purchaseBtn {
-            background: #fff !important;
-            color: #0a0a0f !important;
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%) !important;
+            color: #fff !important;
             border: none !important;
             border-radius: 50px !important;
             padding: 16px 30px !important;
             font-weight: 700;
             font-size: 1rem;
-            letter-spacing: 0.3px;
+            letter-spacing: 0.5px;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(255,255,255,0.15) !important;
+            box-shadow: 
+                0 4px 20px rgba(220, 38, 38, 0.3),
+                0 0 30px rgba(220, 38, 38, 0.1) !important;
+            position: relative;
+            overflow: hidden;
+        }
+
+        #home #purchaseBtn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s ease;
+        }
+
+        #home #purchaseBtn:hover:not(:disabled)::before {
+            left: 100%;
         }
 
         #home #purchaseBtn:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(255,255,255,0.25) !important;
+            box-shadow: 
+                0 8px 30px rgba(220, 38, 38, 0.4),
+                0 0 40px rgba(220, 38, 38, 0.15) !important;
         }
 
         #home #purchaseBtn:disabled {
-            background: rgba(255,255,255,0.1) !important;
+            background: rgba(255,255,255,0.05) !important;
             color: rgba(255,255,255,0.3) !important;
             box-shadow: none !important;
         }
 
-        #home .btn-outline-primary {
-            border-color: rgba(255,255,255,0.2) !important;
+        #home .btn-outline-primary, .coupon-apply-btn {
+            border-color: rgba(220, 38, 38, 0.3) !important;
             color: rgba(255,255,255,0.7) !important;
-            border-radius: 12px !important;
-        }
-
-        #home .btn-outline-primary:hover {
-            background: rgba(255,255,255,0.1) !important;
-            border-color: rgba(255,255,255,0.3) !important;
-            color: #fff !important;
-        }
-
-        #home .coupon-apply-btn {
-            background: transparent !important;
-            border: 1.5px solid rgba(255,255,255,0.15) !important;
-            color: rgba(255,255,255,0.6) !important;
             border-radius: 14px !important;
-            padding: 12px !important;
-            font-weight: 500;
+            background: rgba(220, 38, 38, 0.05) !important;
             transition: all 0.3s ease;
         }
 
-        #home .coupon-apply-btn:hover {
-            background: rgba(255,255,255,0.08) !important;
-            border-color: rgba(255,255,255,0.25) !important;
+        #home .btn-outline-primary:hover, .coupon-apply-btn:hover {
+            background: rgba(220, 38, 38, 0.15) !important;
+            border-color: rgba(220, 38, 38, 0.5) !important;
             color: #fff !important;
+            box-shadow: 0 0 15px rgba(220, 38, 38, 0.1);
         }
 
+        /* ===== TOTAL DISPLAY ===== */
         #home #totalDisplay {
             color: #fff;
         }
 
         #home #totalDisplay .h3 {
-            color: #10b981 !important;
+            color: #ef4444 !important;
+            text-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
         }
 
         #home #totalDisplay .text-muted {
-            color: rgba(255,255,255,0.4) !important;
+            color: rgba(255,255,255,0.3) !important;
         }
 
         #home #totalDisplay .text-success {
-            color: #34d399 !important;
+            color: #f87171 !important;
         }
 
-        /* Trust badge */
+        /* ===== TRUST BADGE ===== */
         .trust-badge {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 8px;
-            color: rgba(255,255,255,0.4);
+            color: rgba(255,255,255,0.3);
             font-size: 0.8rem;
             margin-top: 16px;
         }
 
         .trust-badge i {
-            color: #10b981;
+            color: #ef4444;
         }
 
-        /* Telegram button */
+        /* ===== TELEGRAM BUTTON ===== */
         .telegram-btn {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(220, 38, 38, 0.08);
+            border: 1px solid rgba(220, 38, 38, 0.2);
             color: rgba(255,255,255,0.6);
             padding: 10px 24px;
             border-radius: 50px;
@@ -1285,33 +1466,33 @@ Thank you for your purchase!
         }
 
         .telegram-btn:hover {
-            background: rgba(255,255,255,0.1);
+            background: rgba(220, 38, 38, 0.15);
             color: #fff;
+            box-shadow: 0 0 20px rgba(220, 38, 38, 0.1);
         }
 
-        .telegram-btn i {
-            color: #229ED9;
-        }
-
-        /* Footer */
+        /* ===== FOOTER ===== */
         .user-footer {
             text-align: center;
             padding: 30px 20px;
-            color: rgba(255,255,255,0.25);
+            color: rgba(255,255,255,0.2);
             font-size: 0.75rem;
         }
 
-        /* FAQ Page Dark */
+        /* ===== FAQ PAGE ===== */
         #faq .section-title {
             color: #fff;
+            text-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
         }
 
         #faq .accordion-item {
-            background: rgba(15, 23, 42, 0.7);
-            border: 1px solid rgba(255,255,255,0.06);
+            background: rgba(20, 0, 0, 0.5);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(220, 38, 38, 0.15);
             border-radius: 16px !important;
             margin-bottom: 12px;
             overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
         }
 
         #faq .accordion-button {
@@ -1324,12 +1505,12 @@ Thank you for your purchase!
         }
 
         #faq .accordion-button:not(.collapsed) {
-            background: rgba(16, 185, 129, 0.08);
-            color: #10b981;
+            background: rgba(220, 38, 38, 0.1);
+            color: #ef4444;
         }
 
         #faq .accordion-button::after {
-            filter: invert(1);
+            filter: invert(0.3) sepia(1) saturate(5) hue-rotate(-30deg);
         }
 
         #faq .accordion-body {
@@ -1337,156 +1518,154 @@ Thank you for your purchase!
             padding: 0 24px 18px;
         }
 
-        /* Contact Page Dark */
+        /* ===== CONTACT PAGE ===== */
         #contact .section-title {
             color: #fff;
+            text-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
         }
 
         #contact .card {
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(20, 0, 0, 0.5);
+            backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(220, 38, 38, 0.15);
             border-radius: 24px;
-        }
-
-        #contact .form-label {
-            color: rgba(255,255,255,0.5);
-        }
-
-        #contact .form-control {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: #fff;
-            border-radius: 14px;
-            padding: 14px 16px;
-        }
-
-        #contact .form-control::placeholder {
-            color: rgba(255,255,255,0.25);
-        }
-
-        #contact .form-control:focus {
-            background: rgba(255,255,255,0.08);
-            border-color: rgba(16, 185, 129, 0.4);
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-            color: #fff;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 40px rgba(220, 38, 38, 0.05);
         }
 
         #contact .btn-primary {
             border-radius: 50px;
-            background: #fff;
-            color: #0a0a0f;
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            color: #fff;
             border: none;
             font-weight: 700;
+            padding: 14px 30px;
+            box-shadow: 0 4px 20px rgba(220, 38, 38, 0.3);
+            transition: all 0.3s ease;
         }
 
-        /* Admin Login Dark */
+        #contact .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(220, 38, 38, 0.4);
+        }
+
+        /* ===== ADMIN LOGIN ===== */
         #admin-login .section-title, #admin-login h3 {
             color: #fff;
+            text-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
         }
 
         #admin-login .card {
-            background: rgba(15, 23, 42, 0.85);
-            backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.08);
+            background: rgba(20, 0, 0, 0.5);
+            backdrop-filter: blur(24px) saturate(180%);
+            border: 1px solid rgba(220, 38, 38, 0.15);
             border-radius: 24px;
-        }
-
-        #admin-login .form-label {
-            color: rgba(255,255,255,0.5);
-        }
-
-        #admin-login .form-control {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: #fff;
-            border-radius: 14px;
-            padding: 14px 16px;
-        }
-
-        #admin-login .form-control:focus {
-            background: rgba(255,255,255,0.08);
-            border-color: rgba(16, 185, 129, 0.4);
-            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
-            color: #fff;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 40px rgba(220, 38, 38, 0.05);
         }
 
         #admin-login .btn-primary {
             border-radius: 50px;
-            background: #fff;
-            color: #0a0a0f;
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%);
+            color: #fff;
             border: none;
             font-weight: 700;
+            padding: 14px 30px;
+            box-shadow: 0 4px 20px rgba(220, 38, 38, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        #admin-login .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(220, 38, 38, 0.4);
         }
 
         #admin-login .text-primary {
-            color: #10b981 !important;
+            color: #ef4444 !important;
         }
 
-        /* Success Page Dark */
+        /* ===== SUCCESS PAGE ===== */
         #success-page .success-box {
-            background: linear-gradient(135deg, #0f172a 0%, #1a1a2e 100%);
-            border: 1px solid rgba(16, 185, 129, 0.2);
+            background: rgba(20, 0, 0, 0.6);
+            backdrop-filter: blur(30px) saturate(180%);
+            border: 1px solid rgba(220, 38, 38, 0.2);
             border-radius: 24px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            box-shadow: 
+                0 8px 32px rgba(0,0,0,0.4),
+                0 0 60px rgba(220, 38, 38, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #success-page .success-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(220, 38, 38, 0.1) 0%, transparent 60%);
+            pointer-events: none;
+        }
+
+        #success-page .success-box > * {
+            position: relative;
+            z-index: 1;
         }
 
         #success-page .success-box i.bi-check-circle-fill {
-            color: #10b981;
+            color: #ef4444;
+            text-shadow: 0 0 30px rgba(239, 68, 68, 0.5);
         }
 
         #success-page .key-display {
             background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            color: #10b981;
+            border: 1px solid rgba(220, 38, 38, 0.2);
+            color: #ef4444;
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
         }
 
         #success-page .btn-light {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.15);
+            background: rgba(220, 38, 38, 0.1);
+            border: 1px solid rgba(220, 38, 38, 0.2);
             color: #fff;
             border-radius: 12px;
+            transition: all 0.3s ease;
         }
 
         #success-page .btn-light:hover {
-            background: rgba(255,255,255,0.2);
+            background: rgba(220, 38, 38, 0.2);
+            box-shadow: 0 0 15px rgba(220, 38, 38, 0.1);
         }
 
         #success-page .btn-outline-light {
             border-radius: 50px;
-            border-color: rgba(255,255,255,0.2);
+            border-color: rgba(220, 38, 38, 0.3);
+            color: rgba(255,255,255,0.8);
+            transition: all 0.3s ease;
         }
 
-        /* Navbar enhancement for user pages */
-        .navbar {
-            background: rgba(10, 10, 15, 0.9) !important;
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+        #success-page .btn-outline-light:hover {
+            background: rgba(220, 38, 38, 0.1);
+            border-color: rgba(220, 38, 38, 0.5);
+            color: #fff;
         }
 
-        .navbar-brand {
-            color: #fff !important;
-            font-weight: 700;
-            letter-spacing: 0.5px;
+        #success-page #apkDownloadCard > div {
+            background: rgba(220, 38, 38, 0.08) !important;
+            border: 1px solid rgba(220, 38, 38, 0.2) !important;
         }
 
-        .navbar-brand img {
-            border-radius: 10px !important;
+        #success-page #apkDownloadBtn {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%) !important;
+            box-shadow: 0 4px 20px rgba(220, 38, 38, 0.3) !important;
+            transition: all 0.3s ease;
         }
 
-        .nav-link {
-            color: rgba(255,255,255,0.6) !important;
-            font-weight: 500;
-            font-size: 0.9rem;
-            transition: color 0.2s;
+        #success-page #apkDownloadBtn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(220, 38, 38, 0.4) !important;
         }
 
-        .nav-link:hover {
-            color: #fff !important;
-        }
-
-        /* Store header text */
+        /* ===== STORE HEADER ===== */
         .store-header {
             text-align: center;
             padding: 20px 0 10px;
@@ -1495,48 +1674,352 @@ Thank you for your purchase!
         .store-header h1 {
             color: #fff;
             font-size: 1.1rem;
-            font-weight: 700;
-            letter-spacing: 2px;
+            font-weight: 800;
+            letter-spacing: 3px;
             text-transform: uppercase;
             margin: 0;
+            text-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
         }
 
         .store-header .sub-text {
-            color: rgba(255,255,255,0.4);
+            color: rgba(255,255,255,0.3);
             font-size: 0.85rem;
             margin-top: 4px;
         }
 
-        /* Hamburger menu for mobile */
+        /* ===== HAMBURGER ===== */
         .navbar-toggler {
             border: none !important;
+            box-shadow: none !important;
         }
 
-        .dropdown-menu {
-            background: rgba(15, 23, 42, 0.95);
+        .navbar-toggler-icon {
+            filter: brightness(0) invert(1) !important;
+        }
+
+        /* ===== ADMIN PANEL ===== */
+        #admin-dashboard, #admin-products, #admin-durations, #admin-prices, 
+        #admin-keys, #admin-coupons, #admin-orders, #admin-payments {
+            background: linear-gradient(180deg, #0a0a0a 0%, #0d0000 50%, #0a0a0a 100%);
+            min-height: 100vh;
+        }
+
+        .admin-sidebar { 
+            min-height: calc(100vh - 56px); 
+            background: rgba(10, 0, 0, 0.9); 
+            color: white;
             backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.08);
+            border-right: 1px solid rgba(220, 38, 38, 0.15);
+        }
+
+        .admin-sidebar .nav-link { 
+            color: rgba(255,255,255,0.6); 
+            padding: 12px 20px; 
+            border-radius: 8px; 
+            margin: 2px 10px;
+            transition: all 0.3s ease;
+        }
+
+        .admin-sidebar .nav-link:hover, .admin-sidebar .nav-link.active { 
+            background: rgba(220, 38, 38, 0.15); 
+            color: #ef4444;
+            box-shadow: 0 0 15px rgba(220, 38, 38, 0.1);
+        }
+
+        .section-title { 
+            font-weight: 800; 
+            margin-bottom: 20px; 
+            color: #fff;
+            text-shadow: 0 0 20px rgba(220, 38, 38, 0.2);
+        }
+
+        .stat-card { 
+            background: rgba(20, 0, 0, 0.5); 
+            backdrop-filter: blur(20px);
+            border-radius: 16px; 
+            padding: 24px; 
+            text-align: center; 
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3), 0 0 30px rgba(220, 38, 38, 0.05);
+            border: 1px solid rgba(220, 38, 38, 0.1);
+        }
+
+        .stat-number { 
+            font-size: 2.2rem; 
+            font-weight: 800; 
+            color: #ef4444;
+            text-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
+        }
+
+        .stat-card .text-muted {
+            color: rgba(255,255,255,0.4) !important;
+            font-weight: 500;
+        }
+
+        #admin-dashboard .card, #admin-products .card, #admin-durations .card,
+        #admin-prices .card, #admin-keys .card, #admin-coupons .card,
+        #admin-orders .card, #admin-payments .card {
+            background: rgba(20, 0, 0, 0.5);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(220, 38, 38, 0.1);
             border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            overflow: hidden;
         }
 
-        .dropdown-item {
-            color: rgba(255,255,255,0.7);
-            border-radius: 8px;
-            margin: 2px 8px;
-            padding: 10px 16px;
-        }
-
-        .dropdown-item:hover {
-            background: rgba(255,255,255,0.08);
+        #admin-dashboard .card-header, #admin-products .card-header,
+        #admin-durations .card-header, #admin-prices .card-header,
+        #admin-keys .card-header, #admin-coupons .card-header,
+        #admin-orders .card-header, #admin-payments .card-header {
+            background: rgba(220, 38, 38, 0.08) !important;
+            border-bottom: 1px solid rgba(220, 38, 38, 0.1);
             color: #fff;
         }
 
-        .dropdown-divider {
-            border-color: rgba(255,255,255,0.08);
+        #admin-dashboard .card-header h5, #admin-products .card-header h5,
+        #admin-durations .card-header h5, #admin-prices .card-header h5,
+        #admin-keys .card-header h5, #admin-coupons .card-header h5,
+        #admin-orders .card-header h5, #admin-payments .card-header h5 {
+            color: #fff;
+            font-weight: 600;
         }
 
+        .table {
+            color: rgba(255,255,255,0.8);
+        }
+
+        .table thead th {
+            background: rgba(220, 38, 38, 0.08) !important;
+            color: #ef4444;
+            font-weight: 600;
+            border-bottom: 1px solid rgba(220, 38, 38, 0.15);
+        }
+
+        .table tbody td {
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .table-hover tbody tr:hover {
+            background: rgba(220, 38, 38, 0.05) !important;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%) !important;
+            border: none !important;
+            border-radius: 12px;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(220, 38, 38, 0.4);
+        }
+
+        .btn-warning {
+            background: rgba(234, 179, 8, 0.15) !important;
+            border: 1px solid rgba(234, 179, 8, 0.3) !important;
+            color: #eab308 !important;
+        }
+
+        .btn-warning:hover {
+            background: rgba(234, 179, 8, 0.25) !important;
+        }
+
+        .btn-danger {
+            background: rgba(220, 38, 38, 0.15) !important;
+            border: 1px solid rgba(220, 38, 38, 0.3) !important;
+            color: #ef4444 !important;
+        }
+
+        .btn-danger:hover {
+            background: rgba(220, 38, 38, 0.25) !important;
+        }
+
+        .btn-outline-primary {
+            border-color: rgba(220, 38, 38, 0.3) !important;
+            color: rgba(255,255,255,0.7) !important;
+        }
+
+        .btn-outline-primary:hover {
+            background: rgba(220, 38, 38, 0.1) !important;
+            border-color: rgba(220, 38, 38, 0.5) !important;
+            color: #fff !important;
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.08) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            color: rgba(255,255,255,0.7) !important;
+        }
+
+        .nav-tabs {
+            border-bottom: 1px solid rgba(220, 38, 38, 0.15);
+        }
+
+        .nav-tabs .nav-link {
+            color: rgba(255,255,255,0.5) !important;
+            border: none;
+            border-bottom: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .nav-tabs .nav-link:hover {
+            color: rgba(255,255,255,0.8) !important;
+            border-bottom-color: rgba(220, 38, 38, 0.3);
+        }
+
+        .nav-tabs .nav-link.active {
+            color: #ef4444 !important;
+            background: transparent !important;
+            border-bottom: 2px solid #ef4444 !important;
+        }
+
+        .modal-content {
+            background: rgba(20, 0, 0, 0.95);
+            backdrop-filter: blur(30px);
+            border: 1px solid rgba(220, 38, 38, 0.2);
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(220, 38, 38, 0.1);
+        }
+
+        .modal-header {
+            border-bottom: 1px solid rgba(220, 38, 38, 0.15);
+        }
+
+        .modal-header .modal-title {
+            color: #fff;
+            font-weight: 700;
+        }
+
+        .modal-footer {
+            border-top: 1px solid rgba(220, 38, 38, 0.15);
+        }
+
+        .btn-close {
+            filter: invert(1);
+            opacity: 0.5;
+        }
+
+        .btn-close:hover {
+            opacity: 1;
+        }
+
+        .form-check-input:checked {
+            background-color: #dc2626;
+            border-color: #dc2626;
+        }
+
+        .form-check-input:focus {
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.2);
+        }
+
+        .badge.bg-success {
+            background: rgba(16, 185, 129, 0.15) !important;
+            color: #34d399 !important;
+            border: 1px solid rgba(16, 185, 129, 0.2);
+        }
+
+        .badge.bg-secondary {
+            background: rgba(255,255,255,0.08) !important;
+            color: rgba(255,255,255,0.5) !important;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .badge.bg-info {
+            background: rgba(59, 130, 246, 0.15) !important;
+            color: #60a5fa !important;
+            border: 1px solid rgba(59, 130, 246, 0.2);
+        }
+
+        .badge.bg-danger {
+            background: rgba(220, 38, 38, 0.15) !important;
+            color: #ef4444 !important;
+            border: 1px solid rgba(220, 38, 38, 0.2);
+        }
+
+        .badge.bg-warning {
+            background: rgba(234, 179, 8, 0.15) !important;
+            color: #eab308 !important;
+            border: 1px solid rgba(234, 179, 8, 0.2);
+        }
+
+        .alert.alert-warning {
+            background: rgba(234, 179, 8, 0.08);
+            border: 1px solid rgba(234, 179, 8, 0.2);
+            color: #eab308;
+        }
+
+        .alert.alert-info {
+            background: rgba(59, 130, 246, 0.08);
+            border: 1px solid rgba(59, 130, 246, 0.2);
+            color: #60a5fa;
+        }
+
+        .form-text.text-muted {
+            color: rgba(255,255,255,0.3) !important;
+        }
+
+        .table-light {
+            background: rgba(220, 38, 38, 0.05) !important;
+        }
+
+        code {
+            color: #f87171;
+            background: rgba(220, 38, 38, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85em;
+        }
+
+        /* Admin Keys Stock Summary */
+        #admin-keys .card.mb-4.border-0 {
+            background: linear-gradient(135deg, rgba(20, 0, 0, 0.7) 0%, rgba(30, 0, 0, 0.5) 100%) !important;
+            border: 1px solid rgba(220, 38, 38, 0.15) !important;
+        }
+
+        #admin-keys .card-header {
+            background: transparent !important;
+            border-bottom: 1px solid rgba(220, 38, 38, 0.1) !important;
+        }
+
+        #stockSummaryCards .col-md-4 > div {
+            background: rgba(255,255,255,0.03) !important;
+            border: 1px solid rgba(220, 38, 38, 0.1) !important;
+            border-radius: 12px !important;
+            transition: all 0.3s ease;
+        }
+
+        #stockSummaryCards .col-md-4 > div:hover {
+            border-color: rgba(220, 38, 38, 0.25) !important;
+            box-shadow: 0 4px 20px rgba(220, 38, 38, 0.1);
+        }
+
+        /* Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #0a0a0a;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: rgba(220, 38, 38, 0.3);
+            border-radius: 4px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(220, 38, 38, 0.5);
+        }
+
+        /* Selection */
+        ::selection {
+            background: rgba(220, 38, 38, 0.3);
+            color: #fff;
+        }
     </style>
+<base target="_blank">
 <base target="_blank">
 <base target="_blank">
 <base target="_blank">
@@ -1591,14 +2074,14 @@ Thank you for your purchase!
                     <h4 class="mb-4 text-center"><i class="bi bi-cart3 me-2"></i>NovaEsp Store</h4>
 
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Select Product</label>
+                        <label class="form-label fw-semibold" style="color: rgba(255,255,255,0.85) !important; font-size: 0.8rem;">Select Product</label>
                         <select class="form-select form-select-lg" id="productSelect" onchange="onProductChange()">
                             <option value="">Select Product</option>
                         </select>
                     </div>
 
                     <div class="mb-3">
-                        <label class="form-label fw-semibold">Select Duration</label>
+                        <label class="form-label fw-semibold" style="color: rgba(255,255,255,0.85) !important; font-size: 0.8rem;">Select Duration</label>
                         <select class="form-select form-select-lg" id="durationSelect" onchange="onDurationChange()" disabled>
                             <option value="">Select Duration</option>
                         </select>
@@ -1607,9 +2090,9 @@ Thank you for your purchase!
                     
 
                     <div class="mb-3">
-                        <label class="form-label">Coupon Code (Optional)</label>
+                        <label class="form-label" style="color: rgba(255,255,255,0.85) !important; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px;">Coupon Code (Optional)</label>
                         <div class="d-flex gap-2">
-                            <input type="text" class="form-control flex-grow-1" id="couponInput" placeholder="Enter coupon code" style="border-radius: 14px;">
+                            <input type="text" class="form-control flex-grow-1" id="couponInput" placeholder="Enter coupon code" style="border-radius: 14px; color: #fff !important; background: rgba(255,255,255,0.06) !important;">
                             <button class="btn btn-outline-primary px-4" type="button" onclick="applyCoupon()" style="border-radius: 14px; border-width: 1.5px; white-space: nowrap;">Apply</button>
                         </div>
                         <div id="couponMsg" class="mt-2 small"></div>
@@ -1627,7 +2110,7 @@ Thank you for your purchase!
 
     <!-- FAQ PAGE -->
     <div id="faq" class="section d-none">
-        <div class="container py-5">
+        <div class="container py-5 d-flex flex-column align-items-center justify-content-center" style="min-height: calc(100vh - 76px);">
             <h2 class="section-title text-center mb-4">Frequently Asked Questions</h2>
             <div class="row justify-content-center">
                 <div class="col-md-8">
@@ -1658,9 +2141,9 @@ Thank you for your purchase!
 
     <!-- CONTACT PAGE -->
     <div id="contact" class="section d-none">
-        <div class="container py-5">
+        <div class="container py-5 d-flex flex-column align-items-center justify-content-center" style="min-height: calc(100vh - 76px);">
             <h2 class="section-title text-center mb-4">Contact Us</h2>
-            <div class="row justify-content-center">
+            <div class="row justify-content-center w-100">
                 <div class="col-md-6">
                     <div class="card p-4">
                         <div class="mb-3"><label class="form-label">Name</label><input type="text" class="form-control" placeholder="Your name"></div>
@@ -1675,8 +2158,8 @@ Thank you for your purchase!
 
     <!-- ADMIN LOGIN -->
     <div id="admin-login" class="section d-none">
-        <div class="container py-5">
-            <div class="row justify-content-center">
+        <div class="container py-5 d-flex flex-column align-items-center justify-content-center" style="min-height: calc(100vh - 76px);">
+            <div class="row justify-content-center w-100">
                 <div class="col-md-4">
                     <div class="card p-4">
                         <div class="text-center mb-4">
@@ -1946,8 +2429,8 @@ Thank you for your purchase!
 
     <!-- SUCCESS PAGE -->
     <div id="success-page" class="section d-none">
-        <div class="container py-5">
-            <div class="row justify-content-center">
+        <div class="container py-5 d-flex flex-column align-items-center justify-content-center" style="min-height: calc(100vh - 76px);">
+            <div class="row justify-content-center w-100">
                 <div class="col-md-6">
                     <div class="success-box">
                         <i class="bi bi-check-circle-fill display-1"></i>
