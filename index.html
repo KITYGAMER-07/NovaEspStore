@@ -1770,44 +1770,13 @@ Thank you for your purchase!
             color: rgba(255,255,255,0.5) !important;
         }
 
-        /* ===== TABLE STYLES - FIXED FOR VISIBILITY ===== */
-        .table {
-            color: rgba(255,255,255,0.95) !important;
-            --bs-table-color: rgba(255,255,255,0.95) !important;
-        }
-
-        .table tbody td {
-            color: rgba(255,255,255,0.95) !important;
-            --bs-table-color-state: rgba(255,255,255,0.95) !important;
-            font-weight: 500;
-            padding: 12px 16px;
-            border-bottom: 1px solid rgba(255,255,255,0.08) !important;
-            vertical-align: middle;
-        }
-
-        .table thead th {
-            background-color: rgba(15, 0, 0, 0.98) !important;
-            --bs-table-bg: rgba(15, 0, 0, 0.98) !important;
-            color: #ff4444 !important;
-            --bs-table-color: #ff4444 !important;
-            font-weight: 800 !important;
-            border-bottom: 2px solid rgba(220, 38, 38, 0.4) !important;
-            text-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
-            font-size: 0.85rem;
-            letter-spacing: 0.8px;
-            text-transform: uppercase;
-            padding: 14px 16px;
-            vertical-align: middle;
-        }
-
-        .table-hover tbody tr:hover {
-            background-color: rgba(220, 38, 38, 0.15) !important;
-            --bs-table-bg-state: rgba(220, 38, 38, 0.15) !important;
-        }
-
-        .table-hover tbody tr:hover td {
-            color: #fff !important;
-        }
+        /* ===== TABLE STYLES - NUCLEAR FIX ===== */
+        .table { color: #fff !important; }
+        .table td { color: #fff !important; border-bottom: 1px solid rgba(255,255,255,0.1) !important; }
+        .table th { color: #ff3333 !important; background-color: #1a0000 !important; border-bottom: 2px solid #cc0000 !important; font-weight: 800 !important; text-transform: uppercase; letter-spacing: 1px; font-size: 0.8rem; padding: 14px 16px; }
+        .table-hover tbody tr:hover { background-color: rgba(200, 0, 0, 0.2) !important; }
+        .table-hover tbody tr:hover td { color: #fff !important; }
+        .table code { color: #ff6666; background: rgba(200,0,0,0.2); padding: 3px 8px; border-radius: 4px; }
 
         .btn-primary {
             background: linear-gradient(135deg, #dc2626 0%, #991b1b 100%) !important;
@@ -1971,34 +1940,9 @@ Thank you for your purchase!
             color: rgba(255,255,255,0.3) !important;
         }
 
-        /* Override Bootstrap table-light with DARK theme */
-        .table-light,
-        .table > thead.table-light > tr,
-        .table > thead.table-light > tr > th,
-        .table > thead.table-light > tr > td,
-        .table > tbody > tr.table-light > td,
-        .table > tbody > tr.table-light > th {
-            background-color: rgba(15, 0, 0, 0.98) !important;
-            --bs-table-bg: rgba(15, 0, 0, 0.98) !important;
-            color: #ff4444 !important;
-            --bs-table-color: #ff4444 !important;
-            --bs-table-color-state: #ff4444 !important;
-            border-color: rgba(220, 38, 38, 0.2) !important;
-            --bs-table-border-color: rgba(220, 38, 38, 0.2) !important;
-        }
-
-        .table tbody tr td.text-center {
-            color: rgba(255,255,255,0.7) !important;
-        }
-
-        .table code {
-            color: #ff6b6b;
-            background: rgba(220, 38, 38, 0.15);
-            padding: 3px 8px;
-            border-radius: 6px;
-            font-size: 0.85em;
-            font-weight: 600;
-        }
+        .table-dark-custom { background-color: #1a0000 !important; }
+        .table-dark-custom th { background-color: #1a0000 !important; color: #ff3333 !important; }
+        .table-dark-custom td { background-color: #1a0000 !important; color: #fff !important; }
 
         code {
             color: #f87171;
@@ -2237,7 +2181,7 @@ Thank you for your purchase!
                         <div class="card-header"><h5 class="mb-0">Recent Orders</h5></div>
                         <div class="card-body p-0 table-responsive-wrapper">
                             <table class="table table-hover mb-0">
-                                <thead class="table-light"><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Status</th></tr></thead>
+                                <thead class="table-dark-custom"><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Status</th></tr></thead>
                                 <tbody id="recentOrdersTable"><tr><td colspan="5" class="text-center">Loading...</td></tr></tbody>
                             </table>
                         </div>
@@ -2257,7 +2201,7 @@ Thank you for your purchase!
             <div class="card">
                 <div class="card-body p-0 table-responsive-wrapper">
                     <table class="table table-hover mb-0">
-                        <thead class="table-light"><tr><th>Product Name</th><th>Status</th><th>Actions</th></tr></thead>
+                        <thead class="table-dark-custom"><tr><th>Product Name</th><th>Status</th><th>Actions</th></tr></thead>
                         <tbody id="productsTable"><tr><td colspan="3" class="text-center">Loading...</td></tr></tbody>
                     </table>
                 </div>
@@ -2275,7 +2219,7 @@ Thank you for your purchase!
             <div class="card">
                 <div class="card-body p-0 table-responsive-wrapper">
                     <table class="table table-hover mb-0">
-                        <thead class="table-light"><tr><th>Product</th><th>Duration</th><th>Unit</th><th>Actions</th></tr></thead>
+                        <thead class="table-dark-custom"><tr><th>Product</th><th>Duration</th><th>Unit</th><th>Actions</th></tr></thead>
                         <tbody id="durationsTable"><tr><td colspan="2" class="text-center">Loading...</td></tr></tbody>
                     </table>
                 </div>
@@ -2293,7 +2237,7 @@ Thank you for your purchase!
             <div class="card">
                 <div class="card-body p-0 table-responsive-wrapper">
                     <table class="table table-hover mb-0">
-                        <thead class="table-light"><tr><th>Product</th><th>Duration</th><th>Price</th><th>Actions</th></tr></thead>
+                        <thead class="table-dark-custom"><tr><th>Product</th><th>Duration</th><th>Price</th><th>Actions</th></tr></thead>
                         <tbody id="pricesTable"><tr><td colspan="4" class="text-center">Loading...</td></tr></tbody>
                     </table>
                 </div>
@@ -2354,7 +2298,7 @@ Thank you for your purchase!
                 <div class="tab-pane fade show active" id="activeKeys">
                     <div class="card"><div class="card-body p-0 table-responsive-wrapper">
                         <table class="table table-hover mb-0">
-                            <thead class="table-light"><tr><th>Product</th><th>Duration</th><th>Key</th><th>Added</th><th>Actions</th></tr></thead>
+                            <thead class="table-dark-custom"><tr><th>Product</th><th>Duration</th><th>Key</th><th>Added</th><th>Actions</th></tr></thead>
                             <tbody id="activeKeysTable"><tr><td colspan="4" class="text-center">Loading...</td></tr></tbody>
                         </table>
                     </div></div>
@@ -2362,7 +2306,7 @@ Thank you for your purchase!
                 <div class="tab-pane fade" id="usedKeys">
                     <div class="card"><div class="card-body p-0 table-responsive-wrapper">
                         <table class="table table-hover mb-0">
-                            <thead class="table-light"><tr><th>Product</th><th>Duration</th><th>Key</th><th>Used Date</th><th>Actions</th></tr></thead>
+                            <thead class="table-dark-custom"><tr><th>Product</th><th>Duration</th><th>Key</th><th>Used Date</th><th>Actions</th></tr></thead>
                             <tbody id="usedKeysTable"><tr><td colspan="4" class="text-center">Loading...</td></tr></tbody>
                         </table>
                     </div></div>
@@ -2381,7 +2325,7 @@ Thank you for your purchase!
             <div class="card">
                 <div class="card-body p-0 table-responsive-wrapper">
                     <table class="table table-hover mb-0">
-                        <thead class="table-light"><tr><th>Code</th><th>Discount</th><th>Min Order</th><th>Expiry</th><th>Actions</th></tr></thead>
+                        <thead class="table-dark-custom"><tr><th>Code</th><th>Discount</th><th>Min Order</th><th>Expiry</th><th>Actions</th></tr></thead>
                         <tbody id="couponsTable"><tr><td colspan="4" class="text-center">Loading...</td></tr></tbody>
                     </table>
                 </div>
@@ -2404,7 +2348,7 @@ Thank you for your purchase!
                 <div class="tab-pane fade show active" id="paidOrders">
                     <div class="card"><div class="card-body p-0 table-responsive-wrapper">
                         <table class="table table-hover mb-0">
-                            <thead class="table-light"><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Key</th><th>Date</th></tr></thead>
+                            <thead class="table-dark-custom"><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Key</th><th>Date</th></tr></thead>
                             <tbody id="paidOrdersTable"><tr><td colspan="6" class="text-center">Loading...</td></tr></tbody>
                         </table>
                     </div></div>
@@ -2412,7 +2356,7 @@ Thank you for your purchase!
                 <div class="tab-pane fade" id="failedOrders">
                     <div class="card"><div class="card-body p-0 table-responsive-wrapper">
                         <table class="table table-hover mb-0">
-                            <thead class="table-light"><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Key</th><th>Date</th></tr></thead>
+                            <thead class="table-dark-custom"><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Key</th><th>Date</th></tr></thead>
                             <tbody id="failedOrdersTable"><tr><td colspan="6" class="text-center">Loading...</td></tr></tbody>
                         </table>
                     </div></div>
