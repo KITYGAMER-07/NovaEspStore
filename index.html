@@ -792,11 +792,20 @@
         #home, #faq, #contact, #success-page, #admin-login {
             min-height: calc(100vh - 65px);
             color: #fff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 0;
+        }
+        
+        #home > .container, #faq > .container, #contact > .container, #success-page > .container, #admin-login > .container {
+            width: 100%;
         }
 
         .purchase-card {
             max-width: 450px;
             margin: 0 auto;
+            width: 100%;
         }
 
         .form-label {
@@ -1041,7 +1050,7 @@
 
     <!-- HOME PAGE -->
     <div id="home" class="section">
-        <div class="container py-5">
+        <div class="container">
             <div class="card glass purchase-card">
                 <div class="card-body p-4 p-md-5">
                     <!-- Logo removed as requested -->
@@ -1081,7 +1090,7 @@
 
     <!-- FAQ PAGE -->
     <div id="faq" class="section d-none">
-        <div class="container py-5">
+        <div class="container">
             <h2 class="text-center mb-5 fw-bold" style="text-shadow: 0 0 15px var(--red-glow);">Frequently Asked Questions</h2>
             <div class="row justify-content-center">
                 <div class="col-md-8">
@@ -1112,7 +1121,7 @@
 
     <!-- CONTACT PAGE -->
     <div id="contact" class="section d-none">
-        <div class="container py-5">
+        <div class="container">
             <h2 class="text-center mb-5 fw-bold" style="text-shadow: 0 0 15px var(--red-glow);">Contact Us</h2>
             <div class="row justify-content-center">
                 <div class="col-md-6">
@@ -1131,8 +1140,8 @@
 
     <!-- ADMIN LOGIN -->
     <div id="admin-login" class="section d-none">
-        <div class="container py-5">
-            <div class="row justify-content-center align-items-center" style="min-height:70vh;">
+        <div class="container">
+            <div class="row justify-content-center">
                 <div class="col-md-5 col-lg-4">
                     <div class="card glass purchase-card">
                         <div class="card-body p-4 p-md-5">
@@ -1360,7 +1369,7 @@
 
     <!-- SUCCESS PAGE -->
     <div id="success-page" class="section d-none">
-        <div class="container py-5">
+        <div class="container">
             <div class="row justify-content-center">
                 <div class="col-md-7 col-lg-6">
                     <div class="card glass success-box p-4 p-md-5">
