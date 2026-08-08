@@ -347,7 +347,7 @@
             
             orders.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
             let html = orders.slice(0, 5).map(o => `<tr><td>${o.orderId}</td><td>${o.productName}</td><td>${o.durationName}</td><td>₹${o.finalAmount}</td><td><span class="badge bg-success">${o.status}</span></td></tr>`).join('');
-            document.getElementById('recentOrdersTable').innerHTML = html || '<tr><td colspan="5" class="text-center" style="color: #9ca3af; font-weight: 600;">No orders yet</td></tr>';
+            document.getElementById('recentOrdersTable').innerHTML = html || '<tr><td colspan="5" class="text-center" style="color: #555555; font-weight: 600;">No orders yet</td></tr>';
         }
 
         // ==========================================
@@ -356,7 +356,7 @@
         async function loadAdminProducts() {
             const products = await getList('products');
             let html = products.map(p => `<tr><td>${p.name}</td><td><span class="badge ${p.enabled !== false ? 'bg-success' : 'bg-secondary'}">${p.enabled !== false ? 'Enabled' : 'Disabled'}</span></td><td><button class="btn btn-sm btn-warning me-1" onclick="editProduct('${p.id}', '${p.name}', ${p.enabled !== false})"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-danger" onclick="deleteProduct('${p.id}')"><i class="bi bi-trash"></i></button></td></tr>`).join('');
-            document.getElementById('productsTable').innerHTML = html || '<tr><td colspan="3" class="text-center" style="color: #9ca3af; font-weight: 600;">No products</td></tr>';
+            document.getElementById('productsTable').innerHTML = html || '<tr><td colspan="3" class="text-center" style="color: #555555; font-weight: 600;">No products</td></tr>';
         }
 
         window.saveProduct = async function() {
@@ -402,7 +402,7 @@
                 const u = d.unit ? d.unit.charAt(0).toUpperCase() + d.unit.slice(1) : 'Days';
                 return `<tr><td>${pName}</td><td>${d.name}</td><td><span class="badge bg-info">${u}</span></td><td><button class="btn btn-sm btn-warning me-1" onclick="editDuration('${d.id}', '${d.productId}', '${d.name}', '${d.unit || 'days'}')"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-danger" onclick="deleteDuration('${d.id}')"><i class="bi bi-trash"></i></button></td></tr>`;
             }).join('');
-            document.getElementById('durationsTable').innerHTML = html || '<tr><td colspan="4" class="text-center" style="color: #9ca3af; font-weight: 600;">No durations</td></tr>';
+            document.getElementById('durationsTable').innerHTML = html || '<tr><td colspan="4" class="text-center" style="color: #555555; font-weight: 600;">No durations</td></tr>';
         }
 
         window.saveDuration = async function() {
@@ -470,7 +470,7 @@
                 const dU = d?.unit ? d.unit.charAt(0).toUpperCase() + d.unit.slice(1) : '';
                 return `<tr><td>${pName}</td><td>${dName} ${dU}</td><td>₹${p.price}</td><td><button class="btn btn-sm btn-warning me-1" onclick="editPrice('${p.id}', '${p.productId}', '${p.durationId}', ${p.price})"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-danger" onclick="deletePrice('${p.id}')"><i class="bi bi-trash"></i></button></td></tr>`;
             }).join('');
-            document.getElementById('pricesTable').innerHTML = html || '<tr><td colspan="4" class="text-center" style="color: #9ca3af; font-weight: 600;">No prices set</td></tr>';
+            document.getElementById('pricesTable').innerHTML = html || '<tr><td colspan="4" class="text-center" style="color: #555555; font-weight: 600;">No prices set</td></tr>';
         }
 
         async function populatePriceDropdowns() {
@@ -548,7 +548,7 @@
                 const low = c.active <= 2, out = c.active === 0;
                 stockHtml += `<div class="col-md-4 col-lg-3"><div class="p-3" style="background: #111111; border-radius: 12px; border: 1px solid rgba(255,0,60,0.3);"><div class="d-flex justify-content-between mb-2"><div><div style="font-size: 0.95rem; font-weight: 800; color: #ffffff;">${pName}</div><div style="font-size: 0.8rem; color: #9ca3af;">${dName}</div></div><span class="badge ${out ? 'bg-danger' : low ? 'bg-warning' : 'bg-success'}" style="font-size: 0.75rem; font-weight: 700;">${out ? 'Out' : low ? 'Low' : 'In Stock'}</span></div><div class="d-flex gap-3 mt-2"><div class="text-center"><div style="font-size: 1.4rem; font-weight: 800; color: ${c.active > 0 ? '#00ff9d' : '#ef4444'};">${c.active}</div><div style="font-size: 0.7rem; color: #6b7280; font-weight: 600;">AVAIL</div></div><div class="text-center"><div style="font-size: 1.4rem; font-weight: 800; color: #ffffff;">${c.used}</div><div style="font-size: 0.7rem; color: #6b7280; font-weight: 600;">SOLD</div></div><div class="text-center"><div style="font-size: 1.4rem; font-weight: 800; color: #38bdf8;">${c.total}</div><div style="font-size: 0.7rem; color: #6b7280; font-weight: 600;">TOTAL</div></div></div></div></div>`;
             });
-            document.getElementById('stockSummaryCards').innerHTML = stockHtml || '<div class="col-12 text-center" style="color: #6b7280; font-weight: 600;">No keys in stock</div>';
+            document.getElementById('stockSummaryCards').innerHTML = stockHtml || '<div class="col-12 text-center" style="color: #555555; font-weight: 600;">No keys in stock</div>';
 
             let activeHtml = '', usedHtml = '';
             keys.forEach(k => {
@@ -560,8 +560,8 @@
                 const row = `<tr><td>${pName}</td><td>${dName}</td><td><code>${k.key}</code></td><td>${k.used ? uDate : aDate}</td><td><button class="btn btn-sm btn-danger" onclick="deleteKey('${k.id}')"><i class="bi bi-trash"></i></button></td></tr>`;
                 if (k.used) usedHtml += row; else activeHtml += row;
             });
-            document.getElementById('activeKeysTable').innerHTML = activeHtml || '<tr><td colspan="5" class="text-center" style="color: #9ca3af; font-weight: 600;">No active keys</td></tr>';
-            document.getElementById('usedKeysTable').innerHTML = usedHtml || '<tr><td colspan="5" class="text-center" style="color: #9ca3af; font-weight: 600;">No used keys</td></tr>';
+            document.getElementById('activeKeysTable').innerHTML = activeHtml || '<tr><td colspan="5" class="text-center" style="color: #555555; font-weight: 600;">No active keys</td></tr>';
+            document.getElementById('usedKeysTable').innerHTML = usedHtml || '<tr><td colspan="5" class="text-center" style="color: #555555; font-weight: 600;">No used keys</td></tr>';
 
             const kSelect = document.getElementById('keyProduct');
             kSelect.innerHTML = '<option value="">Select Product</option>';
@@ -599,7 +599,7 @@
         async function loadAdminCoupons() {
             const coupons = await getList('coupons');
             let html = coupons.map(c => `<tr><td>${c.code}</td><td>${c.type === 'percentage' ? c.value + '%' : '₹' + c.value}</td><td>${c.minOrderValue ? '₹' + c.minOrderValue : 'Any'}</td><td>${c.expiryDate ? new Date(c.expiryDate).toLocaleDateString() : 'No expiry'}</td><td><button class="btn btn-sm btn-danger" onclick="deleteCoupon('${c.id}')"><i class="bi bi-trash"></i></button></td></tr>`).join('');
-            document.getElementById('couponsTable').innerHTML = html || '<tr><td colspan="5" class="text-center" style="color: #9ca3af; font-weight: 600;">No coupons</td></tr>';
+            document.getElementById('couponsTable').innerHTML = html || '<tr><td colspan="5" class="text-center" style="color: #555555; font-weight: 600;">No coupons</td></tr>';
         }
 
         window.saveCoupon = async function() {
@@ -632,8 +632,8 @@
                 const row = `<tr><td>${o.orderId}</td><td>${o.productName}</td><td>${o.durationName}</td><td>₹${o.finalAmount}</td><td><code>${o.licenseKey || 'N/A'}</code></td><td>${date}</td></tr>`;
                 if (o.status === 'paid') paidHtml += row; else failedHtml += row;
             });
-            document.getElementById('paidOrdersTable').innerHTML = paidHtml || '<tr><td colspan="6" class="text-center" style="color: #9ca3af; font-weight: 600;">No paid orders</td></tr>';
-            document.getElementById('failedOrdersTable').innerHTML = failedHtml || '<tr><td colspan="6" class="text-center" style="color: #9ca3af; font-weight: 600;">No failed orders</td></tr>';
+            document.getElementById('paidOrdersTable').innerHTML = paidHtml || '<tr><td colspan="6" class="text-center" style="color: #555555; font-weight: 600;">No paid orders</td></tr>';
+            document.getElementById('failedOrdersTable').innerHTML = failedHtml || '<tr><td colspan="6" class="text-center" style="color: #555555; font-weight: 600;">No failed orders</td></tr>';
         }
 
         window.searchOrders = function() {
