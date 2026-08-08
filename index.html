@@ -1109,8 +1109,7 @@ Thank you for your purchase!
             border: 1px solid rgba(220, 38, 38, 0.15) !important;
             box-shadow: 
                 0 8px 32px rgba(0, 0, 0, 0.5),
-                inset 0 1px 0 rgba(255, 255, 255, 0.05),
-                0 0 60px rgba(220, 38, 38, 0.05) !important;
+                inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
         }
 
         .glass-strong {
@@ -1120,8 +1119,7 @@ Thank you for your purchase!
             border: 1px solid rgba(220, 38, 38, 0.2) !important;
             box-shadow: 
                 0 12px 40px rgba(0, 0, 0, 0.6),
-                inset 0 1px 0 rgba(255, 255, 255, 0.08),
-                0 0 80px rgba(220, 38, 38, 0.08) !important;
+                inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
         }
 
         /* ===== NAVBAR ===== */
@@ -1130,7 +1128,7 @@ Thank you for your purchase!
             backdrop-filter: blur(20px) saturate(150%);
             -webkit-backdrop-filter: blur(20px) saturate(150%);
             border-bottom: 1px solid rgba(220, 38, 38, 0.2);
-            box-shadow: 0 4px 30px rgba(0,0,0,0.4), 0 0 40px rgba(220, 38, 38, 0.05);
+            box-shadow: 0 4px 30px rgba(0,0,0,0.4);
         }
 
         .navbar-brand {
@@ -1138,7 +1136,6 @@ Thank you for your purchase!
             font-weight: 800;
             letter-spacing: 1px;
             font-size: 1.3rem;
-            text-shadow: 0 0 20px rgba(220, 38, 38, 0.5);
         }
 
         .navbar-brand img {
@@ -1156,7 +1153,6 @@ Thank you for your purchase!
 
         .nav-link:hover {
             color: #ef4444 !important;
-            text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
         }
 
         .nav-link::after {
@@ -1181,7 +1177,7 @@ Thank you for your purchase!
             backdrop-filter: blur(24px) saturate(180%);
             border: 1px solid rgba(220, 38, 38, 0.2);
             border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 40px rgba(220, 38, 38, 0.08);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
         }
 
         .dropdown-item {
@@ -1203,27 +1199,12 @@ Thank you for your purchase!
 
         /* ===== SECTION BACKGROUNDS ===== */
         #home, #faq, #contact, #success-page, #admin-login {
-            background: 
-                radial-gradient(ellipse at 20% 20%, rgba(139, 0, 0, 0.15) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 80%, rgba(220, 38, 38, 0.08) 0%, transparent 50%),
-                radial-gradient(ellipse at 50% 50%, rgba(30, 0, 0, 0.3) 0%, transparent 70%),
-                linear-gradient(180deg, #0a0a0a 0%, #0d0000 30%, #0a0a0a 70%, #0d0000 100%);
+            background: linear-gradient(180deg, #0a0a0a 0%, #0d0000 30%, #0a0a0a 70%, #0d0000 100%);
             min-height: 100vh;
             position: relative;
         }
 
-        #home::before, #faq::before, #contact::before, #success-page::before, #admin-login::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: 
-                url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23dc2626' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-            pointer-events: none;
-            z-index: 0;
-        }
+        /* No pattern overlay */
 
         #home .container, #faq .container, #contact .container, #success-page .container, #admin-login .container {
             position: relative;
@@ -1247,16 +1228,7 @@ Thank you for your purchase!
             overflow: hidden;
         }
 
-        #home .purchase-card::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(220, 38, 38, 0.08) 0%, transparent 70%);
-            pointer-events: none;
-        }
+        /* No glow overlay */
 
         #home .purchase-card .card-body {
             padding: 32px !important;
@@ -1269,12 +1241,10 @@ Thank you for your purchase!
             font-size: 1.5rem;
             font-weight: 800;
             letter-spacing: -0.5px;
-            text-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
         }
 
         #home .purchase-card h4 i {
             color: #ef4444;
-            text-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
         }
 
         /* ===== FORM ELEMENTS ===== */
@@ -1368,33 +1338,16 @@ Thank you for your purchase!
             font-size: 1rem;
             letter-spacing: 0.5px;
             transition: all 0.3s ease;
-            box-shadow: 
-                0 4px 20px rgba(220, 38, 38, 0.3),
-                0 0 30px rgba(220, 38, 38, 0.1) !important;
+            box-shadow: 0 4px 20px rgba(220, 38, 38, 0.3) !important;
             position: relative;
             overflow: hidden;
         }
 
-        #home #purchaseBtn::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: -100%;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
-            transition: left 0.5s ease;
-        }
-
-        #home #purchaseBtn:hover:not(:disabled)::before {
-            left: 100%;
-        }
+        /* No shine animation */
 
         #home #purchaseBtn:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 
-                0 8px 30px rgba(220, 38, 38, 0.4),
-                0 0 40px rgba(220, 38, 38, 0.15) !important;
+            box-shadow: 0 8px 30px rgba(220, 38, 38, 0.4) !important;
         }
 
         #home #purchaseBtn:disabled {
@@ -1425,7 +1378,6 @@ Thank you for your purchase!
 
         #home #totalDisplay .h3 {
             color: #ef4444 !important;
-            text-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
         }
 
         #home #totalDisplay .text-muted {
@@ -1469,7 +1421,6 @@ Thank you for your purchase!
         .telegram-btn:hover {
             background: rgba(220, 38, 38, 0.15);
             color: #fff;
-            box-shadow: 0 0 20px rgba(220, 38, 38, 0.1);
         }
 
         /* ===== FOOTER ===== */
@@ -1483,7 +1434,6 @@ Thank you for your purchase!
         /* ===== FAQ PAGE ===== */
         #faq .section-title {
             color: #fff;
-            text-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
         }
 
         #faq .accordion-item {
@@ -1522,7 +1472,6 @@ Thank you for your purchase!
         /* ===== CONTACT PAGE ===== */
         #contact .section-title {
             color: #fff;
-            text-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
         }
 
         #contact .card {
@@ -1530,7 +1479,7 @@ Thank you for your purchase!
             backdrop-filter: blur(24px) saturate(180%);
             border: 1px solid rgba(220, 38, 38, 0.15);
             border-radius: 24px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 40px rgba(220, 38, 38, 0.05);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
         }
 
         #contact .btn-primary {
@@ -1552,7 +1501,6 @@ Thank you for your purchase!
         /* ===== ADMIN LOGIN ===== */
         #admin-login .section-title, #admin-login h3 {
             color: #fff;
-            text-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
         }
 
         #admin-login .card {
@@ -1560,7 +1508,7 @@ Thank you for your purchase!
             backdrop-filter: blur(24px) saturate(180%);
             border: 1px solid rgba(220, 38, 38, 0.15);
             border-radius: 24px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 40px rgba(220, 38, 38, 0.05);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
         }
 
         #admin-login .btn-primary {
@@ -1590,22 +1538,12 @@ Thank you for your purchase!
             border: 1px solid rgba(220, 38, 38, 0.2);
             border-radius: 24px;
             box-shadow: 
-                0 8px 32px rgba(0,0,0,0.4),
-                0 0 60px rgba(220, 38, 38, 0.08);
+                0 8px 32px rgba(0,0,0,0.4);
             position: relative;
             overflow: hidden;
         }
 
-        #success-page .success-box::before {
-            content: '';
-            position: absolute;
-            top: -50%;
-            left: -50%;
-            width: 200%;
-            height: 200%;
-            background: radial-gradient(circle, rgba(220, 38, 38, 0.1) 0%, transparent 60%);
-            pointer-events: none;
-        }
+        /* No glow overlay */
 
         #success-page .success-box > * {
             position: relative;
@@ -1614,14 +1552,12 @@ Thank you for your purchase!
 
         #success-page .success-box i.bi-check-circle-fill {
             color: #ef4444;
-            text-shadow: 0 0 30px rgba(239, 68, 68, 0.5);
         }
 
         #success-page .key-display {
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(220, 38, 38, 0.2);
             color: #ef4444;
-            text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
         }
 
         #success-page .btn-light {
@@ -1634,7 +1570,6 @@ Thank you for your purchase!
 
         #success-page .btn-light:hover {
             background: rgba(220, 38, 38, 0.2);
-            box-shadow: 0 0 15px rgba(220, 38, 38, 0.1);
         }
 
         #success-page .btn-outline-light {
@@ -1679,7 +1614,6 @@ Thank you for your purchase!
             letter-spacing: 3px;
             text-transform: uppercase;
             margin: 0;
-            text-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
         }
 
         .store-header .sub-text {
@@ -1724,14 +1658,12 @@ Thank you for your purchase!
         .admin-sidebar .nav-link:hover, .admin-sidebar .nav-link.active { 
             background: rgba(220, 38, 38, 0.15); 
             color: #ef4444;
-            box-shadow: 0 0 15px rgba(220, 38, 38, 0.1);
         }
 
         .section-title { 
             font-weight: 800; 
             margin-bottom: 20px; 
             color: #fff;
-            text-shadow: 0 0 20px rgba(220, 38, 38, 0.2);
         }
 
         .stat-card { 
@@ -1740,7 +1672,7 @@ Thank you for your purchase!
             border-radius: 16px; 
             padding: 24px; 
             text-align: center; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3), 0 0 30px rgba(220, 38, 38, 0.05);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
             border: 1px solid rgba(220, 38, 38, 0.1);
         }
 
@@ -1748,7 +1680,6 @@ Thank you for your purchase!
             font-size: 2.2rem; 
             font-weight: 800; 
             color: #ef4444;
-            text-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
         }
 
         .stat-card .text-muted {
@@ -1881,7 +1812,7 @@ Thank you for your purchase!
             backdrop-filter: blur(30px);
             border: 1px solid rgba(220, 38, 38, 0.2);
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(220, 38, 38, 0.1);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
         }
 
         .modal-header {
@@ -1993,7 +1924,6 @@ Thank you for your purchase!
 
         #stockSummaryCards .col-md-4 > div:hover {
             border-color: rgba(220, 38, 38, 0.25) !important;
-            box-shadow: 0 4px 20px rgba(220, 38, 38, 0.1);
         }
 
         /* Scrollbar */
@@ -2091,10 +2021,10 @@ Thank you for your purchase!
                     
 
                     <div class="mb-3">
-                        <label class="form-label" style="color: rgba(255,255,255,0.9) !important; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 10px;">Coupon Code (Optional)</label>
-                        <div class="d-flex gap-2">
-                            <input type="text" class="form-control flex-grow-1" id="couponInput" placeholder="Enter coupon code" style="border-radius: 14px; color: #fff !important; background: rgba(255,255,255,0.06) !important;">
-                            <button class="btn btn-outline-primary px-4" type="button" onclick="applyCoupon()" style="border-radius: 14px; border-width: 1.5px; white-space: nowrap;">Apply</button>
+                        <label class="form-label" style="color: rgba(255,255,255,0.9) !important; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 8px;">Coupon Code</label>
+                        <div class="d-flex gap-2" style="flex-wrap: nowrap;">
+                            <input type="text" class="form-control" id="couponInput" placeholder="Enter code" style="border-radius: 14px; color: #fff !important; background: rgba(255,255,255,0.06) !important; min-width: 0;">
+                            <button class="btn btn-outline-primary" type="button" onclick="applyCoupon()" style="border-radius: 14px; border-width: 1.5px; white-space: nowrap; flex-shrink: 0; padding: 12px 20px;">Apply</button>
                         </div>
                         <div id="couponMsg" class="mt-2 small"></div>
                     </div>
