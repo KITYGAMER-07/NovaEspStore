@@ -3,18 +3,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>NovaEsp Store</title>
+    <title>Key Selling Store</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
-    <base target="_blank">
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
         import { getDatabase, ref, get, set, push, update, remove, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
         // ==========================================
-        // FIREBASE CONFIG
+        // FIREBASE CONFIG - REPLACE WITH YOURSa
         // ==========================================
         const firebaseConfig = {
             apiKey: "AIzaSyDKupV0toRbcPDDW8sLd9JNrbVVMDkfb2E",
@@ -29,54 +28,81 @@
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
 
-        // Helpers
-        async function getData(path) { const s = await get(ref(db, path)); return s.exists() ? s.val() : null; }
-        async function getList(path) { const d = await getData(path); return d ? Object.entries(d).map(([id, val]) => ({ id, ...val })) : []; }
-        async function setData(path, data) { await set(ref(db, path), data); }
-        async function pushData(path, data) { const n = push(ref(db, path)); await set(n, { ...data, id: n.key }); return n.key; }
-        async function updateData(path, data) { await update(ref(db, path), data); }
-        async function deleteData(path) { await remove(ref(db, path)); }
+        // Helper: Get data from RTDB
+        async function getData(path) {
+            const snapshot = await get(ref(db, path));
+            return snapshot.exists() ? snapshot.val() : null;
+        }
+
+        // Helper: Get list from RTDB
+        async function getList(path) {
+            const data = await getData(path);
+            if (!data) return [];
+            return Object.entries(data).map(([id, val]) => ({ id, ...val }));
+        }
+
+        // Helper: Set data
+        async function setData(path, data) {
+            await set(ref(db, path), data);
+        }
+
+        // Helper: Push data (auto ID)
+        async function pushData(path, data) {
+            const newRef = push(ref(db, path));
+            await set(newRef, { ...data, id: newRef.key });
+            return newRef.key;
+        }
+
+        // Helper: Update data
+        async function updateData(path, data) {
+            await update(ref(db, path), data);
+        }
+
+        // Helper: Delete data
+        async function deleteData(path) {
+            await remove(ref(db, path));
+        }
 
         // ==========================================
-        // TOAST NOTIFICATION SYSTEM
+        // APP CONFIG (LOADED FROM RTDB)
         // ==========================================
-        window.showToast = function(message, type = 'success') {
-            const container = document.getElementById('toastContainer');
-            const toast = document.createElement('div');
-            const icon = type === 'success' ? 'bi-check-circle-fill' : (type === 'error' ? 'bi-x-circle-fill' : 'bi-info-circle-fill');
-            const bg = type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' : (type === 'error' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #3b82f6, #2563eb)');
-            
-            toast.style.cssText = `background: ${bg}; color: #fff; padding: 14px 20px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 10px; transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); min-width: 280px; max-width: 350px; font-weight: 500; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);`;
-            toast.innerHTML = `<i class="bi ${icon}" style="font-size: 1.2rem;"></i> <span>${message}</span>`;
-            container.appendChild(toast);
-            
-            setTimeout(() => toast.style.transform = 'translateX(0)', 50);
-            setTimeout(() => {
-                toast.style.transform = 'translateX(120%)';
-                setTimeout(() => toast.remove(), 400);
-            }, 3000);
+        let appConfig = {
+            razorpayKeyId: '',
+            adminUsername: '',
+            adminPassword: '',
+            apkUrl: ''
         };
-
-        // ==========================================
-        // APP CONFIG
-        // ==========================================
-        let appConfig = { razorpayKeyId: '', adminUsername: '', adminPassword: '', apkUrl: '' };
 
         async function loadAppConfig() {
             try {
                 const rzp = await getData('settings/razorpay');
                 if (rzp) appConfig.razorpayKeyId = rzp.keyId || '';
+
                 const admin = await getData('settings/admin');
-                if (admin) { appConfig.adminUsername = admin.username || ''; appConfig.adminPassword = admin.password || ''; }
+                if (admin) {
+                    appConfig.adminUsername = admin.username || '';
+                    appConfig.adminPassword = admin.password || '';
+                }
+
                 const apk = await getData('settings/apk');
-                if (apk) appConfig.apkUrl = apk.url || '';
-            } catch (e) { console.error('Config load error:', e); }
+                if (apk) {
+                    appConfig.apkUrl = apk.url || '';
+                }
+            } catch (e) {
+                console.error('Config load error:', e);
+            }
         }
 
         // ==========================================
         // GLOBAL STATE
         // ==========================================
-        let currentProduct = null, currentDuration = null, currentPrice = 0, currentCoupon = null, discountAmount = 0, finalAmount = 0;
+        let currentProduct = null;
+        let currentDuration = null;
+        let currentPrice = 0;
+        let currentCoupon = null;
+        let discountAmount = 0;
+        let finalAmount = 0;
+        let isAdmin = false;
 
         // ==========================================
         // NAVIGATION
@@ -84,55 +110,60 @@
         window.showSection = function(sectionId) {
             document.querySelectorAll('.section').forEach(s => s.classList.add('d-none'));
             document.getElementById(sectionId).classList.remove('d-none');
-            
-            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
-            const activeLink = document.querySelector(`.nav-link[onclick*="${sectionId}"]`);
-            if (activeLink) activeLink.classList.add('active');
-
-            const loaders = {
-                'admin-dashboard': loadAdminDashboard,
-                'admin-products': loadAdminProducts,
-                'admin-durations': loadAdminDurations,
-                'admin-prices': loadAdminPrices,
-                'admin-keys': loadAdminKeys,
-                'admin-coupons': loadAdminCoupons,
-                'admin-orders': loadAdminOrders,
-                'admin-payments': loadAdminPayments
-            };
-            if (loaders[sectionId]) loaders[sectionId]();
-            
-            window.scrollTo(0, 0);
+            if (sectionId === 'admin-dashboard') loadAdminDashboard();
+            if (sectionId === 'admin-products') loadAdminProducts();
+            if (sectionId === 'admin-durations') loadAdminDurations();
+            if (sectionId === 'admin-prices') loadAdminPrices();
+            if (sectionId === 'admin-keys') loadAdminKeys();
+            if (sectionId === 'admin-coupons') loadAdminCoupons();
+            if (sectionId === 'admin-orders') loadAdminOrders();
+            if (sectionId === 'admin-payments') loadAdminPayments();
         };
 
         // ==========================================
-        // HOME PAGE
+        // HOME PAGE - LOAD PRODUCTS
         // ==========================================
         async function loadHomeProducts() {
             const select = document.getElementById('productSelect');
             select.innerHTML = '<option value="">Select Product</option>';
+
             const products = await getList('products');
-            products.forEach(p => { if (p.enabled !== false) select.innerHTML += `<option value="${p.id}">${p.name}</option>`; });
+            products.forEach(p => {
+                if (p.enabled !== false) {
+                    select.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+                }
+            });
         }
 
         window.onProductChange = async function() {
             const productId = document.getElementById('productSelect').value;
             const durationSelect = document.getElementById('durationSelect');
             durationSelect.innerHTML = '<option value="">Select Duration</option>';
+            // price display removed
             document.getElementById('purchaseBtn').disabled = true;
-            currentProduct = null; currentDuration = null; currentPrice = 0; currentCoupon = null;
+            currentProduct = null;
+            currentDuration = null;
+            currentPrice = 0;
+            currentCoupon = null;
             document.getElementById('couponInput').value = '';
             document.getElementById('couponMsg').innerHTML = '';
-            document.getElementById('totalDisplay').innerHTML = '';
 
-            if (!productId) { durationSelect.disabled = true; return; }
+            if (!productId) {
+                durationSelect.disabled = true;
+                return;
+            }
 
             const product = await getData('products/' + productId);
             if (product) {
                 currentProduct = { id: productId, ...product };
+
+                // Load durations specific to this product
                 const durations = await getList('durations');
-                durations.filter(d => d.productId === productId).forEach(d => {
-                    const u = d.unit ? d.unit.charAt(0).toUpperCase() + d.unit.slice(1) : 'Days';
-                    durationSelect.innerHTML += `<option value="${d.id}">${d.name} ${u}</option>`;
+                const productDurations = durations.filter(d => d.productId === productId);
+
+                productDurations.forEach(dur => {
+                    const unitLabel = dur.unit ? dur.unit.charAt(0).toUpperCase() + dur.unit.slice(1) : 'Days';
+                    durationSelect.innerHTML += `<option value="${dur.id}">${dur.name} ${unitLabel}</option>`;
                 });
                 durationSelect.disabled = false;
             }
@@ -145,71 +176,104 @@
             const durData = await getData('durations/' + durationId);
             const prices = await getList('prices');
             let priceFound = false;
-            
             prices.forEach(p => {
                 if (p.productId === currentProduct.id && p.durationId === durationId) {
                     currentPrice = p.price;
-                    const u = durData?.unit ? durData.unit.charAt(0).toUpperCase() + durData.unit.slice(1) : '';
-                    currentDuration = { id: durationId, name: durData?.name + ' ' + u };
+                    const unitLabel = durData?.unit ? durData.unit.charAt(0).toUpperCase() + durData.unit.slice(1) : '';
+                    currentDuration = { id: durationId, name: durData?.name + ' ' + unitLabel };
                     priceFound = true;
                 }
             });
 
             if (!priceFound) {
-                document.getElementById('totalDisplay').innerHTML = '<span class="text-danger fw-bold"><i class="bi bi-x-circle"></i> Price not set</span>';
+                document.getElementById('totalDisplay').innerHTML = '<span class="text-danger fw-bold"><i class="bi bi-x-circle"></i> Price not set for this combination</span>';
                 document.getElementById('purchaseBtn').disabled = true;
                 return;
             }
 
             const keys = await getList('licenseKeys');
-            if (!keys.find(k => k.productId === currentProduct.id && k.durationId === durationId && !k.used)) {
-                document.getElementById('totalDisplay').innerHTML = '<span class="text-danger fw-bold"><i class="bi bi-x-circle"></i> Out of Stock</span>';
+            const availableKey = keys.find(k => k.productId === currentProduct.id && k.durationId === durationId && !k.used);
+
+            if (!availableKey) {
+                document.getElementById('totalDisplay').innerHTML = '<span class="text-danger fw-bold"><i class="bi bi-x-circle"></i> Not available. Choose another duration</span>';
                 document.getElementById('purchaseBtn').disabled = true;
                 return;
             }
 
             document.getElementById('purchaseBtn').disabled = false;
+
+            // Re-validate coupon if price changed
             if (currentCoupon) {
-                const min = parseFloat(currentCoupon.minOrderValue) || 0;
-                if (currentPrice < min) { currentCoupon = null; document.getElementById('couponInput').value = ''; }
+                const minOrder = parseFloat(currentCoupon.minOrderValue) || 0;
+                if (currentPrice < minOrder) {
+                    currentCoupon = null;
+                    document.getElementById('couponMsg').innerHTML = '<span class="text-warning"><i class="bi bi-exclamation-triangle"></i> Coupon removed - minimum order value not met for this duration</span>';
+                    document.getElementById('couponInput').value = '';
+                }
             }
+
             calculateTotal();
         };
 
         window.applyCoupon = async function() {
             const code = document.getElementById('couponInput').value.trim().toUpperCase();
-            if (!code) { currentCoupon = null; document.getElementById('couponMsg').innerHTML = ''; calculateTotal(); return; }
+            if (!code) {
+                currentCoupon = null;
+                document.getElementById('couponMsg').innerHTML = '';
+                calculateTotal();
+                return;
+            }
 
+            // If no product/duration selected yet, don't allow coupon
             if (!currentProduct || !currentDuration || currentPrice <= 0) {
-                document.getElementById('couponMsg').innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Select product first</span>';
-                currentCoupon = null; calculateTotal(); return;
+                document.getElementById('couponMsg').innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Please select a product and duration first</span>';
+                currentCoupon = null;
+                calculateTotal();
+                return;
             }
 
             const coupons = await getList('coupons');
-            let matched = null, minFail = false, expired = false;
+            let matchedCoupon = null;
+            let minOrderFail = false;
+            let expired = false;
 
             for (const c of coupons) {
                 if (c.code === code) {
-                    const exp = c.expiryDate ? new Date(c.expiryDate) : null;
-                    if (exp) exp.setHours(23, 59, 59, 999);
-                    if (exp && exp < new Date()) { expired = true; continue; }
-                    if (currentPrice >= (parseFloat(c.minOrderValue) || 0)) { matched = { id: c.id, ...c }; break; } 
-                    else minFail = true;
+                    const now = new Date();
+                    const expiry = c.expiryDate ? new Date(c.expiryDate) : null;
+                    // Set expiry to end of day for fair comparison
+                    if (expiry) {
+                        expiry.setHours(23, 59, 59, 999);
+                    }
+
+                    if (expiry && expiry < now) {
+                        expired = true;
+                        continue;
+                    }
+
+                    const minOrder = parseFloat(c.minOrderValue) || 0;
+                    if (currentPrice >= minOrder) {
+                        matchedCoupon = { id: c.id, ...c };
+                        break; // Found valid coupon, stop searching
+                    } else {
+                        minOrderFail = true;
+                        // Don't break - keep looking for another valid coupon
+                    }
                 }
             }
 
-            if (matched) {
-                currentCoupon = matched;
-                document.getElementById('couponMsg').innerHTML = `<span class="text-success"><i class="bi bi-check-circle"></i> Applied! Saved ₹${matched.type === 'percentage' ? Math.round(currentPrice * matched.value / 100) : matched.value}</span>`;
-            } else if (minFail) {
+            if (matchedCoupon) {
+                currentCoupon = matchedCoupon;
+                document.getElementById('couponMsg').innerHTML = '<span class="text-success"><i class="bi bi-check-circle"></i> Coupon applied! You saved ₹' + (currentCoupon.type === 'percentage' ? Math.round(currentPrice * currentCoupon.value / 100) : currentCoupon.value) + '</span>';
+            } else if (minOrderFail) {
                 currentCoupon = null;
-                document.getElementById('couponMsg').innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Min order not met</span>';
+                document.getElementById('couponMsg').innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Minimum order value not met (₹' + currentPrice + ' < required ₹' + (coupons.find(c => c.code === code)?.minOrderValue || 0) + ')</span>';
             } else if (expired) {
                 currentCoupon = null;
-                document.getElementById('couponMsg').innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Expired</span>';
+                document.getElementById('couponMsg').innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Coupon has expired</span>';
             } else {
                 currentCoupon = null;
-                document.getElementById('couponMsg').innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Invalid code</span>';
+                document.getElementById('couponMsg').innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Invalid coupon code</span>';
             }
             calculateTotal();
         };
@@ -217,161 +281,308 @@
         function calculateTotal() {
             discountAmount = 0;
             if (currentCoupon) {
-                discountAmount = currentCoupon.type === 'percentage' ? Math.round(currentPrice * currentCoupon.value / 100) : currentCoupon.value;
+                if (currentCoupon.type === 'percentage') {
+                    discountAmount = Math.round(currentPrice * currentCoupon.value / 100);
+                } else {
+                    discountAmount = currentCoupon.value;
+                }
             }
             finalAmount = Math.max(0, currentPrice - discountAmount);
+
             let html = '';
             if (currentCoupon) {
                 html += `<div class="text-decoration-line-through text-muted">₹${currentPrice}</div>`;
-                html += `<div class="text-success mb-1">Discount: -₹${discountAmount}</div>`;
+                html += `<div class="text-success">Discount: -₹${discountAmount}</div>`;
             }
-            html += `<div class="h3 fw-bold mb-0" style="color: #ff003c; text-shadow: 0 0 15px rgba(255, 0, 60, 0.5);">Total: ₹${finalAmount}</div>`;
+            html += `<div class="h3 text-primary fw-bold">Total: ₹${finalAmount}</div>`;
             document.getElementById('totalDisplay').innerHTML = html;
         }
 
         // ==========================================
-        // PAYMENT & ORDER
+        // RAZORPAY PAYMENT
         // ==========================================
         window.initiatePayment = async function() {
             if (!currentProduct || !currentDuration || finalAmount <= 0) return;
-            if (!appConfig.razorpayKeyId) { showToast('Payment gateway not configured', 'error'); return; }
+
+            if (!appConfig.razorpayKeyId) {
+                alert('Payment gateway not configured. Please contact admin.');
+                return;
+            }
 
             const orderId = 'ORD' + Date.now();
+
             const options = {
                 key: appConfig.razorpayKeyId,
                 amount: finalAmount * 100,
                 currency: "INR",
                 name: currentProduct.name,
                 description: `${currentProduct.name} - ${currentDuration.name}`,
-                handler: async (res) => await processSuccessPayment(res, orderId),
-                theme: { color: "#dc2626" }
+                handler: async function(response) {
+                    await processSuccessPayment(response, orderId);
+                },
+                prefill: {
+                    name: "",
+                    email: "",
+                    contact: ""
+                },
+                theme: {
+                    color: "#0d6efd"
+                }
             };
 
             try {
                 const rzp = new Razorpay(options);
-                rzp.on('payment.failed', (res) => showToast('Payment failed: ' + (res.error?.description || ''), 'error'));
+                rzp.on('payment.failed', function(response) {
+                    alert('Payment failed: ' + (response.error?.description || 'Unknown error'));
+                });
                 rzp.open();
-            } catch (e) { showToast('Payment Error: ' + e.message, 'error'); }
+            } catch (e) {
+                alert('Payment Error: ' + e.message);
+                console.error('Razorpay Error:', e);
+            }
         };
 
         async function processSuccessPayment(response, orderId) {
-            let assignedKey = null, keyDocId = null;
+            let assignedKey = null;
+            let keyDocId = null;
+
             try {
+                // Find unused license key matching product + duration
                 const keys = await getList('licenseKeys');
+
                 for (const k of keys) {
                     if (k.productId === currentProduct.id && k.durationId === currentDuration.id && !k.used) {
-                        assignedKey = k.key; keyDocId = k.id; break;
+                        assignedKey = k.key;
+                        keyDocId = k.id;
+                        break;
                     }
                 }
-                if (keyDocId) await updateData('licenseKeys/' + keyDocId, { used: true, usedAt: Date.now(), orderId });
-                
+
+                if (keyDocId) {
+                    await updateData('licenseKeys/' + keyDocId, { used: true, usedAt: Date.now(), orderId: orderId });
+                }
+
+                // Save order
                 const orderData = {
-                    orderId, productId: currentProduct.id, productName: currentProduct.name,
-                    durationId: currentDuration.id, durationName: currentDuration.name,
-                    originalPrice: currentPrice, discountAmount, finalAmount,
+                    orderId: orderId,
+                    productId: currentProduct.id,
+                    productName: currentProduct.name,
+                    durationId: currentDuration.id,
+                    durationName: currentDuration.name,
+                    originalPrice: currentPrice,
+                    discountAmount: discountAmount,
+                    finalAmount: finalAmount,
                     couponCode: currentCoupon ? currentCoupon.code : null,
-                    licenseKey: assignedKey, paymentId: response.razorpay_payment_id,
-                    status: 'paid', createdAt: Date.now()
+                    licenseKey: assignedKey,
+                    paymentId: response.razorpay_payment_id,
+                    status: 'paid',
+                    createdAt: Date.now()
                 };
                 await pushData('orders', orderData);
-                await pushData('payments', { orderId, paymentId: response.razorpay_payment_id, amount: finalAmount, gateway: 'razorpay', status: 'success', createdAt: Date.now() });
-            } catch (e) { console.error('Post-payment error:', e); }
 
-            window.lastOrder = { orderId, productName: currentProduct.name, durationName: currentDuration.name, licenseKey: assignedKey || 'Contact Admin', originalPrice: currentPrice, discountAmount, finalAmount, couponCode: currentCoupon ? currentCoupon.code : null, paymentId: response.razorpay_payment_id, date: new Date().toLocaleString() };
+                // Save payment record
+                await pushData('payments', {
+                    orderId: orderId,
+                    paymentId: response.razorpay_payment_id,
+                    amount: finalAmount,
+                    gateway: 'razorpay',
+                    status: 'success',
+                    createdAt: Date.now()
+                });
+            } catch (e) {
+                console.error('Post-payment error:', e);
+            }
 
+            // Store order details for invoice
+            window.lastOrder = {
+                orderId: orderId,
+                productName: currentProduct ? currentProduct.name : '',
+                durationName: currentDuration ? currentDuration.name : '',
+                licenseKey: assignedKey || 'No keys available - Contact Admin',
+                originalPrice: currentPrice || 0,
+                discountAmount: discountAmount || 0,
+                finalAmount: finalAmount || 0,
+                couponCode: currentCoupon ? currentCoupon.code : null,
+                paymentId: response.razorpay_payment_id,
+                date: new Date().toLocaleString()
+            };
+
+            // Show success page regardless of DB errors
             document.getElementById('successOrderId').textContent = orderId;
             document.getElementById('successProduct').textContent = currentProduct.name;
             document.getElementById('successDuration').textContent = currentDuration.name;
             document.getElementById('successKey').textContent = assignedKey || 'No keys available - Contact Admin';
             document.getElementById('successAmount').textContent = '₹' + finalAmount;
 
+            // Show APK download if URL is configured
             if (appConfig.apkUrl) {
                 document.getElementById('apkDownloadCard').style.display = 'block';
                 document.getElementById('apkDownloadBtn').href = appConfig.apkUrl;
             } else {
                 document.getElementById('apkDownloadCard').style.display = 'none';
             }
+
             showSection('success-page');
         }
 
         window.copyKey = function() {
-            navigator.clipboard.writeText(document.getElementById('successKey').textContent);
-            showToast('License key copied to clipboard!');
+            const key = document.getElementById('successKey').textContent;
+            navigator.clipboard.writeText(key);
+            alert('License key copied!');
         };
 
         window.downloadInvoice = function() {
-            const o = window.lastOrder || {};
-            let inv = `===============================================\n              NOVAESP - INVOICE\n===============================================\nOrder ID     : ${o.orderId}\nPayment ID   : ${o.paymentId}\nDate         : ${o.date}\n-----------------------------------------------\nProduct      : ${o.productName}\nDuration     : ${o.durationName}\nLicense Key  : ${o.licenseKey}\n-----------------------------------------------\nOriginal Price : ₹${o.originalPrice}\n`;
-            if (o.discountAmount > 0) inv += `Discount       : -₹${o.discountAmount}${o.couponCode ? ` (${o.couponCode})` : ''}\n`;
-            inv += `-----------------------------------------------\nAMOUNT PAID    : ₹${o.finalAmount}\n===============================================\nThank you!`;
-            
-            const blob = new Blob([inv], { type: 'text/plain' });
+            const order = window.lastOrder || {};
+            const orderId = order.orderId || document.getElementById('successOrderId').textContent || 'N/A';
+            const product = order.productName || document.getElementById('successProduct').textContent || 'N/A';
+            const duration = order.durationName || document.getElementById('successDuration').textContent || 'N/A';
+            const key = order.licenseKey || document.getElementById('successKey').textContent || 'N/A';
+            const originalPrice = order.originalPrice || 0;
+            const discountAmount = order.discountAmount || 0;
+            const finalAmount = order.finalAmount || 0;
+            const couponCode = order.couponCode || null;
+            const paymentId = order.paymentId || 'N/A';
+            const date = order.date || new Date().toLocaleString();
+
+            let invoice = `
+===============================================
+              NOVAESP - INVOICE
+===============================================
+Order ID     : ${orderId}
+Payment ID   : ${paymentId}
+Date         : ${date}
+-----------------------------------------------
+PRODUCT DETAILS
+-----------------------------------------------
+Product      : ${product}
+Duration     : ${duration}
+License Key  : ${key}
+-----------------------------------------------
+PAYMENT DETAILS
+-----------------------------------------------
+Original Price : ₹${originalPrice}`;
+
+            if (discountAmount > 0) {
+                invoice += `
+Discount       : -₹${discountAmount}`;
+                if (couponCode) {
+                    invoice += ` (Coupon: ${couponCode})`;
+                }
+            }
+
+            invoice += `
+-----------------------------------------------
+AMOUNT PAID    : ₹${finalAmount}
+===============================================
+Thank you for your purchase!
+===============================================
+            `;
+
+            const blob = new Blob([invoice], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = `Invoice_${o.orderId}.txt`;
+            a.href = url;
+            a.download = `Invoice_${orderId}.txt`;
+            document.body.appendChild(a);
             a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
         };
 
         // ==========================================
-        // ADMIN AUTH
+        // ADMIN LOGIN
         // ==========================================
         window.adminLogin = async function() {
             const u = document.getElementById('adminUser').value;
             const p = document.getElementById('adminPass').value;
+
             await loadAppConfig();
+
             if (u === appConfig.adminUsername && p === appConfig.adminPassword) {
+                isAdmin = true;
                 document.getElementById('adminNav').classList.remove('d-none');
                 document.getElementById('loginNav').classList.add('d-none');
                 showSection('admin-dashboard');
             } else {
-                showToast('Invalid credentials!', 'error');
+                alert('Invalid credentials!');
             }
         };
 
         window.adminLogout = function() {
+            isAdmin = false;
             document.getElementById('adminNav').classList.add('d-none');
             document.getElementById('loginNav').classList.remove('d-none');
             showSection('home');
         };
 
         // ==========================================
-        // ADMIN: DASHBOARD
+        // ADMIN DASHBOARD
         // ==========================================
         async function loadAdminDashboard() {
             const orders = await getList('orders');
-            let tO = 0, tS = 0, tR = 0;
-            orders.forEach(d => { tO++; if (d.status === 'paid') { tS++; tR += d.finalAmount || 0; } });
-            document.getElementById('dashTotalOrders').textContent = tO;
-            document.getElementById('dashTotalSales').textContent = tS;
-            document.getElementById('dashRevenue').textContent = '₹' + tR;
-            
+            let totalOrders = 0, totalSales = 0, totalRevenue = 0;
+
+            orders.forEach(data => {
+                totalOrders++;
+                if (data.status === 'paid') {
+                    totalSales++;
+                    totalRevenue += data.finalAmount || 0;
+                }
+            });
+
+            document.getElementById('dashTotalOrders').textContent = totalOrders;
+            document.getElementById('dashTotalSales').textContent = totalSales;
+            document.getElementById('dashRevenue').textContent = '₹' + totalRevenue;
+
             orders.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
-            let html = orders.slice(0, 5).map(o => `<tr><td>${o.orderId}</td><td>${o.productName}</td><td>${o.durationName}</td><td>₹${o.finalAmount}</td><td><span class="badge bg-success">${o.status}</span></td></tr>`).join('');
-            document.getElementById('recentOrdersTable').innerHTML = html || '<tr><td colspan="5" class="text-center" style="color: #555555; font-weight: 600;">No orders yet</td></tr>';
+            let html = '';
+            orders.slice(0, 5).forEach(o => {
+                html += `<tr><td>${o.orderId}</td><td>${o.productName}</td><td>${o.durationName}</td><td>₹${o.finalAmount}</td><td><span class="badge bg-success">${o.status}</span></td></tr>`;
+            });
+            document.getElementById('recentOrdersTable').innerHTML = html || '<tr><td colspan="5" class="text-center">No orders yet</td></tr>';
         }
 
         // ==========================================
-        // ADMIN: PRODUCTS
+        // ADMIN PRODUCTS
         // ==========================================
         async function loadAdminProducts() {
             const products = await getList('products');
-            let html = products.map(p => `<tr><td>${p.name}</td><td><span class="badge ${p.enabled !== false ? 'bg-success' : 'bg-secondary'}">${p.enabled !== false ? 'Enabled' : 'Disabled'}</span></td><td><button class="btn btn-sm btn-warning me-1" onclick="editProduct('${p.id}', '${p.name}', ${p.enabled !== false})"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-danger" onclick="deleteProduct('${p.id}')"><i class="bi bi-trash"></i></button></td></tr>`).join('');
-            document.getElementById('productsTable').innerHTML = html || '<tr><td colspan="3" class="text-center" style="color: #555555; font-weight: 600;">No products</td></tr>';
+            let html = '';
+            products.forEach(p => {
+                html += `<tr>
+                    <td>${p.name}</td>
+                    <td><span class="badge ${p.enabled !== false ? 'bg-success' : 'bg-secondary'}">${p.enabled !== false ? 'Enabled' : 'Disabled'}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="editProduct('${p.id}', '${p.name}', ${p.enabled !== false})"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteProduct('${p.id}')"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('productsTable').innerHTML = html || '<tr><td colspan="3" class="text-center">No products</td></tr>';
         }
 
         window.saveProduct = async function() {
             const name = document.getElementById('productName').value.trim();
             const enabled = document.getElementById('productEnabled').checked;
             const editId = document.getElementById('productEditId').value;
-            if (!name) { showToast('Enter product name', 'error'); return; }
-            if (editId) await updateData('products/' + editId, { name, enabled });
-            else await pushData('products', { name, enabled, createdAt: Date.now() });
+
+            if (!name) { alert('Enter product name'); return; }
+
+            if (editId) {
+                await updateData('products/' + editId, { name, enabled });
+            } else {
+                await pushData('products', { name, enabled, createdAt: Date.now() });
+            }
+
+            document.getElementById('productName').value = '';
+            document.getElementById('productEditId').value = '';
+            document.getElementById('productEnabled').checked = true;
+            document.getElementById('productModalTitle').textContent = 'Add Product';
             bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
-            showToast('Product saved successfully!');
             loadAdminProducts();
         };
 
-        window.editProduct = (id, name, enabled) => {
+        window.editProduct = function(id, name, enabled) {
             document.getElementById('productName').value = name;
             document.getElementById('productEnabled').checked = enabled;
             document.getElementById('productEditId').value = id;
@@ -379,11 +590,14 @@
             new bootstrap.Modal(document.getElementById('productModal')).show();
         };
 
-        window.deleteProduct = async (id) => {
-            if (confirm('Delete this product?')) { await deleteData('products/' + id); showToast('Product deleted!'); loadAdminProducts(); }
+        window.deleteProduct = async function(id) {
+            if (confirm('Delete this product?')) {
+                await deleteData('products/' + id);
+                loadAdminProducts();
+            }
         };
 
-        window.openProductModal = () => {
+        window.openProductModal = function() {
             document.getElementById('productName').value = '';
             document.getElementById('productEditId').value = '';
             document.getElementById('productEnabled').checked = true;
@@ -392,17 +606,27 @@
         };
 
         // ==========================================
-        // ADMIN: DURATIONS
+        // ADMIN DURATIONS
         // ==========================================
         async function loadAdminDurations() {
             const durations = await getList('durations');
-            const products = (await getData('products')) || {};
-            let html = durations.map(d => {
-                const pName = products[d.productId]?.name || 'Unknown';
-                const u = d.unit ? d.unit.charAt(0).toUpperCase() + d.unit.slice(1) : 'Days';
-                return `<tr><td>${pName}</td><td>${d.name}</td><td><span class="badge bg-info">${u}</span></td><td><button class="btn btn-sm btn-warning me-1" onclick="editDuration('${d.id}', '${d.productId}', '${d.name}', '${d.unit || 'days'}')"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-danger" onclick="deleteDuration('${d.id}')"><i class="bi bi-trash"></i></button></td></tr>`;
-            }).join('');
-            document.getElementById('durationsTable').innerHTML = html || '<tr><td colspan="4" class="text-center" style="color: #555555; font-weight: 600;">No durations</td></tr>';
+            const productsSnap = await getData('products');
+            const products = productsSnap || {};
+            let html = '';
+            durations.forEach(d => {
+                const prodName = products[d.productId]?.name || 'Unknown';
+                const unitLabel = d.unit ? d.unit.charAt(0).toUpperCase() + d.unit.slice(1) : 'Days';
+                html += `<tr>
+                    <td>${prodName}</td>
+                    <td>${d.name}</td>
+                    <td><span class="badge bg-info">${unitLabel}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="editDuration('${d.id}', '${d.productId}', '${d.name}', '${d.unit || 'days'}')"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteDuration('${d.id}')"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('durationsTable').innerHTML = html || '<tr><td colspan="4" class="text-center">No durations</td></tr>';
         }
 
         window.saveDuration = async function() {
@@ -410,15 +634,25 @@
             const name = document.getElementById('durationName').value.trim();
             const unit = document.getElementById('durationUnit').value;
             const editId = document.getElementById('durationEditId').value;
-            if (!productId || !name) { showToast('Fill all fields', 'error'); return; }
-            if (editId) await updateData('durations/' + editId, { productId, name, unit });
-            else await pushData('durations', { productId, name, unit, createdAt: Date.now() });
+            if (!productId) { alert('Select a product'); return; }
+            if (!name) { alert('Enter duration name'); return; }
+
+            if (editId) {
+                await updateData('durations/' + editId, { productId, name, unit });
+            } else {
+                await pushData('durations', { productId, name, unit, createdAt: Date.now() });
+            }
+
+            document.getElementById('durationProduct').value = '';
+            document.getElementById('durationName').value = '';
+            document.getElementById('durationUnit').value = 'days';
+            document.getElementById('durationEditId').value = '';
+            document.getElementById('durationModalTitle').textContent = 'Add Duration';
             bootstrap.Modal.getInstance(document.getElementById('durationModal')).hide();
-            showToast('Duration saved!');
             loadAdminDurations();
         };
 
-        window.editDuration = async (id, productId, name, unit) => {
+        window.editDuration = async function(id, productId, name, unit) {
             await populateDurationProductDropdown();
             document.getElementById('durationProduct').value = productId || '';
             document.getElementById('durationName').value = name;
@@ -428,8 +662,14 @@
             new bootstrap.Modal(document.getElementById('durationModal')).show();
         };
 
-        window.deleteDuration = async (id) => { if (confirm('Delete this duration?')) { await deleteData('durations/' + id); showToast('Deleted!'); loadAdminDurations(); } };
-        window.openDurationModal = async () => {
+        window.deleteDuration = async function(id) {
+            if (confirm('Delete this duration?')) {
+                await deleteData('durations/' + id);
+                loadAdminDurations();
+            }
+        };
+
+        window.openDurationModal = async function() {
             await populateDurationProductDropdown();
             document.getElementById('durationProduct').value = '';
             document.getElementById('durationName').value = '';
@@ -442,51 +682,82 @@
         async function populateDurationProductDropdown() {
             const select = document.getElementById('durationProduct');
             select.innerHTML = '<option value="">Select Product</option>';
-            (await getList('products')).forEach(p => { if (p.enabled !== false) select.innerHTML += `<option value="${p.id}">${p.name}</option>`; });
+            const products = await getList('products');
+            products.forEach(p => {
+                if (p.enabled !== false) select.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+            });
         }
+
 
         window.onKeyProductChange = async function() {
             const productId = document.getElementById('keyProduct').value;
             const dSelect = document.getElementById('keyDuration');
             dSelect.innerHTML = '<option value="">Select Duration</option>';
+
             if (!productId) return;
-            (await getList('durations')).filter(d => d.productId === productId).forEach(d => {
-                const u = d.unit ? d.unit.charAt(0).toUpperCase() + d.unit.slice(1) : 'Days';
-                dSelect.innerHTML += `<option value="${d.id}">${d.name} ${u}</option>`;
+
+            const durations = await getList('durations');
+            const productDurations = durations.filter(d => d.productId === productId);
+            productDurations.forEach(d => {
+                const unitLabel = d.unit ? d.unit.charAt(0).toUpperCase() + d.unit.slice(1) : 'Days';
+                dSelect.innerHTML += `<option value="${d.id}">${d.name} ${unitLabel}</option>`;
             });
         };
 
         // ==========================================
-        // ADMIN: PRICES
+        // ADMIN PRICES
         // ==========================================
         async function loadAdminPrices() {
             const prices = await getList('prices');
-            const products = (await getData('products')) || {};
-            const durations = (await getData('durations')) || {};
-            let html = prices.map(p => {
-                const pName = products[p.productId]?.name || 'Unknown';
-                const d = durations[p.durationId];
-                const dName = d?.name || 'Unknown';
-                const dU = d?.unit ? d.unit.charAt(0).toUpperCase() + d.unit.slice(1) : '';
-                return `<tr><td>${pName}</td><td>${dName} ${dU}</td><td>₹${p.price}</td><td><button class="btn btn-sm btn-warning me-1" onclick="editPrice('${p.id}', '${p.productId}', '${p.durationId}', ${p.price})"><i class="bi bi-pencil"></i></button><button class="btn btn-sm btn-danger" onclick="deletePrice('${p.id}')"><i class="bi bi-trash"></i></button></td></tr>`;
-            }).join('');
-            document.getElementById('pricesTable').innerHTML = html || '<tr><td colspan="4" class="text-center" style="color: #555555; font-weight: 600;">No prices set</td></tr>';
+            const productsSnap = await getData('products');
+            const durationsSnap = await getData('durations');
+
+            const products = productsSnap || {};
+            const durations = durationsSnap || {};
+
+            let html = '';
+            prices.forEach(p => {
+                const prodName = products[p.productId]?.name || 'Unknown';
+                const dur = durations[p.durationId];
+                const durName = dur?.name || 'Unknown';
+                const durUnit = dur?.unit ? dur.unit.charAt(0).toUpperCase() + dur.unit.slice(1) : '';
+                html += `<tr>
+                    <td>${prodName}</td>
+                    <td>${durName} ${durUnit}</td>
+                    <td>₹${p.price}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="editPrice('${p.id}', '${p.productId}', '${p.durationId}', ${p.price})"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deletePrice('${p.id}')"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('pricesTable').innerHTML = html || '<tr><td colspan="4" class="text-center">No prices set</td></tr>';
         }
 
         async function populatePriceDropdowns() {
             const pSelect = document.getElementById('priceProduct');
+            const dSelect = document.getElementById('priceDuration');
             pSelect.innerHTML = '<option value="">Select Product</option>';
-            (await getList('products')).forEach(d => { if (d.enabled !== false) pSelect.innerHTML += `<option value="${d.id}">${d.name}</option>`; });
+            dSelect.innerHTML = '<option value="">Select Duration</option>';
+
+            const products = await getList('products');
+            products.forEach(d => {
+                if (d.enabled !== false) pSelect.innerHTML += `<option value="${d.id}">${d.name}</option>`;
+            });
         }
 
         window.onPriceProductChange = async function() {
             const productId = document.getElementById('priceProduct').value;
             const dSelect = document.getElementById('priceDuration');
             dSelect.innerHTML = '<option value="">Select Duration</option>';
+
             if (!productId) return;
-            (await getList('durations')).filter(d => d.productId === productId).forEach(d => {
-                const u = d.unit ? d.unit.charAt(0).toUpperCase() + d.unit.slice(1) : 'Days';
-                dSelect.innerHTML += `<option value="${d.id}">${d.name} ${u}</option>`;
+
+            const durations = await getList('durations');
+            const productDurations = durations.filter(d => d.productId === productId);
+            productDurations.forEach(d => {
+                const unitLabel = d.unit ? d.unit.charAt(0).toUpperCase() + d.unit.slice(1) : 'Days';
+                dSelect.innerHTML += `<option value="${d.id}">${d.name} ${unitLabel}</option>`;
             });
         };
 
@@ -495,15 +766,23 @@
             const durationId = document.getElementById('priceDuration').value;
             const price = parseInt(document.getElementById('priceValue').value);
             const editId = document.getElementById('priceEditId').value;
-            if (!productId || !durationId || !price || price <= 0) { showToast('Fill all fields', 'error'); return; }
-            if (editId) await updateData('prices/' + editId, { productId, durationId, price });
-            else await pushData('prices', { productId, durationId, price, createdAt: Date.now() });
+
+            if (!productId || !durationId || !price || price <= 0) { alert('Fill all fields'); return; }
+
+            if (editId) {
+                await updateData('prices/' + editId, { productId, durationId, price });
+            } else {
+                await pushData('prices', { productId, durationId, price, createdAt: Date.now() });
+            }
+
+            document.getElementById('priceValue').value = '';
+            document.getElementById('priceEditId').value = '';
+            document.getElementById('priceModalTitle').textContent = 'Set Price';
             bootstrap.Modal.getInstance(document.getElementById('priceModal')).hide();
-            showToast('Price saved!');
             loadAdminPrices();
         };
 
-        window.editPrice = async (id, productId, durationId, price) => {
+        window.editPrice = async function(id, productId, durationId, price) {
             await populatePriceDropdowns();
             document.getElementById('priceProduct').value = productId;
             await onPriceProductChange();
@@ -514,8 +793,14 @@
             new bootstrap.Modal(document.getElementById('priceModal')).show();
         };
 
-        window.deletePrice = async (id) => { if (confirm('Delete this price?')) { await deleteData('prices/' + id); showToast('Deleted!'); loadAdminPrices(); } };
-        window.openPriceModal = async () => {
+        window.deletePrice = async function(id) {
+            if (confirm('Delete this price?')) {
+                await deleteData('prices/' + id);
+                loadAdminPrices();
+            }
+        };
+
+        window.openPriceModal = async function() {
             await populatePriceDropdowns();
             document.getElementById('priceValue').value = '';
             document.getElementById('priceEditId').value = '';
@@ -524,58 +809,123 @@
         };
 
         // ==========================================
-        // ADMIN: LICENSE KEYS
+        // ADMIN LICENSE KEYS
         // ==========================================
         async function loadAdminKeys() {
             const keys = await getList('licenseKeys');
-            const products = (await getData('products')) || {};
-            const durations = (await getData('durations')) || {};
+            const productsSnap = await getData('products');
+            const durationsSnap = await getData('durations');
+            const products = productsSnap || {};
+            const durations = durationsSnap || {};
 
+            // ===== STOCK SUMMARY CALCULATION =====
             const stockMap = {};
+            // Initialize stock map for all product+duration combos that have keys
             keys.forEach(k => {
-                const ck = k.productId + '_' + k.durationId;
-                if (!stockMap[ck]) stockMap[ck] = { total: 0, used: 0, active: 0 };
-                stockMap[ck].total++;
-                if (k.used) stockMap[ck].used++; else stockMap[ck].active++;
+                const comboKey = k.productId + '_' + k.durationId;
+                if (!stockMap[comboKey]) {
+                    stockMap[comboKey] = { total: 0, used: 0, active: 0 };
+                }
+                stockMap[comboKey].total++;
+                if (k.used) {
+                    stockMap[comboKey].used++;
+                } else {
+                    stockMap[comboKey].active++;
+                }
             });
 
+            // Build stock summary HTML
             let stockHtml = '';
-            Object.entries(stockMap).sort((a, b) => b[1].active - a[1].active).forEach(([ck, c]) => {
-                const [pId, dId] = ck.split('_');
-                const pName = products[pId]?.name || 'Unknown';
-                const d = durations[dId];
-                const dName = d ? `${d.name} ${d.unit ? d.unit.charAt(0).toUpperCase() + d.unit.slice(1) : ''}` : 'Unknown';
-                const low = c.active <= 2, out = c.active === 0;
-                stockHtml += `<div class="col-md-4 col-lg-3"><div class="p-3" style="background: #111111; border-radius: 12px; border: 1px solid rgba(255,0,60,0.3);"><div class="d-flex justify-content-between mb-2"><div><div style="font-size: 0.95rem; font-weight: 800; color: #ffffff;">${pName}</div><div style="font-size: 0.8rem; color: #9ca3af;">${dName}</div></div><span class="badge ${out ? 'bg-danger' : low ? 'bg-warning' : 'bg-success'}" style="font-size: 0.75rem; font-weight: 700;">${out ? 'Out' : low ? 'Low' : 'In Stock'}</span></div><div class="d-flex gap-3 mt-2"><div class="text-center"><div style="font-size: 1.4rem; font-weight: 800; color: ${c.active > 0 ? '#00ff9d' : '#ef4444'};">${c.active}</div><div style="font-size: 0.7rem; color: #6b7280; font-weight: 600;">AVAIL</div></div><div class="text-center"><div style="font-size: 1.4rem; font-weight: 800; color: #ffffff;">${c.used}</div><div style="font-size: 0.7rem; color: #6b7280; font-weight: 600;">SOLD</div></div><div class="text-center"><div style="font-size: 1.4rem; font-weight: 800; color: #38bdf8;">${c.total}</div><div style="font-size: 0.7rem; color: #6b7280; font-weight: 600;">TOTAL</div></div></div></div></div>`;
-            });
-            document.getElementById('stockSummaryCards').innerHTML = stockHtml || '<div class="col-12 text-center" style="color: #555555; font-weight: 600;">No keys in stock</div>';
+            const stockEntries = Object.entries(stockMap).sort((a, b) => b[1].active - a[1].active);
+
+            if (stockEntries.length === 0) {
+                stockHtml = '<div class="col-12 text-center text-white-50">No keys in stock</div>';
+            } else {
+                stockEntries.forEach(([comboKey, counts]) => {
+                    const [prodId, durId] = comboKey.split('_');
+                    const prodName = products[prodId]?.name || 'Unknown Product';
+                    const dur = durations[durId];
+                    const durName = dur ? `${dur.name} ${dur.unit ? dur.unit.charAt(0).toUpperCase() + dur.unit.slice(1) : ''}` : 'Unknown Duration';
+                    const lowStock = counts.active <= 2;
+                    const outOfStock = counts.active === 0;
+
+                    stockHtml += `
+                    <div class="col-md-4 col-lg-3">
+                        <div class="p-3" style="background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <div class="fw-bold text-white" style="font-size: 0.9rem;">${prodName}</div>
+                                    <div class="text-white-50" style="font-size: 0.75rem;">${durName}</div>
+                                </div>
+                                <span class="badge ${outOfStock ? 'bg-danger' : lowStock ? 'bg-warning text-dark' : 'bg-success'}" style="font-size: 0.7rem;">
+                                    ${outOfStock ? 'Out of Stock' : lowStock ? 'Low Stock' : 'In Stock'}
+                                </span>
+                            </div>
+                            <div class="d-flex gap-3 mt-2">
+                                <div class="text-center">
+                                    <div class="fw-bold ${counts.active > 0 ? 'text-success' : 'text-danger'}" style="font-size: 1.3rem;">${counts.active}</div>
+                                    <div class="text-white-50" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px;">Available</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="fw-bold text-white" style="font-size: 1.3rem;">${counts.used}</div>
+                                    <div class="text-white-50" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px;">Sold</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="fw-bold text-info" style="font-size: 1.3rem;">${counts.total}</div>
+                                    <div class="text-white-50" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px;">Total</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                });
+            }
+            document.getElementById('stockSummaryCards').innerHTML = stockHtml;
+            // ===== END STOCK SUMMARY =====
 
             let activeHtml = '', usedHtml = '';
             keys.forEach(k => {
-                const pName = products[k.productId]?.name || 'Unknown';
-                const d = durations[k.durationId];
-                const dName = d ? `${d.name} ${d.unit ? d.unit.charAt(0).toUpperCase() + d.unit.slice(1) : ''}` : 'Unknown';
-                const uDate = k.usedAt ? new Date(k.usedAt).toLocaleDateString() : '-';
-                const aDate = k.createdAt ? new Date(k.createdAt).toLocaleDateString() : '-';
-                const row = `<tr><td>${pName}</td><td>${dName}</td><td><code>${k.key}</code></td><td>${k.used ? uDate : aDate}</td><td><button class="btn btn-sm btn-danger" onclick="deleteKey('${k.id}')"><i class="bi bi-trash"></i></button></td></tr>`;
-                if (k.used) usedHtml += row; else activeHtml += row;
+                const prodName = products[k.productId]?.name || 'Unknown';
+                const dur = durations[k.durationId];
+                const durName = dur ? `${dur.name} ${dur.unit ? dur.unit.charAt(0).toUpperCase() + dur.unit.slice(1) : ''}` : 'Unknown';
+                const usedDate = k.usedAt ? new Date(k.usedAt).toLocaleDateString() : '-';
+                const addedDate = k.createdAt ? new Date(k.createdAt).toLocaleDateString() : '-';
+                const row = `<tr><td>${prodName}</td><td>${durName}</td><td><code>${k.key}</code></td><td>${k.used ? usedDate : addedDate}</td><td><button class="btn btn-sm btn-danger" onclick="deleteKey('${k.id}')"><i class="bi bi-trash"></i></button></td></tr>`;
+                if (k.used) {
+                    usedHtml += row;
+                } else {
+                    activeHtml += row;
+                }
             });
-            document.getElementById('activeKeysTable').innerHTML = activeHtml || '<tr><td colspan="5" class="text-center" style="color: #555555; font-weight: 600;">No active keys</td></tr>';
-            document.getElementById('usedKeysTable').innerHTML = usedHtml || '<tr><td colspan="5" class="text-center" style="color: #555555; font-weight: 600;">No used keys</td></tr>';
 
+            document.getElementById('activeKeysTable').innerHTML = activeHtml || '<tr><td colspan="5" class="text-center">No active keys</td></tr>';
+            document.getElementById('usedKeysTable').innerHTML = usedHtml || '<tr><td colspan="5" class="text-center">No used keys</td></tr>';
+
+            // Populate product dropdown for key import
             const kSelect = document.getElementById('keyProduct');
             kSelect.innerHTML = '<option value="">Select Product</option>';
-            (await getList('products')).forEach(d => { if (d.enabled !== false) kSelect.innerHTML += `<option value="${d.id}">${d.name}</option>`; });
+            const productsList = await getList('products');
+            productsList.forEach(d => {
+                if (d.enabled !== false) kSelect.innerHTML += `<option value="${d.id}">${d.name}</option>`;
+            });
         }
 
         window.importKeys = async function() {
             const productId = document.getElementById('keyProduct').value;
             const durationId = document.getElementById('keyDuration').value;
             const keysText = document.getElementById('keysTextarea').value.trim();
-            if (!productId || !durationId || !keysText) { showToast('Fill all fields', 'error'); return; }
+
+            if (!productId) { alert('Select a product'); return; }
+            if (!durationId) { alert('Select a duration'); return; }
+            if (!keysText) { alert('Enter keys to import'); return; }
+
             const keys = keysText.split('\n').map(k => k.trim()).filter(k => k);
-            for (const key of keys) await pushData('licenseKeys', { productId, durationId, key, used: false, createdAt: Date.now() });
-            showToast(`${keys.length} keys imported!`);
+            let count = 0;
+            for (const key of keys) {
+                await pushData('licenseKeys', { productId, durationId, key, used: false, createdAt: Date.now() });
+                count++;
+            }
+
+            alert(`${count} keys imported!`);
             document.getElementById('keysTextarea').value = '';
             loadAdminKeys();
         };
@@ -584,22 +934,44 @@
             const productId = document.getElementById('keyProduct').value;
             const durationId = document.getElementById('keyDuration').value;
             const key = document.getElementById('singleKeyInput').value.trim();
-            if (!productId || !durationId || !key) { showToast('Fill all fields', 'error'); return; }
+
+            if (!productId) { alert('Select product'); return; }
+            if (!durationId) { alert('Select duration'); return; }
+            if (!key) { alert('Enter key'); return; }
+
             await pushData('licenseKeys', { productId, durationId, key, used: false, createdAt: Date.now() });
             document.getElementById('singleKeyInput').value = '';
-            showToast('Key added!');
+            alert('Key added!');
             loadAdminKeys();
         };
 
-        window.deleteKey = async (id) => { if (confirm('Delete this key?')) { await deleteData('licenseKeys/' + id); showToast('Deleted!'); loadAdminKeys(); } };
+        window.deleteKey = async function(id) {
+            if (confirm('Are you sure you want to delete this license key?')) {
+                await deleteData('licenseKeys/' + id);
+                loadAdminKeys();
+            }
+        };
 
         // ==========================================
-        // ADMIN: COUPONS
+        // ADMIN COUPONS
         // ==========================================
         async function loadAdminCoupons() {
             const coupons = await getList('coupons');
-            let html = coupons.map(c => `<tr><td>${c.code}</td><td>${c.type === 'percentage' ? c.value + '%' : '₹' + c.value}</td><td>${c.minOrderValue ? '₹' + c.minOrderValue : 'Any'}</td><td>${c.expiryDate ? new Date(c.expiryDate).toLocaleDateString() : 'No expiry'}</td><td><button class="btn btn-sm btn-danger" onclick="deleteCoupon('${c.id}')"><i class="bi bi-trash"></i></button></td></tr>`).join('');
-            document.getElementById('couponsTable').innerHTML = html || '<tr><td colspan="5" class="text-center" style="color: #555555; font-weight: 600;">No coupons</td></tr>';
+            let html = '';
+            coupons.forEach(c => {
+                const expiry = c.expiryDate ? new Date(c.expiryDate).toLocaleDateString() : 'No expiry';
+                const minOrder = c.minOrderValue ? '₹' + c.minOrderValue : 'Any';
+                html += `<tr>
+                    <td>${c.code}</td>
+                    <td>${c.type === 'percentage' ? c.value + '%' : '₹' + c.value}</td>
+                    <td>${minOrder}</td>
+                    <td>${expiry}</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="deleteCoupon('${c.id}')"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('couponsTable').innerHTML = html || '<tr><td colspan="5" class="text-center">No coupons</td></tr>';
         }
 
         window.saveCoupon = async function() {
@@ -608,32 +980,60 @@
             const value = parseInt(document.getElementById('couponValue').value);
             const minOrderValue = parseInt(document.getElementById('couponMinOrder').value) || 0;
             const expiry = document.getElementById('couponExpiry').value;
-            if (!code || !value || value <= 0) { showToast('Fill all fields', 'error'); return; }
+
+            if (!code || !value || value <= 0) { alert('Fill all fields'); return; }
+
             await pushData('coupons', { code, type, value, minOrderValue, expiryDate: expiry || null, createdAt: Date.now() });
+
+            document.getElementById('couponCode').value = '';
+            document.getElementById('couponValue').value = '';
+            document.getElementById('couponMinOrder').value = '';
+            document.getElementById('couponExpiry').value = '';
             bootstrap.Modal.getInstance(document.getElementById('couponModal')).hide();
-            showToast('Coupon created!');
             loadAdminCoupons();
         };
 
-        window.deleteCoupon = async (id) => { if (confirm('Delete this coupon?')) { await deleteData('coupons/' + id); showToast('Deleted!'); loadAdminCoupons(); } };
-        window.openCouponModal = () => {
-            ['couponCode','couponValue','couponMinOrder','couponExpiry'].forEach(id => document.getElementById(id).value = '');
+        window.deleteCoupon = async function(id) {
+            if (confirm('Delete this coupon?')) {
+                await deleteData('coupons/' + id);
+                loadAdminCoupons();
+            }
+        };
+
+        window.openCouponModal = function() {
+            document.getElementById('couponCode').value = '';
+            document.getElementById('couponValue').value = '';
+            document.getElementById('couponMinOrder').value = '';
+            document.getElementById('couponExpiry').value = '';
             new bootstrap.Modal(document.getElementById('couponModal')).show();
         };
 
         // ==========================================
-        // ADMIN: ORDERS
+        // ADMIN ORDERS
         // ==========================================
         async function loadAdminOrders() {
             const orders = await getList('orders');
+            const productsSnap = await getData('products');
+            const products = productsSnap || {};
+
             let paidHtml = '', failedHtml = '';
             orders.forEach(o => {
                 const date = o.createdAt ? new Date(o.createdAt).toLocaleString() : '-';
-                const row = `<tr><td>${o.orderId}</td><td>${o.productName}</td><td>${o.durationName}</td><td>₹${o.finalAmount}</td><td><code>${o.licenseKey || 'N/A'}</code></td><td>${date}</td></tr>`;
-                if (o.status === 'paid') paidHtml += row; else failedHtml += row;
+                const row = `<tr>
+                    <td>${o.orderId}</td>
+                    <td>${o.productName}</td>
+                    <td>${o.durationName}</td>
+                    <td>₹${o.finalAmount}</td>
+                    <td><code>${o.licenseKey || 'N/A'}</code></td>
+                    <td>${date}</td>
+                </tr>`;
+
+                if (o.status === 'paid') paidHtml += row;
+                else failedHtml += row;
             });
-            document.getElementById('paidOrdersTable').innerHTML = paidHtml || '<tr><td colspan="6" class="text-center" style="color: #555555; font-weight: 600;">No paid orders</td></tr>';
-            document.getElementById('failedOrdersTable').innerHTML = failedHtml || '<tr><td colspan="6" class="text-center" style="color: #555555; font-weight: 600;">No failed orders</td></tr>';
+
+            document.getElementById('paidOrdersTable').innerHTML = paidHtml || '<tr><td colspan="6" class="text-center">No paid orders</td></tr>';
+            document.getElementById('failedOrdersTable').innerHTML = failedHtml || '<tr><td colspan="6" class="text-center">No failed orders</td></tr>';
         }
 
         window.searchOrders = function() {
@@ -644,22 +1044,26 @@
         };
 
         // ==========================================
-        // ADMIN: PAYMENT SETTINGS
+        // ADMIN PAYMENT SETTINGS
         // ==========================================
         async function loadAdminPayments() {
             const rzp = await getData('settings/razorpay');
             const admin = await getData('settings/admin');
             const apk = await getData('settings/apk');
+
             document.getElementById('rzpKeyId').value = rzp?.keyId || '';
             document.getElementById('adminUsername').value = admin?.username || '';
             document.getElementById('adminPassword').value = admin?.password || '';
+
             const apkUrl = apk?.url || '';
             document.getElementById('apkUrl').value = apkUrl;
             if (apkUrl) {
                 document.getElementById('apkPreviewBox').style.display = 'block';
                 document.getElementById('apkUrlPreview').value = apkUrl;
                 document.getElementById('apkUrlLink').href = apkUrl;
-            } else { document.getElementById('apkPreviewBox').style.display = 'none'; }
+            } else {
+                document.getElementById('apkPreviewBox').style.display = 'none';
+            }
         }
 
         window.savePaymentSettings = async function() {
@@ -667,15 +1071,21 @@
             const adminUsername = document.getElementById('adminUsername').value.trim();
             const adminPassword = document.getElementById('adminPassword').value.trim();
             const apkUrl = document.getElementById('apkUrl').value.trim();
+
             await setData('settings/razorpay', { keyId: rzpKeyId });
-            if (adminUsername && adminPassword) await setData('settings/admin', { username: adminUsername, password: adminPassword });
+
+            if (adminUsername && adminPassword) {
+                await setData('settings/admin', { username: adminUsername, password: adminPassword });
+            }
+
             await setData('settings/apk', { url: apkUrl });
+
             await loadAppConfig();
-            showToast('Settings saved successfully!');
+            alert('Settings saved!');
         };
 
         // ==========================================
-        // INIT
+        // INITIALIZE
         // ==========================================
         document.addEventListener('DOMContentLoaded', async () => {
             await loadAppConfig();
@@ -683,557 +1093,474 @@
         });
     </script>
     <style>
-        :root {
-            --neon-red: #ff003c;
-            --dark-red: #b91c1c;
-            --bg-black: #050505;
-            --glass-bg: rgba(20, 20, 20, 0.6);
-            --glass-bg-admin: rgba(5, 5, 5, 0.98); /* Darker glass for admin to make text pop */
-            --glass-border: rgba(255, 255, 255, 0.08);
-            --red-glow: rgba(255, 0, 60, 0.4);
-            --text-light: #f3f4f6;
-            --text-muted: rgba(255, 255, 255, 0.6);
-        }
-        
-        body { 
-            background: var(--bg-black); 
-            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; 
-            color: var(--text-light);
-            overflow-x: hidden;
-            position: relative;
+        body { background: #f8f9fa; font-family: 'Segoe UI', sans-serif; }
+        .navbar { box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+        .card { border: none; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); }
+        .purchase-card { max-width: 500px; margin: 0 auto; }
+        .btn-primary { border-radius: 10px; padding: 12px 30px; font-weight: 600; }
+        .form-select, .form-control { border-radius: 10px; padding: 12px; }
+        .price-box { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border-radius: 12px; padding: 20px; text-align: center; }
+        .success-box { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; border-radius: 16px; padding: 40px; text-align: center; }
+        .key-display { background: rgba(255,255,255,0.2); border-radius: 10px; padding: 15px; font-family: monospace; font-size: 1.2rem; word-break: break-all; }
+        .stat-card { background: white; border-radius: 12px; padding: 20px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+        .stat-number { font-size: 2rem; font-weight: 700; color: #0d6efd; }
+        .admin-sidebar { min-height: calc(100vh - 56px); background: #1a1a2e; color: white; }
+        .admin-sidebar .nav-link { color: rgba(255,255,255,0.7); padding: 12px 20px; border-radius: 8px; margin: 2px 10px; }
+        .admin-sidebar .nav-link:hover, .admin-sidebar .nav-link.active { background: rgba(255,255,255,0.1); color: white; }
+        .section-title { font-weight: 700; margin-bottom: 20px; color: #1a1a2e; }
+
+        /* === USER PANEL DARK THEME - UI REFERENCE MATCH === */
+        #home, #faq, #contact, #success-page, #admin-login {
+            background: linear-gradient(180deg, #0d1a1a 0%, #0a0a0f 50%, #1a0a0a 100%);
+            min-height: 100vh;
         }
 
-        /* Animated Background Orbs - Red & Black Theme */
-        .orb {
-            position: fixed;
-            border-radius: 50%;
-            filter: blur(80px);
-            z-index: -1;
-            opacity: 0.4;
-        }
-        .orb-1 { width: 400px; height: 400px; background: var(--neon-red); top: -100px; left: -100px; animation: float 8s ease-in-out infinite; }
-        .orb-2 { width: 350px; height: 350px; background: #450a0a; bottom: -100px; right: -100px; animation: float 10s ease-in-out infinite reverse; }
-        .orb-3 { width: 300px; height: 300px; background: #7f1d1d; top: 40%; left: 50%; transform: translate(-50%, -50%); animation: float 12s ease-in-out infinite; }
-
-        @keyframes float {
-            0%, 100% { transform: translate(0, 0) scale(1); }
-            50% { transform: translate(30px, 30px) scale(1.1); }
+        #home .purchase-card {
+            background: rgba(15, 23, 42, 0.85) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08) !important;
+            border-radius: 24px !important;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05) !important;
+            max-width: 420px;
         }
 
-        /* === GLASSMORPHISM GLOBAL === */
-        .glass {
-            background: var(--glass-bg) !important;
-            backdrop-filter: blur(16px) !important;
-            -webkit-backdrop-filter: blur(16px) !important;
-            border: 1px solid var(--glass-border) !important;
-            border-radius: 20px !important;
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5) !important;
+        #home .purchase-card .card-body {
+            padding: 32px !important;
         }
 
-        /* Navbar */
+        #home .purchase-card h4 {
+            color: #fff;
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        #home .purchase-card h4 i {
+            color: #10b981;
+        }
+
+        #home .form-label {
+            color: rgba(255,255,255,0.5);
+            font-size: 0.7rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            margin-bottom: 8px;
+        }
+
+        #home .form-select, #home .form-control {
+            background: rgba(255,255,255,0.05) !important;
+            border: 1px solid rgba(255,255,255,0.1) !important;
+            color: #fff !important;
+            border-radius: 14px !important;
+            padding: 14px 16px !important;
+            font-size: 0.95rem;
+            font-weight: 500;
+        }
+
+        #home .form-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='rgba(255,255,255,0.5)' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 16px center !important;
+            background-size: 16px 12px !important;
+            padding-right: 44px !important;
+            -webkit-appearance: none !important;
+            -moz-appearance: none !important;
+            appearance: none !important;
+        }
+
+        #home .form-select:focus, #home .form-control:focus {
+            background: rgba(255,255,255,0.08) !important;
+            border-color: rgba(16, 185, 129, 0.4) !important;
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+        }
+
+        #home .form-select option {
+            background: #0f172a;
+            color: #fff;
+        }
+
+        #home .form-select:disabled {
+            background: rgba(255,255,255,0.02) !important;
+            color: rgba(255,255,255,0.3) !important;
+        }
+
+        #home #purchaseBtn {
+            background: #fff !important;
+            color: #0a0a0f !important;
+            border: none !important;
+            border-radius: 50px !important;
+            padding: 16px 30px !important;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.3px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(255,255,255,0.15) !important;
+        }
+
+        #home #purchaseBtn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 30px rgba(255,255,255,0.25) !important;
+        }
+
+        #home #purchaseBtn:disabled {
+            background: rgba(255,255,255,0.1) !important;
+            color: rgba(255,255,255,0.3) !important;
+            box-shadow: none !important;
+        }
+
+        #home .btn-outline-primary {
+            border-color: rgba(255,255,255,0.2) !important;
+            color: rgba(255,255,255,0.7) !important;
+            border-radius: 12px !important;
+        }
+
+        #home .btn-outline-primary:hover {
+            background: rgba(255,255,255,0.1) !important;
+            border-color: rgba(255,255,255,0.3) !important;
+            color: #fff !important;
+        }
+
+        #home .coupon-apply-btn {
+            background: transparent !important;
+            border: 1.5px solid rgba(255,255,255,0.15) !important;
+            color: rgba(255,255,255,0.6) !important;
+            border-radius: 14px !important;
+            padding: 12px !important;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        #home .coupon-apply-btn:hover {
+            background: rgba(255,255,255,0.08) !important;
+            border-color: rgba(255,255,255,0.25) !important;
+            color: #fff !important;
+        }
+
+        #home #totalDisplay {
+            color: #fff;
+        }
+
+        #home #totalDisplay .h3 {
+            color: #10b981 !important;
+        }
+
+        #home #totalDisplay .text-muted {
+            color: rgba(255,255,255,0.4) !important;
+        }
+
+        #home #totalDisplay .text-success {
+            color: #34d399 !important;
+        }
+
+        /* Trust badge */
+        .trust-badge {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            color: rgba(255,255,255,0.4);
+            font-size: 0.8rem;
+            margin-top: 16px;
+        }
+
+        .trust-badge i {
+            color: #10b981;
+        }
+
+        /* Telegram button */
+        .telegram-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: rgba(255,255,255,0.6);
+            padding: 10px 24px;
+            border-radius: 50px;
+            text-decoration: none;
+            font-size: 0.85rem;
+            transition: all 0.3s ease;
+        }
+
+        .telegram-btn:hover {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+        }
+
+        .telegram-btn i {
+            color: #229ED9;
+        }
+
+        /* Footer */
+        .user-footer {
+            text-align: center;
+            padding: 30px 20px;
+            color: rgba(255,255,255,0.25);
+            font-size: 0.75rem;
+        }
+
+        /* FAQ Page Dark */
+        #faq .section-title {
+            color: #fff;
+        }
+
+        #faq .accordion-item {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(255,255,255,0.06);
+            border-radius: 16px !important;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+
+        #faq .accordion-button {
+            background: transparent;
+            color: #fff;
+            font-weight: 600;
+            padding: 18px 24px;
+            border: none;
+            box-shadow: none;
+        }
+
+        #faq .accordion-button:not(.collapsed) {
+            background: rgba(16, 185, 129, 0.08);
+            color: #10b981;
+        }
+
+        #faq .accordion-button::after {
+            filter: invert(1);
+        }
+
+        #faq .accordion-body {
+            color: rgba(255,255,255,0.6);
+            padding: 0 24px 18px;
+        }
+
+        /* Contact Page Dark */
+        #contact .section-title {
+            color: #fff;
+        }
+
+        #contact .card {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px;
+        }
+
+        #contact .form-label {
+            color: rgba(255,255,255,0.5);
+        }
+
+        #contact .form-control {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            border-radius: 14px;
+            padding: 14px 16px;
+        }
+
+        #contact .form-control::placeholder {
+            color: rgba(255,255,255,0.25);
+        }
+
+        #contact .form-control:focus {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(16, 185, 129, 0.4);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+            color: #fff;
+        }
+
+        #contact .btn-primary {
+            border-radius: 50px;
+            background: #fff;
+            color: #0a0a0f;
+            border: none;
+            font-weight: 700;
+        }
+
+        /* Admin Login Dark */
+        #admin-login .section-title, #admin-login h3 {
+            color: #fff;
+        }
+
+        #admin-login .card {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 24px;
+        }
+
+        #admin-login .form-label {
+            color: rgba(255,255,255,0.5);
+        }
+
+        #admin-login .form-control {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #fff;
+            border-radius: 14px;
+            padding: 14px 16px;
+        }
+
+        #admin-login .form-control:focus {
+            background: rgba(255,255,255,0.08);
+            border-color: rgba(16, 185, 129, 0.4);
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1);
+            color: #fff;
+        }
+
+        #admin-login .btn-primary {
+            border-radius: 50px;
+            background: #fff;
+            color: #0a0a0f;
+            border: none;
+            font-weight: 700;
+        }
+
+        #admin-login .text-primary {
+            color: #10b981 !important;
+        }
+
+        /* Success Page Dark */
+        #success-page .success-box {
+            background: linear-gradient(135deg, #0f172a 0%, #1a1a2e 100%);
+            border: 1px solid rgba(16, 185, 129, 0.2);
+            border-radius: 24px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+        }
+
+        #success-page .success-box i.bi-check-circle-fill {
+            color: #10b981;
+        }
+
+        #success-page .key-display {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: #10b981;
+        }
+
+        #success-page .btn-light {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.15);
+            color: #fff;
+            border-radius: 12px;
+        }
+
+        #success-page .btn-light:hover {
+            background: rgba(255,255,255,0.2);
+        }
+
+        #success-page .btn-outline-light {
+            border-radius: 50px;
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        /* Navbar enhancement for user pages */
         .navbar {
-            background: rgba(5, 5, 5, 0.8) !important;
-            backdrop-filter: blur(16px);
-            border-bottom: 1px solid var(--glass-border);
-            padding: 12px 0;
+            background: rgba(10, 10, 15, 0.9) !important;
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid rgba(255,255,255,0.05);
         }
 
         .navbar-brand {
             color: #fff !important;
-            font-weight: 800;
-            letter-spacing: -0.5px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-shadow: 0 0 10px var(--red-glow);
+            font-weight: 700;
+            letter-spacing: 0.5px;
         }
 
-        /* Mobile Menu Toggle Button Styling */
-        .navbar-toggler {
-            border: 1px solid var(--glass-border) !important;
-            padding: 6px 10px !important;
-            border-radius: 8px !important;
-        }
-        .navbar-toggler:focus {
-            box-shadow: 0 0 0 3px rgba(255, 0, 60, 0.2) !important;
-        }
-        .navbar-toggler-icon {
-            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 30 30'%3e%3cpath stroke='rgba%28255, 255, 255, 0.9%29' stroke-linecap='round' stroke-miterlimit='10' stroke-width='2' d='M4 7h22M4 15h22M4 23h22'/%3e%3c/svg%3e") !important;
+        .navbar-brand img {
+            border-radius: 10px !important;
         }
 
         .nav-link {
-            color: var(--text-muted) !important;
+            color: rgba(255,255,255,0.6) !important;
             font-weight: 500;
-            font-size: 0.95rem;
-            transition: all 0.3s ease;
-            padding: 8px 15px !important;
-            border-radius: 10px;
+            font-size: 0.9rem;
+            transition: color 0.2s;
         }
 
-        .nav-link:hover, .nav-link.active {
-            color: #fff !important;
-            background: rgba(255, 0, 60, 0.1);
-            text-shadow: 0 0 8px var(--red-glow);
-        }
-
-        .nav-link i { color: var(--neon-red); }
-
-        /* Dropdown Menu Glass */
-        .dropdown-menu {
-            background: rgba(5, 5, 5, 0.9) !important;
-            backdrop-filter: blur(16px);
-            border: 1px solid var(--glass-border) !important;
-            border-radius: 12px !important;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
-        }
-        .dropdown-item { color: var(--text-muted) !important; border-radius: 8px; margin: 2px 8px; }
-        .dropdown-item:hover { background: rgba(255,0,60,0.1) !important; color: #fff !important; }
-
-        /* === USER PANEL === */
-        #home, #faq, #contact, #success-page, #admin-login {
-            min-height: calc(100vh - 65px);
-            color: #fff;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 0;
-        }
-        
-        #home > .container, #faq > .container, #contact > .container, #success-page > .container, #admin-login > .container {
-            width: 100%;
-        }
-
-        .purchase-card {
-            max-width: 450px;
-            margin: 0 auto;
-            width: 100%;
-        }
-
-        .form-label {
-            color: rgba(255,255,255,0.7);
-            font-size: 0.85rem;
-            font-weight: 600;
-            margin-bottom: 8px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .form-select, .form-control {
-            background: rgba(255,255,255,0.05) !important;
-            border: 1px solid var(--glass-border) !important;
-            color: #fff !important;
-            border-radius: 12px !important;
-            padding: 14px 16px !important;
-            font-size: 0.95rem;
-            font-weight: 500;
-            transition: all 0.3s ease;
-        }
-
-        .form-control::placeholder { color: rgba(255,255,255,0.4); }
-
-        .form-select:focus, .form-control:focus {
-            background: rgba(255,255,255,0.08) !important;
-            border-color: var(--neon-red) !important;
-            box-shadow: 0 0 0 4px rgba(255, 0, 60, 0.15) !important;
+        .nav-link:hover {
             color: #fff !important;
         }
 
-        .form-select option { background: var(--bg-black); color: #fff; }
-        .form-select:disabled { background: rgba(255,255,255,0.02) !important; color: rgba(255,255,255,0.3) !important; }
-
-        #purchaseBtn {
-            background: linear-gradient(45deg, var(--neon-red), var(--dark-red));
-            color: #fff !important;
-            border: none !important;
-            border-radius: 12px !important;
-            padding: 16px 30px !important;
-            font-weight: 700;
-            font-size: 1.1rem;
-            transition: all 0.3s ease;
-            box-shadow: 0 4px 15px var(--red-glow) !important;
-        }
-
-        #purchaseBtn:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 25px var(--red-glow) !important;
-        }
-
-        #purchaseBtn:disabled {
-            background: rgba(255,255,255,0.1) !important;
-            color: rgba(255,255,255,0.4) !important;
-            box-shadow: none !important;
-        }
-
-        .btn-outline-primary {
-            border: 1px solid var(--glass-border) !important;
-            color: var(--text-muted) !important;
-            border-radius: 12px !important;
-            font-weight: 600;
-            background: transparent;
-        }
-
-        .btn-outline-primary:hover {
-            background: rgba(255,0,60,0.08) !important;
-            border-color: var(--neon-red) !important;
-            color: var(--neon-red) !important;
-        }
-
-        #totalDisplay { color: #fff; }
-        #totalDisplay .text-muted { color: rgba(255,255,255,0.5) !important; }
-        #totalDisplay .text-success { color: #00ff9d !important; font-weight: 600; }
-
-        /* FAQ Accordion */
-        .accordion-item {
-            background: var(--glass-bg) !important;
-            border: 1px solid var(--glass-border) !important;
-            border-radius: 16px !important;
-            margin-bottom: 15px;
-            overflow: hidden;
-            backdrop-filter: blur(16px);
-        }
-        .accordion-button {
-            background: transparent !important;
-            color: #fff !important;
-            font-weight: 600;
-            box-shadow: none !important;
-        }
-        .accordion-button:not(.collapsed) { color: var(--neon-red) !important; }
-        .accordion-button::after { filter: invert(1); }
-        .accordion-body { color: rgba(255,255,255,0.7); border-top: 1px solid var(--glass-border); }
-
-        /* Success Page */
-        .success-box {
+        /* Store header text */
+        .store-header {
             text-align: center;
+            padding: 20px 0 10px;
         }
 
-        .success-box i.bi-check-circle-fill {
-            color: #00ff9d;
-            font-size: 4rem;
-            text-shadow: 0 0 20px rgba(0, 255, 157, 0.5);
-        }
-
-        .key-display {
-            background: rgba(255, 0, 60, 0.05);
-            border: 1px solid rgba(255, 0, 60, 0.3);
-            color: #ff4d6d;
-            border-radius: 12px;
-            padding: 15px;
-            font-family: 'Courier New', monospace;
-            font-size: 1.2rem;
-            word-break: break-all;
+        .store-header h1 {
+            color: #fff;
+            font-size: 1.1rem;
             font-weight: 700;
-            box-shadow: 0 0 15px rgba(255, 0, 60, 0.1);
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin: 0;
         }
 
-        .btn-light {
-            background: rgba(255,255,255,0.1) !important;
-            border: 1px solid rgba(255,255,255,0.2) !important;
-            color: #fff !important;
-            font-weight: 600;
-        }
-        .btn-light:hover {
-            background: rgba(255,255,255,0.2) !important;
-        }
-
-        /* === ADMIN PANEL HIGH CONTRAST FIXES === */
-        .admin-section {
-            min-height: calc(100vh - 65px);
-            padding: 30px;
-            background: #050505 !important;
-            color: #ffffff !important;
-        }
-        .admin-section * {
-            color: #ffffff !important;
-        }
-        .admin-section .btn-primary *,
-        .admin-section .btn-warning *,
-        .admin-section .btn-danger *,
-        .admin-section .btn-secondary *,
-        .admin-section .btn-outline-primary *,
-        .admin-section .btn-light * {
-            color: inherit !important;
-        }
-        .admin-section .text-success {
-            color: #00ff9d !important;
-        }
-        .admin-section .text-danger {
-            color: #ef4444 !important;
-        }
-        .admin-section .text-info {
-            color: #38bdf8 !important;
-        }
-        .admin-section .badge.bg-success {
-            background-color: #10b981 !important;
-            color: #000000 !important;
-        }
-        .admin-section .badge.bg-secondary {
-            background-color: #6b7280 !important;
-            color: #ffffff !important;
-        }
-        .admin-section .badge.bg-info {
-            background-color: #0ea5e9 !important;
-            color: #ffffff !important;
-        }
-        .admin-section .badge.bg-warning {
-            background-color: #f59e0b !important;
-            color: #000000 !important;
-        }
-        .admin-section .badge.bg-danger {
-            background-color: #ef4444 !important;
-            color: #ffffff !important;
-        }
-
-        /* Darker Glass Background for Admin Cards */
-        .admin-section .glass {
-            background: #0a0a0a !important;
-            border: 1px solid rgba(255, 255, 255, 0.2) !important;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.8) !important;
-        }
-
-        .admin-section .section-title {
-            font-weight: 900;
-            color: #ffffff !important;
-            font-size: 1.75rem;
-            margin-bottom: 25px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-shadow: 0 0 25px var(--red-glow), 0 2px 4px rgba(0,0,0,0.8);
-        }
-
-        /* Make Card Headers clear */
-        .admin-section .card-header {
-            background: #1a0505 !important;
-            border-bottom: 1px solid #ff003c !important;
-            color: #ffffff !important;
-            font-weight: 800;
-            padding: 16px 20px;
-        }
-        .admin-section .card-header h5,
-        .admin-section .card-header h3 {
-            color: #ffffff !important;
-            font-weight: 800;
-        }
-
-        /* Fix text muted inside admin to be brighter */
-        .admin-section .text-muted {
-            color: #9ca3af !important;
-            font-weight: 500;
-        }
-
-        /* Fix Form Labels in Admin */
-        .admin-section .form-label {
-            color: #ffffff !important;
-            text-transform: none;
-            letter-spacing: 0;
-            font-size: 0.95rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        /* Fix Inputs in Admin for max visibility */
-        .admin-section .form-control,
-        .admin-section .form-select {
-            background: #1a1a1a !important;
-            border: 1px solid rgba(255, 255, 255, 0.3) !important;
-            color: #ffffff !important;
-            border-radius: 8px !important;
-            padding: 12px 16px !important;
-            font-weight: 600;
-            font-size: 1rem;
-        }
-        .admin-section .form-control::placeholder {
-            color: #6b7280 !important;
-            font-weight: 500;
-        }
-        .admin-section .form-control:read-only {
-            background: rgba(255, 255, 255, 0.05) !important;
-        }
-
-        /* Fix Helper Text */
-        .admin-section .form-text {
-            color: #9ca3af !important;
-            font-weight: 600;
+        .store-header .sub-text {
+            color: rgba(255,255,255,0.4);
             font-size: 0.85rem;
+            margin-top: 4px;
         }
 
-        /* Fix Table Text */
-        .admin-section .table {
-            color: #e5e7eb !important;
-        }
-        .admin-section .table thead th { 
-            background: #1a0505 !important; 
-            border-bottom: 2px solid #ff003c !important; 
-            color: #ff6b8a !important; 
-            text-transform: uppercase; 
-            font-size: 0.85rem; 
-            padding: 15px; 
-            letter-spacing: 0.5px; 
-            font-weight: 800;
-        }
-        .admin-section .table tbody td { 
-            padding: 15px; 
-            vertical-align: middle; 
-            border-color: rgba(255, 255, 255, 0.15) !important; 
-            color: #ffffff !important; 
-            font-weight: 600;
-            font-size: 0.95rem;
-        }
-        .admin-section .table-hover tbody tr:hover { 
-            background: rgba(255, 0, 60, 0.08) !important; 
+        /* Hamburger menu for mobile */
+        .navbar-toggler {
+            border: none !important;
         }
 
-        /* Fix Code tags in tables */
-        .admin-section code {
-            color: #ff8fa3;
-            background: rgba(255, 0, 60, 0.2);
-            padding: 4px 10px;
-            border-radius: 6px;
-            font-weight: 700;
-            font-size: 0.95rem;
-            border: 1px solid rgba(255, 0, 60, 0.3);
+        .dropdown-menu {
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
         }
 
-        /* Buttons in Admin */
-        .admin-section .btn-warning {
-            background: #f59e0b;
-            border-color: #f59e0b;
-            color: #000;
-        }
-        .admin-section .btn-danger {
-            background: #ef4444;
-            border-color: #ef4444;
-        }
-        .admin-section .btn-secondary {
-            background: #374151;
-            border-color: #374151;
-        }
-        .admin-section .btn-primary {
-            background: linear-gradient(45deg, var(--neon-red), var(--dark-red));
-            border: none;
-        }
-        .admin-section .btn-outline-primary {
-            color: #ff4d6d !important;
-            border: 1px solid rgba(255, 0, 60, 0.4) !important;
-        }
-        .admin-section .btn-outline-primary:hover {
-            background: rgba(255, 0, 60, 0.1) !important;
+        .dropdown-item {
+            color: rgba(255,255,255,0.7);
+            border-radius: 8px;
+            margin: 2px 8px;
+            padding: 10px 16px;
         }
 
-        /* Fix Input Group Text */
-        .admin-section .input-group-text {
-            background: #1a1a1a;
-            border: 1px solid rgba(255, 255, 255, 0.3);
-            color: #ffffff;
-            font-weight: 600;
+        .dropdown-item:hover {
+            background: rgba(255,255,255,0.08);
+            color: #fff;
         }
 
-        /* Modals Text Fix */
-        .modal-content {
-            background: #0a0a0a !important;
-            border: 1px solid #ff003c !important;
-            border-radius: 20px !important;
-            color: #ffffff !important;
-            box-shadow: 0 0 50px rgba(255, 0, 60, 0.5);
-        }
-        .modal-header, .modal-footer { border-color: var(--glass-border) !important; }
-        .modal-title { color: #ffffff !important; font-weight: 700; }
-        .modal-body { color: #ffffff !important; }
-        .btn-close { filter: invert(1); }
-        
-        .modal .form-label {
-            color: #ffffff !important;
-            text-transform: none;
-            letter-spacing: 0;
-            font-size: 0.95rem;
-            font-weight: 700;
-        }
-        .modal .form-control,
-        .modal .form-select {
-            background: #1a1a1a !important;
-            border: 1px solid rgba(255, 255, 255, 0.3) !important;
-            color: #ffffff !important;
-            font-weight: 600;
-            font-size: 1rem;
-        }
-        .modal .form-text { color: #9ca3af !important; font-weight: 600; font-size: 0.85rem; }
-        .modal .btn-secondary { background: #374151; border-color: #374151; }
-        .modal .btn-primary { background: linear-gradient(45deg, var(--neon-red), var(--dark-red)); border: none; }
-
-        /* Toast Container */
-        #toastContainer {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-            display: flex;
-            flex-direction: column;
+        .dropdown-divider {
+            border-color: rgba(255,255,255,0.08);
         }
 
-        /* Admin Nav Tabs Fix */
-        .admin-section .nav-tabs .nav-link {
-            color: #9ca3af !important;
-            font-weight: 700;
-            border: none;
-            border-bottom: 2px solid transparent;
-            padding: 12px 24px;
-            font-size: 0.95rem;
-        }
-        .admin-section .nav-tabs .nav-link.active {
-            color: #ffffff !important;
-            background: rgba(255, 0, 60, 0.15) !important;
-            border-bottom: 3px solid #ff003c !important;
-        }
-        .admin-section .nav-tabs .nav-link:hover {
-            color: #ffffff !important;
-            border-color: transparent;
-            background: rgba(255, 255, 255, 0.05) !important;
-        }
-        
-        /* Badge fixes for admin */
-        .admin-section .badge {
-            font-weight: 600;
-            padding: 6px 10px;
-            font-size: 0.8rem;
-        }
-        
-        /* Stat Card Styles */
-        .stat-card {
-            padding: 20px;
-        }
-        
-        /* Responsive tweaks */
-        @media (max-width: 768px) {
-            .admin-section { padding: 15px; }
-            .success-box { padding: 25px; }
-        }
     </style>
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
+<base target="_blank">
 <base target="_blank">
 </head>
 <body>
-    <!-- Background Orbs -->
-    <div class="orb orb-1"></div>
-    <div class="orb orb-2"></div>
-    <div class="orb orb-3"></div>
-
-    <!-- TOAST CONTAINER -->
-    <div id="toastContainer"></div>
-
     <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg sticky-top">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark sticky-top">
         <div class="container">
-            <a class="navbar-brand" href="#" onclick="showSection('home'); return false;">
-                <img src="logo.jpg" alt="NovaEsp" style="width:32px;height:32px;object-fit:cover;border-radius:8px;"> NovaEsp
-            </a>
-            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
+            <a class="navbar-brand fw-bold" href="#" onclick="showSection('home'); return false;"><img src="logo.jpg" alt="NovaEsp" style="width:30px;height:30px;object-fit:cover;border-radius:8px;" class="me-2">NovaEsp</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" style="border:none;box-shadow:none;outline:none;padding:4px;">
+                <span class="navbar-toggler-icon" style="filter:brightness(0) invert(1);"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav ms-auto align-items-lg-center">
-                    <li class="nav-item"><a class="nav-link active" href="#" onclick="showSection('home'); return false;">Home</a></li>
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('home'); return false;">Home</a></li>
                     <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('faq'); return false;">FAQ</a></li>
                     <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('contact'); return false;">Contact</a></li>
-                    <li class="nav-item" id="loginNav"><a class="nav-link" href="#" onclick="showSection('admin-login'); return false;"><i class="bi bi-shield-lock me-1"></i>Admin</a></li>
+                    <li class="nav-item" id="loginNav"><a class="nav-link" href="#" onclick="showSection('admin-login'); return false;"><i class="bi bi-shield-lock me-1"></i>Admin Login</a></li>
                     <li class="nav-item dropdown d-none" id="adminNav">
                         <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-speedometer2 me-1"></i>Admin</a>
                         <ul class="dropdown-menu dropdown-menu-end">
@@ -1244,8 +1571,8 @@
                             <li><a class="dropdown-item" href="#" onclick="showSection('admin-keys'); return false;">License Keys</a></li>
                             <li><a class="dropdown-item" href="#" onclick="showSection('admin-coupons'); return false;">Coupons</a></li>
                             <li><a class="dropdown-item" href="#" onclick="showSection('admin-orders'); return false;">Orders</a></li>
-                            <li><a class="dropdown-item" href="#" onclick="showSection('admin-payments'); return false;">Settings</a></li>
-                            <li><hr class="dropdown-divider" style="border-color: var(--glass-border);"></li>
+                            <li><a class="dropdown-item" href="#" onclick="showSection('admin-payments'); return false;">Payment Settings</a></li>
+                            <li><hr class="dropdown-divider"></li>
                             <li><a class="dropdown-item text-danger" href="#" onclick="adminLogout(); return false;"><i class="bi bi-box-arrow-right me-1"></i>Logout</a></li>
                         </ul>
                     </li>
@@ -1256,35 +1583,39 @@
 
     <!-- HOME PAGE -->
     <div id="home" class="section">
-        <div class="container">
-            <div class="card glass purchase-card">
-                <div class="card-body p-4 p-md-5">
-                    <!-- Logo removed as requested -->
-                    
+        <div class="container py-5">
+            
+
+            <div class="card purchase-card p-4">
+                <div class="card-body">
+                    <h4 class="mb-4 text-center"><i class="bi bi-cart3 me-2"></i>NovaEsp Store</h4>
+
                     <div class="mb-3">
-                        <label class="form-label">Select Product</label>
+                        <label class="form-label fw-semibold">Select Product</label>
                         <select class="form-select form-select-lg" id="productSelect" onchange="onProductChange()">
                             <option value="">Select Product</option>
                         </select>
                     </div>
 
-                    <div class="mb-4">
-                        <label class="form-label">Select Duration</label>
+                    <div class="mb-3">
+                        <label class="form-label fw-semibold">Select Duration</label>
                         <select class="form-select form-select-lg" id="durationSelect" onchange="onDurationChange()" disabled>
                             <option value="">Select Duration</option>
                         </select>
                     </div>
 
-                    <div class="mb-4">
+                    
+
+                    <div class="mb-3">
                         <label class="form-label">Coupon Code (Optional)</label>
                         <div class="d-flex gap-2">
-                            <input type="text" class="form-control" id="couponInput" placeholder="Enter code" style="flex-grow:1;">
-                            <button class="btn btn-outline-primary px-4" type="button" onclick="applyCoupon()">Apply</button>
+                            <input type="text" class="form-control flex-grow-1" id="couponInput" placeholder="Enter coupon code" style="border-radius: 14px;">
+                            <button class="btn btn-outline-primary px-4" type="button" onclick="applyCoupon()" style="border-radius: 14px; border-width: 1.5px; white-space: nowrap;">Apply</button>
                         </div>
                         <div id="couponMsg" class="mt-2 small"></div>
                     </div>
 
-                    <div id="totalDisplay" class="text-center mb-4"></div>
+                    <div id="totalDisplay" class="text-center mb-3"></div>
 
                     <button class="btn btn-primary w-100 btn-lg" id="purchaseBtn" onclick="initiatePayment()" disabled>
                         <i class="bi bi-credit-card me-2"></i>Purchase Now
@@ -1296,27 +1627,27 @@
 
     <!-- FAQ PAGE -->
     <div id="faq" class="section d-none">
-        <div class="container">
-            <h2 class="text-center mb-5 fw-bold" style="text-shadow: 0 0 15px var(--red-glow);">Frequently Asked Questions</h2>
+        <div class="container py-5">
+            <h2 class="section-title text-center mb-4">Frequently Asked Questions</h2>
             <div class="row justify-content-center">
                 <div class="col-md-8">
                     <div class="accordion" id="faqAccordion">
                         <div class="accordion-item">
-                            <h2 class="accordion-header"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">How do I receive my license key?</button></h2>
+                            <h2 class="accordion-header"><button class="accordion-button" data-bs-toggle="collapse" data-bs-target="#faq1">How do I receive my license key?</button></h2>
                             <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">After successful payment, your license key is displayed instantly on the success page. You can copy it to your clipboard.</div>
+                                <div class="accordion-body">After successful payment, your license key is displayed instantly on the success page. You can also copy it to your clipboard.</div>
                             </div>
                         </div>
                         <div class="accordion-item">
-                            <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">What payment methods are accepted?</button></h2>
+                            <h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#faq2">What payment methods are accepted?</button></h2>
                             <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
                                 <div class="accordion-body">We accept all major payment methods via Razorpay including UPI, Credit/Debit cards, Net Banking, and Wallets.</div>
                             </div>
                         </div>
                         <div class="accordion-item">
-                            <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">Is there a refund policy?</button></h2>
+                            <h2 class="accordion-header"><button class="accordion-button collapsed" data-bs-toggle="collapse" data-bs-target="#faq3">Is there a refund policy?</button></h2>
                             <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body">Due to the digital nature of license keys, all sales are final. Please ensure you select the correct product before purchasing.</div>
+                                <div class="accordion-body">Due to the digital nature of license keys, all sales are final. Please ensure you select the correct product and duration before purchasing.</div>
                             </div>
                         </div>
                     </div>
@@ -1327,17 +1658,15 @@
 
     <!-- CONTACT PAGE -->
     <div id="contact" class="section d-none">
-        <div class="container">
-            <h2 class="text-center mb-5 fw-bold" style="text-shadow: 0 0 15px var(--red-glow);">Contact Us</h2>
+        <div class="container py-5">
+            <h2 class="section-title text-center mb-4">Contact Us</h2>
             <div class="row justify-content-center">
                 <div class="col-md-6">
-                    <div class="card glass purchase-card">
-                        <div class="card-body p-4 p-md-5">
-                            <div class="mb-3"><label class="form-label">Name</label><input type="text" class="form-control" placeholder="Your name"></div>
-                            <div class="mb-3"><label class="form-label">Email</label><input type="email" class="form-control" placeholder="your@email.com"></div>
-                            <div class="mb-4"><label class="form-label">Message</label><textarea class="form-control" rows="4" placeholder="Your message..."></textarea></div>
-                            <button class="btn btn-primary w-100" onclick="showToast('Message sent! We will contact you soon.')">Send Message</button>
-                        </div>
+                    <div class="card p-4">
+                        <div class="mb-3"><label class="form-label">Name</label><input type="text" class="form-control" placeholder="Your name"></div>
+                        <div class="mb-3"><label class="form-label">Email</label><input type="email" class="form-control" placeholder="your@email.com"></div>
+                        <div class="mb-3"><label class="form-label">Message</label><textarea class="form-control" rows="4" placeholder="Your message..."></textarea></div>
+                        <button class="btn btn-primary w-100">Send Message</button>
                     </div>
                 </div>
             </div>
@@ -1346,19 +1675,17 @@
 
     <!-- ADMIN LOGIN -->
     <div id="admin-login" class="section d-none">
-        <div class="container">
+        <div class="container py-5">
             <div class="row justify-content-center">
-                <div class="col-md-5 col-lg-4">
-                    <div class="card glass purchase-card">
-                        <div class="card-body p-4 p-md-5">
-                            <div class="text-center mb-4">
-                                <i class="bi bi-shield-lock display-1" style="color: var(--neon-red); text-shadow: 0 0 20px var(--red-glow);"></i>
-                                <h3 class="mt-3 mb-0 fw-bold text-white">Admin Login</h3>
-                            </div>
-                            <div class="mb-3"><label class="form-label">Username</label><input type="text" class="form-control" id="adminUser" placeholder="admin"></div>
-                            <div class="mb-4"><label class="form-label">Password</label><input type="password" class="form-control" id="adminPass" placeholder="••••••" onkeydown="if(event.key==='Enter') adminLogin()"></div>
-                            <button class="btn btn-primary w-100" onclick="adminLogin()">Login</button>
+                <div class="col-md-4">
+                    <div class="card p-4">
+                        <div class="text-center mb-4">
+                            <i class="bi bi-shield-lock display-1 text-primary"></i>
+                            <h3 class="mt-3">Admin Login</h3>
                         </div>
+                        <div class="mb-3"><label class="form-label">Username</label><input type="text" class="form-control" id="adminUser" placeholder="admin"></div>
+                        <div class="mb-3"><label class="form-label">Password</label><input type="password" class="form-control" id="adminPass" placeholder="••••••"></div>
+                        <button class="btn btn-primary w-100" onclick="adminLogin()">Login</button>
                     </div>
                 </div>
             </div>
@@ -1366,252 +1693,297 @@
     </div>
 
     <!-- ADMIN DASHBOARD -->
-    <div id="admin-dashboard" class="section d-none admin-section">
-        <h3 class="section-title"><i class="bi bi-speedometer2"></i>Dashboard</h3>
-        <div class="row g-4 mb-4">
-            <div class="col-md-4"><div class="card glass stat-card text-center"><div class="card-body"><div class="stat-number" class="stat-number" style="color: #ff003c;" id="dashTotalOrders">0</div><div class="stat-label" class="stat-label">Total Orders</div></div></div></div>
-            <div class="col-md-4"><div class="card glass stat-card text-center"><div class="card-body"><div class="stat-number" class="stat-number" style="color: #ffffff;" id="dashTotalSales">0</div><div class="stat-label" class="stat-label">Total Sales</div></div></div></div>
-            <div class="col-md-4"><div class="card glass stat-card text-center"><div class="card-body"><div class="stat-number" class="stat-number" style="color: #00ff9d;" id="dashRevenue">₹0</div><div class="stat-label" class="stat-label">Revenue</div></div></div></div>
-        </div>
-        <div class="card glass">
-            <div class="card-header border-0 bg-transparent"><h5 class="mb-0 text-white">Recent Orders</h5></div>
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Status</th></tr></thead>
-                    <tbody id="recentOrdersTable"><tr><td colspan="5" class="text-center">Loading...</td></tr></tbody>
-                </table>
+    <div id="admin-dashboard" class="section d-none">
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12 p-4">
+                    <h3 class="section-title">Dashboard</h3>
+                    <div class="row g-4 mb-4">
+                        <div class="col-md-4"><div class="stat-card"><div class="stat-number" id="dashTotalOrders">0</div><div class="text-muted">Total Orders</div></div></div>
+                        <div class="col-md-4"><div class="stat-card"><div class="stat-number" id="dashTotalSales">0</div><div class="text-muted">Total Sales</div></div></div>
+                        <div class="col-md-4"><div class="stat-card"><div class="stat-number" id="dashRevenue">₹0</div><div class="text-muted">Revenue</div></div></div>
+                    </div>
+                    <div class="card">
+                        <div class="card-header bg-white"><h5 class="mb-0">Recent Orders</h5></div>
+                        <div class="card-body p-0">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light"><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Status</th></tr></thead>
+                                <tbody id="recentOrdersTable"><tr><td colspan="5" class="text-center">Loading...</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- ADMIN PRODUCTS -->
-    <div id="admin-products" class="section d-none admin-section">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="section-title mb-0"><i class="bi bi-box"></i>Product Management</h3>
-            <button class="btn btn-primary" onclick="openProductModal()"><i class="bi bi-plus-lg me-1"></i>Add Product</button>
-        </div>
-        <div class="card glass">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead><tr><th>Product Name</th><th>Status</th><th>Actions</th></tr></thead>
-                    <tbody id="productsTable"><tr><td colspan="3" class="text-center">Loading...</td></tr></tbody>
-                </table>
+    <div id="admin-products" class="section d-none">
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="section-title mb-0">Product Management</h3>
+                <button class="btn btn-primary" onclick="openProductModal()"><i class="bi bi-plus-lg me-1"></i>Add Product</button>
+            </div>
+            <div class="card">
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light"><tr><th>Product Name</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody id="productsTable"><tr><td colspan="3" class="text-center">Loading...</td></tr></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- ADMIN DURATIONS -->
-    <div id="admin-durations" class="section d-none admin-section">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="section-title mb-0"><i class="bi bi-clock"></i>Duration Management</h3>
-            <button class="btn btn-primary" onclick="openDurationModal()"><i class="bi bi-plus-lg me-1"></i>Add Duration</button>
-        </div>
-        <div class="card glass">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead><tr><th>Product</th><th>Duration</th><th>Unit</th><th>Actions</th></tr></thead>
-                    <tbody id="durationsTable"><tr><td colspan="4" class="text-center">Loading...</td></tr></tbody>
-                </table>
+    <div id="admin-durations" class="section d-none">
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="section-title mb-0">Duration Management</h3>
+                <button class="btn btn-primary" onclick="openDurationModal()"><i class="bi bi-plus-lg me-1"></i>Add Duration</button>
+            </div>
+            <div class="card">
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light"><tr><th>Product</th><th>Duration</th><th>Unit</th><th>Actions</th></tr></thead>
+                        <tbody id="durationsTable"><tr><td colspan="2" class="text-center">Loading...</td></tr></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- ADMIN PRICES -->
-    <div id="admin-prices" class="section d-none admin-section">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="section-title mb-0"><i class="bi bi-tag"></i>Price Management</h3>
-            <button class="btn btn-primary" onclick="openPriceModal()"><i class="bi bi-plus-lg me-1"></i>Set Price</button>
-        </div>
-        <div class="card glass">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead><tr><th>Product</th><th>Duration</th><th>Price</th><th>Actions</th></tr></thead>
-                    <tbody id="pricesTable"><tr><td colspan="4" class="text-center">Loading...</td></tr></tbody>
-                </table>
+    <div id="admin-prices" class="section d-none">
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="section-title mb-0">Price Management</h3>
+                <button class="btn btn-primary" onclick="openPriceModal()"><i class="bi bi-plus-lg me-1"></i>Set Price</button>
+            </div>
+            <div class="card">
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light"><tr><th>Product</th><th>Duration</th><th>Price</th><th>Actions</th></tr></thead>
+                        <tbody id="pricesTable"><tr><td colspan="4" class="text-center">Loading...</td></tr></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- ADMIN KEYS -->
-    <div id="admin-keys" class="section d-none admin-section">
-        <h3 class="section-title"><i class="bi bi-key"></i>License Key Management</h3>
+    <!-- ADMIN LICENSE KEYS -->
+    <div id="admin-keys" class="section d-none">
+        <div class="container-fluid p-4">
+            <h3 class="section-title">License Key Management</h3>
 
-        <div class="card glass mb-4">
-            <div class="card-header border-0 bg-transparent"><h5 class="mb-0 text-white"><i class="bi bi-box-seam me-2"></i>Stock Summary</h5></div>
-            <div class="card-body">
-                <div class="row g-3" id="stockSummaryCards">
-                    <div class="col-12 text-center text-white-50">Loading stock data...</div>
+            <!-- STOCK SUMMARY -->
+            <div class="card mb-4 border-0" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius: 16px;">
+                <div class="card-header border-0" style="background: transparent; color: #fff;">
+                    <h5 class="mb-0"><i class="bi bi-box-seam me-2"></i>Stock Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3" id="stockSummaryCards">
+                        <div class="col-12 text-center text-white-50">Loading stock data...</div>
+                    </div>
                 </div>
             </div>
-        </div>
 
-        <div class="card glass mb-4">
-            <div class="card-header border-0 bg-transparent"><h5 class="mb-0 text-white">Import / Add Keys</h5></div>
-            <div class="card-body">
-                <div class="row g-3 mb-3">
-                    <div class="col-md-4"><label class="form-label">Select Product</label><select class="form-select" id="keyProduct" onchange="onKeyProductChange()"><option value="">Select Product</option></select></div>
-                    <div class="col-md-4"><label class="form-label">Select Duration</label><select class="form-select" id="keyDuration"><option value="">Select Duration</option></select></div>
-                    <div class="col-md-4"><label class="form-label">Add Single Key</label><div class="input-group"><input type="text" class="form-control" id="singleKeyInput" placeholder="Enter key"><button class="btn btn-outline-primary" onclick="addSingleKey()">Add</button></div></div>
+            <div class="card mb-4">
+                <div class="card-header bg-white"><h5 class="mb-0">Import Keys</h5></div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Select Product</label>
+                            <select class="form-select" id="keyProduct" onchange="onKeyProductChange()"><option value="">Select Product</option></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Select Duration</label>
+                            <select class="form-select" id="keyDuration"><option value="">Select Duration</option></select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label fw-semibold">Or add single key</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control" id="singleKeyInput" placeholder="Enter single key">
+                                <button class="btn btn-outline-primary" onclick="addSingleKey()">Add Key</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mt-3">
+                        <label class="form-label fw-semibold">Paste keys (one per line)</label>
+                        <textarea class="form-control" id="keysTextarea" rows="4" placeholder="Paste keys here (one per line)"></textarea>
+                        <button class="btn btn-primary mt-2" onclick="importKeys()"><i class="bi bi-upload me-1"></i>Import Keys</button>
+                    </div>
                 </div>
-                <label class="form-label">Paste keys (one per line)</label>
-                <textarea class="form-control mb-2" id="keysTextarea" rows="4" placeholder="Paste keys here..."></textarea>
-                <button class="btn btn-primary" onclick="importKeys()"><i class="bi bi-upload me-1"></i>Import Keys</button>
             </div>
-        </div>
 
-        <ul class="nav nav-tabs mb-3" style="border-color: var(--glass-border);">
-            <li class="nav-item"><a class="nav-link active" style="background: transparent; color: #fff; border-bottom: 2px solid var(--neon-red);" data-bs-toggle="tab" href="#activeKeys">Active Keys</a></li>
-            <li class="nav-item"><a class="nav-link" style="background: transparent; color: var(--text-muted); border: none;" data-bs-toggle="tab" href="#usedKeys">Used Keys</a></li>
-        </ul>
-        <div class="tab-content">
-            <div class="tab-pane fade show active" id="activeKeys">
-                <div class="card glass"><div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead><tr><th>Product</th><th>Duration</th><th>Key</th><th>Added</th><th>Actions</th></tr></thead>
-                        <tbody id="activeKeysTable"><tr><td colspan="5" class="text-center">Loading...</td></tr></tbody>
-                    </table>
-                </div></div>
-            </div>
-            <div class="tab-pane fade" id="usedKeys">
-                <div class="card glass"><div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead><tr><th>Product</th><th>Duration</th><th>Key</th><th>Used Date</th><th>Actions</th></tr></thead>
-                        <tbody id="usedKeysTable"><tr><td colspan="5" class="text-center">Loading...</td></tr></tbody>
-                    </table>
-                </div></div>
+            <ul class="nav nav-tabs mb-3">
+                <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#activeKeys">Active Keys</a></li>
+                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#usedKeys">Used Keys</a></li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="activeKeys">
+                    <div class="card"><div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light"><tr><th>Product</th><th>Duration</th><th>Key</th><th>Added</th><th>Actions</th></tr></thead>
+                            <tbody id="activeKeysTable"><tr><td colspan="4" class="text-center">Loading...</td></tr></tbody>
+                        </table>
+                    </div></div>
+                </div>
+                <div class="tab-pane fade" id="usedKeys">
+                    <div class="card"><div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light"><tr><th>Product</th><th>Duration</th><th>Key</th><th>Used Date</th><th>Actions</th></tr></thead>
+                            <tbody id="usedKeysTable"><tr><td colspan="4" class="text-center">Loading...</td></tr></tbody>
+                        </table>
+                    </div></div>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- ADMIN COUPONS -->
-    <div id="admin-coupons" class="section d-none admin-section">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h3 class="section-title mb-0"><i class="bi bi-ticket-perforated"></i>Coupon Management</h3>
-            <button class="btn btn-primary" onclick="openCouponModal()"><i class="bi bi-plus-lg me-1"></i>Create Coupon</button>
-        </div>
-        <div class="card glass">
-            <div class="table-responsive">
-                <table class="table table-hover">
-                    <thead><tr><th>Code</th><th>Discount</th><th>Min Order</th><th>Expiry</th><th>Actions</th></tr></thead>
-                    <tbody id="couponsTable"><tr><td colspan="5" class="text-center">Loading...</td></tr></tbody>
-                </table>
+    <div id="admin-coupons" class="section d-none">
+        <div class="container-fluid p-4">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3 class="section-title mb-0">Coupon Management</h3>
+                <button class="btn btn-primary" onclick="openCouponModal()"><i class="bi bi-plus-lg me-1"></i>Create Coupon</button>
+            </div>
+            <div class="card">
+                <div class="card-body p-0">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light"><tr><th>Code</th><th>Discount</th><th>Min Order</th><th>Expiry</th><th>Actions</th></tr></thead>
+                        <tbody id="couponsTable"><tr><td colspan="4" class="text-center">Loading...</td></tr></tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
 
     <!-- ADMIN ORDERS -->
-    <div id="admin-orders" class="section d-none admin-section">
-        <h3 class="section-title mb-4"><i class="bi bi-receipt"></i>Order Management</h3>
-        <div class="mb-4">
-            <input type="text" class="form-control" id="orderSearch" placeholder="Search orders..." onkeyup="searchOrders()" style="max-width:300px;">
-        </div>
-        <ul class="nav nav-tabs mb-3" style="border-color: var(--glass-border);">
-            <li class="nav-item"><a class="nav-link active" style="background: transparent; color: #fff; border-bottom: 2px solid var(--neon-red);" data-bs-toggle="tab" href="#paidOrders">Paid Orders</a></li>
-            <li class="nav-item"><a class="nav-link" style="background: transparent; color: var(--text-muted); border: none;" data-bs-toggle="tab" href="#failedOrders">Failed Orders</a></li>
-        </ul>
-        <div class="tab-content">
-            <div class="tab-pane fade show active" id="paidOrders">
-                <div class="card glass"><div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Key</th><th>Date</th></tr></thead>
-                        <tbody id="paidOrdersTable"><tr><td colspan="6" class="text-center">Loading...</td></tr></tbody>
-                    </table>
-                </div></div>
+    <div id="admin-orders" class="section d-none">
+        <div class="container-fluid p-4">
+            <h3 class="section-title mb-4">Order Management</h3>
+            <div class="mb-3">
+                <input type="text" class="form-control" id="orderSearch" placeholder="Search orders..." onkeyup="searchOrders()">
             </div>
-            <div class="tab-pane fade" id="failedOrders">
-                <div class="card glass"><div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Key</th><th>Date</th></tr></thead>
-                        <tbody id="failedOrdersTable"><tr><td colspan="6" class="text-center">Loading...</td></tr></tbody>
-                    </table>
-                </div></div>
+            <ul class="nav nav-tabs mb-3">
+                <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#paidOrders">Paid Orders</a></li>
+                <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#failedOrders">Failed Orders</a></li>
+            </ul>
+            <div class="tab-content">
+                <div class="tab-pane fade show active" id="paidOrders">
+                    <div class="card"><div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light"><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Key</th><th>Date</th></tr></thead>
+                            <tbody id="paidOrdersTable"><tr><td colspan="6" class="text-center">Loading...</td></tr></tbody>
+                        </table>
+                    </div></div>
+                </div>
+                <div class="tab-pane fade" id="failedOrders">
+                    <div class="card"><div class="card-body p-0">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light"><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Key</th><th>Date</th></tr></thead>
+                            <tbody id="failedOrdersTable"><tr><td colspan="6" class="text-center">Loading...</td></tr></tbody>
+                        </table>
+                    </div></div>
+                </div>
             </div>
         </div>
     </div>
 
-    <!-- ADMIN PAYMENTS -->
-    <div id="admin-payments" class="section d-none admin-section">
-        <h3 class="section-title mb-4"><i class="bi bi-gear"></i>Payment & Admin Settings</h3>
-        <div class="row g-4">
-            <div class="col-lg-6">
-                <div class="card glass h-100">
-                    <div class="card-header border-0 bg-transparent"><h5 class="mb-0 text-white"><i class="bi bi-credit-card me-2"></i>Razorpay</h5></div>
-                    <div class="card-body">
-                        <label class="form-label">Razorpay Key ID</label>
-                        <input type="text" class="form-control" id="rzpKeyId" placeholder="rzp_test_...">
+    <!-- ADMIN PAYMENT SETTINGS -->
+    <div id="admin-payments" class="section d-none">
+        <div class="container-fluid p-4">
+            <h3 class="section-title mb-4">Payment & Admin Settings</h3>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4">
+                        <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-credit-card me-2"></i>Razorpay</h5></div>
+                        <div class="card-body">
+                            <div class="mb-3"><label class="form-label">Razorpay Key ID (Merchant ID)</label><input type="text" class="form-control" id="rzpKeyId" placeholder="rzp_test_..."></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card mb-4 border-warning">
+                        <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Admin Credentials</h5></div>
+                        <div class="card-body">
+                            <div class="mb-3"><label class="form-label">Username</label><input type="text" class="form-control" id="adminUsername" placeholder="admin"></div>
+                            <div class="mb-3"><label class="form-label">Password</label><input type="password" class="form-control" id="adminPassword" placeholder="••••••"></div>
+                            <div class="alert alert-warning py-2 small mb-0"><i class="bi bi-exclamation-triangle me-1"></i>Stored as plain text. Use strong values.</div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <div class="col-lg-6">
-                <div class="card glass h-100">
-                    <div class="card-header border-0 bg-transparent"><h5 class="mb-0 text-white"><i class="bi bi-shield-lock me-2"></i>Admin Credentials</h5></div>
-                    <div class="card-body">
-                        <div class="mb-3"><label class="form-label">Username</label><input type="text" class="form-control" id="adminUsername" placeholder="admin"></div>
-                        <label class="form-label">Password</label>
-                        <input type="password" class="form-control" id="adminPassword" placeholder="••••••">
-                    </div>
-                </div>
-            </div>
-            <div class="col-12">
-                <div class="card glass">
-                    <div class="card-header border-0 bg-transparent"><h5 class="mb-0 text-white"><i class="bi bi-phone me-2"></i>APK Download Settings</h5></div>
-                    <div class="card-body">
-                        <label class="form-label">GitHub APK Download URL</label>
-                        <input type="url" class="form-control mb-2" id="apkUrl" placeholder="https://github.com/username/repo/releases/download/v1.0/app.apk">
-                        <div class="form-text mb-3">Customers will see a download button after purchase.</div>
-                        <div id="apkPreviewBox" style="display:none;">
-                            <label class="form-label">Current APK Link</label>
-                            <div class="input-group">
-                                <input type="text" class="form-control" id="apkUrlPreview" readonly>
-                                <a id="apkUrlLink" href="#" target="_blank" class="btn btn-outline-primary"><i class="bi bi-box-arrow-up-right"></i></a>
+
+            <!-- APK Settings -->
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card mb-4 border-info">
+                        <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-phone me-2"></i>APK Download Settings</h5></div>
+                        <div class="card-body">
+                            <div class="mb-3">
+                                <label class="form-label">GitHub APK Download URL</label>
+                                <input type="url" class="form-control" id="apkUrl" placeholder="https://github.com/username/repo/releases/download/v1.0/app.apk">
+                                <div class="form-text text-muted">Paste the GitHub release APK link here. Customers will see a download button after purchase.</div>
+                            </div>
+                            <div class="mb-0" id="apkPreviewBox" style="display:none;">
+                                <label class="form-label">Current APK Link</label>
+                                <div class="input-group">
+                                    <input type="text" class="form-control" id="apkUrlPreview" readonly>
+                                    <a id="apkUrlLink" href="#" target="_blank" class="btn btn-outline-primary"><i class="bi bi-box-arrow-up-right"></i></a>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
+
+            <button class="btn btn-primary" onclick="savePaymentSettings()"><i class="bi bi-save me-1"></i>Save All Settings</button>
         </div>
-        <button class="btn btn-primary mt-4" onclick="savePaymentSettings()"><i class="bi bi-save me-1"></i>Save All Settings</button>
     </div>
 
     <!-- SUCCESS PAGE -->
     <div id="success-page" class="section d-none">
-        <div class="container">
+        <div class="container py-5">
             <div class="row justify-content-center">
-                <div class="col-md-7 col-lg-6">
-                    <div class="card glass success-box p-4 p-md-5">
-                        <i class="bi bi-check-circle-fill"></i>
-                        <h2 class="mt-3 mb-4 fw-bold text-white">Payment Successful!</h2>
-                        <div class="text-start mb-4 p-3" style="background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid var(--glass-border);">
-                            <p class="mb-2"><span class="text-muted">Order ID:</span> <strong id="successOrderId"></strong></p>
-                            <p class="mb-2"><span class="text-muted">Product:</span> <strong id="successProduct"></strong></p>
-                            <p class="mb-0"><span class="text-muted">Duration:</span> <strong id="successDuration"></strong></p>
+                <div class="col-md-6">
+                    <div class="success-box">
+                        <i class="bi bi-check-circle-fill display-1"></i>
+                        <h2 class="mt-3 mb-4">Payment Successful!</h2>
+                        <div class="text-start mb-3">
+                            <p><strong>Order ID:</strong> <span id="successOrderId"></span></p>
+                            <p><strong>Product:</strong> <span id="successProduct"></span></p>
+                            <p><strong>Duration:</strong> <span id="successDuration"></span></p>
+                            <p><strong>Amount Paid:</strong> <span id="successAmount"></span></p>
                         </div>
-                        
                         <div class="mb-4">
-                            <div class="text-muted small mb-2 text-uppercase" style="letter-spacing:1px;">Your License Key</div>
+                            <div class="text-white-50 small mb-2">Your License Key</div>
                             <div class="key-display" id="successKey"></div>
                         </div>
 
+                        <!-- APK Download Card -->
                         <div class="mb-4" id="apkDownloadCard" style="display:none;">
-                            <div class="p-3" style="background: rgba(255, 0, 60, 0.05); border-radius: 16px; border: 1px solid rgba(255, 0, 60, 0.2);">
+                            <div class="p-3" style="background: rgba(255,255,255,0.1); border-radius: 16px; border: 1px solid rgba(255,255,255,0.15);">
                                 <div class="d-flex align-items-center gap-3 mb-2">
-                                    <img src="logo.jpg" alt="App" style="width: 48px; height: 48px; border-radius: 12px;">
+                                    <img src="logo.jpg" alt="App Logo" style="width: 48px; height: 48px; object-fit: cover; border-radius: 12px;">
                                     <div class="text-start">
-                                        <div class="fw-bold text-white">Download APK</div>
-                                        <div class="text-muted small">Get the latest Android app</div>
+                                        <div class="fw-bold text-white" style="font-size: 1rem;">Download APK</div>
+                                        <div class="text-white-50" style="font-size: 0.8rem;">Get the latest Android app</div>
                                     </div>
                                 </div>
-                                <a id="apkDownloadBtn" href="#" target="_blank" class="btn w-100 mt-2" style="background: linear-gradient(45deg, var(--neon-red), var(--dark-red)); color: #fff; font-weight: 700; border-radius: 12px; padding: 12px;">
-                                    <i class="bi bi-download me-2"></i>Download Now
+                                <a id="apkDownloadBtn" href="#" target="_blank" class="btn w-100 mt-2" style="background: #3ddc84; color: #000; font-weight: 700; border-radius: 12px; padding: 12px;">
+                                    <i class="bi bi-download me-2"></i>Download APK
                                 </a>
                             </div>
                         </div>
 
                         <div class="d-flex gap-2 justify-content-center">
-                            <button class="btn btn-light flex-fill" onclick="copyKey()"><i class="bi bi-clipboard me-1"></i>Copy</button>
-                            <button class="btn btn-light flex-fill" onclick="downloadInvoice()"><i class="bi bi-download me-1"></i>Invoice</button>
+                            <button class="btn btn-light" onclick="copyKey()"><i class="bi bi-clipboard me-1"></i>Copy Key</button>
+                            <button class="btn btn-light" onclick="downloadInvoice()"><i class="bi bi-download me-1"></i>Download Invoice</button>
                         </div>
-                        <button class="btn btn-primary mt-3 w-100" onclick="showSection('home')">Buy Another Key</button>
+                        <button class="btn btn-outline-light mt-3 w-100" onclick="showSection('home')">Buy Another</button>
                     </div>
                 </div>
             </div>
@@ -1619,7 +1991,7 @@
     </div>
 
     <!-- MODALS -->
-    <div class="modal fade" id="productModal"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal fade" id="productModal"><div class="modal-dialog"><div class="modal-content">
         <div class="modal-header"><h5 class="modal-title" id="productModalTitle">Add Product</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
             <input type="hidden" id="productEditId">
@@ -1629,7 +2001,7 @@
         <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" onclick="saveProduct()">Save</button></div>
     </div></div></div>
 
-    <div class="modal fade" id="durationModal"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal fade" id="durationModal"><div class="modal-dialog"><div class="modal-content">
         <div class="modal-header"><h5 class="modal-title" id="durationModalTitle">Add Duration</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
             <input type="hidden" id="durationEditId">
@@ -1640,7 +2012,7 @@
         <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" onclick="saveDuration()">Save</button></div>
     </div></div></div>
 
-    <div class="modal fade" id="priceModal"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal fade" id="priceModal"><div class="modal-dialog"><div class="modal-content">
         <div class="modal-header"><h5 class="modal-title" id="priceModalTitle">Set Price</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
             <input type="hidden" id="priceEditId">
@@ -1651,14 +2023,14 @@
         <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" onclick="savePrice()">Save</button></div>
     </div></div></div>
 
-    <div class="modal fade" id="couponModal"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
+    <div class="modal fade" id="couponModal"><div class="modal-dialog"><div class="modal-content">
         <div class="modal-header"><h5 class="modal-title">Create Coupon</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
             <div class="mb-3"><label class="form-label">Coupon Code</label><input type="text" class="form-control" id="couponCode" placeholder="SAVE20"></div>
             <div class="mb-3"><label class="form-label">Type</label><select class="form-select" id="couponType"><option value="percentage">Percentage (%)</option><option value="fixed">Fixed Amount (₹)</option></select></div>
             <div class="mb-3"><label class="form-label">Value</label><input type="number" class="form-control" id="couponValue" min="1"></div>
             <div class="mb-3"><label class="form-label">Min Order Value (₹)</label><input type="number" class="form-control" id="couponMinOrder" min="0" placeholder="0 = Any amount"></div>
-            <div class="mb-3"><label class="form-label">Expiry Date</label><input type="date" class="form-control" id="couponExpiry"></div>
+            <div class="mb-3"><label class="form-label">Expiry Date (Optional)</label><input type="date" class="form-control" id="couponExpiry"></div>
         </div>
         <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" onclick="saveCoupon()">Create</button></div>
     </div></div></div>
