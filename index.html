@@ -546,7 +546,7 @@
                 const d = durations[dId];
                 const dName = d ? `${d.name} ${d.unit ? d.unit.charAt(0).toUpperCase() + d.unit.slice(1) : ''}` : 'Unknown';
                 const low = c.active <= 2, out = c.active === 0;
-                stockHtml += `<div class="col-md-4 col-lg-3"><div class="p-3" style="background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,0,60,0.2);"><div class="d-flex justify-content-between mb-2"><div><div class="fw-bold text-white" style="font-size: 0.9rem;">${pName}</div><div class="text-white-50" style="font-size: 0.75rem;">${dName}</div></div><span class="badge ${out ? 'bg-danger' : low ? 'bg-warning text-dark' : 'bg-success'}" style="font-size: 0.7rem;">${out ? 'Out' : low ? 'Low' : 'In Stock'}</span></div><div class="d-flex gap-3 mt-2"><div class="text-center"><div class="fw-bold ${c.active > 0 ? 'text-success' : 'text-danger'}" style="font-size: 1.3rem;">${c.active}</div><div class="text-white-50" style="font-size: 0.65rem;">AVAIL</div></div><div class="text-center"><div class="fw-bold text-white" style="font-size: 1.3rem;">${c.used}</div><div class="text-white-50" style="font-size: 0.65rem;">SOLD</div></div><div class="text-center"><div class="fw-bold text-info" style="font-size: 1.3rem;">${c.total}</div><div class="text-white-50" style="font-size: 0.65rem;">TOTAL</div></div></div></div></div>`;
+                stockHtml += `<div class="col-md-4 col-lg-3"><div class="p-3" style="background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,0,60,0.2);"><div class="d-flex justify-content-between mb-2"><div><div class="fw-bold text-white" style="font-size: 0.9rem;">${pName}</div><div class="text-white-50" style="font-size: 0.75rem;">${dName}</div></div><span class="badge ${out ? 'bg-danger' : low ? 'bg-warning text-dark' : 'bg-success'}" style="font-size: 0.7rem;">${out ? 'Out' : low ? 'Low' : 'In Stock'}</span></div><div class="d-flex gap-3 mt-2"><div class="text-center"><div class="fw-bold ${c.active > 0 ? 'text-success' : 'text-danger'}" style="font-size: 1.3rem;">${c.active}</div><div class="text-white-50" style="font-size: 0.65rem;">AVAIL</div></div><div class="text-center"><div class="fw-bold text-white" style="font-size: 1.3rem;">${c.used}</div><div class="text-white-50" style="font-size: 0.65rem;">SOLD</div></div><div class="text-center"><div class="fw-bold text-info" style="font-size: 1.3rem;">${c.total}</div><div class="text-white-50" style="font-size: 0.65rem;">TOTAL</div></div></div></div></div>`;
             });
             document.getElementById('stockSummaryCards').innerHTML = stockHtml || '<div class="col-12 text-center text-white-50">No keys in stock</div>';
 
@@ -688,6 +688,7 @@
             --dark-red: #b91c1c;
             --bg-black: #050505;
             --glass-bg: rgba(20, 20, 20, 0.6);
+            --glass-bg-admin: rgba(15, 15, 15, 0.85); /* Darker glass for admin to make text pop */
             --glass-border: rgba(255, 255, 255, 0.08);
             --red-glow: rgba(255, 0, 60, 0.4);
             --text-light: #f3f4f6;
@@ -934,15 +935,20 @@
             background: rgba(255,255,255,0.2) !important;
         }
 
-        /* === ADMIN PANEL === */
+        /* === ADMIN PANEL HIGH CONTRAST FIXES === */
         .admin-section {
             min-height: calc(100vh - 65px);
             padding: 30px;
         }
 
+        /* Darker Glass Background for Admin Cards */
+        .admin-section .glass {
+            background: var(--glass-bg-admin) !important;
+        }
+
         .admin-section .section-title {
             font-weight: 800;
-            color: #fff;
+            color: #ffffff !important;
             font-size: 1.75rem;
             margin-bottom: 25px;
             display: flex;
@@ -951,41 +957,143 @@
             text-shadow: 0 0 15px var(--red-glow);
         }
 
-        .stat-card {
-            transition: transform 0.3s ease;
+        /* Make Card Headers clear */
+        .admin-section .card-header {
+            background: transparent !important;
+            border-bottom: 1px solid var(--glass-border) !important;
+            color: #ffffff !important;
+            font-weight: 700;
         }
-        .stat-card:hover { transform: translateY(-3px); border-color: var(--neon-red) !important; }
 
-        .stat-number { font-size: 2rem; font-weight: 800; margin-bottom: 5px; text-shadow: 0 0 10px var(--red-glow); }
-        .stat-label { color: var(--text-muted); font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
+        /* Fix text muted inside admin to be brighter */
+        .admin-section .text-muted {
+            color: #9ca3af !important;
+        }
 
-        .table { margin-bottom: 0; color: #fff; }
-        .table thead th { 
-            background: rgba(255,0,60,0.05) !important; 
-            border-bottom: 1px solid var(--glass-border) !important; 
-            font-weight: 700; 
-            color: var(--neon-red) !important; 
+        /* Fix Form Labels in Admin */
+        .admin-section .form-label {
+            color: #d1d5db !important;
+            text-transform: none;
+            letter-spacing: 0;
+            font-size: 0.9rem;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        /* Fix Inputs in Admin for max visibility */
+        .admin-section .form-control,
+        .admin-section .form-select {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: #ffffff !important;
+            border-radius: 8px !important;
+            padding: 10px 14px !important;
+        }
+        .admin-section .form-control::placeholder {
+            color: #6b7280 !important;
+        }
+        .admin-section .form-control:read-only {
+            background: rgba(255, 255, 255, 0.05) !important;
+        }
+
+        /* Fix Helper Text */
+        .admin-section .form-text {
+            color: #9ca3af !important;
+        }
+
+        /* Fix Table Text */
+        .admin-section .table {
+            color: #e5e7eb !important;
+        }
+        .admin-section .table thead th { 
+            background: rgba(255, 0, 60, 0.05) !important; 
+            border-bottom: 2px solid rgba(255, 0, 60, 0.2) !important; 
+            color: #ff4d6d !important; 
             text-transform: uppercase; 
             font-size: 0.75rem; 
             padding: 15px; 
             letter-spacing: 0.5px; 
         }
-        .table tbody td { padding: 15px; vertical-align: middle; border-color: var(--glass-border) !important; color: rgba(255,255,255,0.8); }
-        .table-hover tbody tr:hover { background: rgba(255,255,255,0.03) !important; }
+        .admin-section .table tbody td { 
+            padding: 15px; 
+            vertical-align: middle; 
+            border-color: rgba(255, 255, 255, 0.05) !important; 
+            color: #f3f4f6 !important; 
+        }
+        .admin-section .table-hover tbody tr:hover { 
+            background: rgba(255, 255, 255, 0.03) !important; 
+        }
 
-        /* Modals */
+        /* Fix Code tags in tables */
+        .admin-section code {
+            color: #ff4d6d;
+            background: rgba(255, 0, 60, 0.1);
+            padding: 2px 6px;
+            border-radius: 4px;
+        }
+
+        /* Buttons in Admin */
+        .admin-section .btn-warning {
+            background: #f59e0b;
+            border-color: #f59e0b;
+            color: #000;
+        }
+        .admin-section .btn-danger {
+            background: #ef4444;
+            border-color: #ef4444;
+        }
+        .admin-section .btn-secondary {
+            background: #374151;
+            border-color: #374151;
+        }
+        .admin-section .btn-primary {
+            background: linear-gradient(45deg, var(--neon-red), var(--dark-red));
+            border: none;
+        }
+        .admin-section .btn-outline-primary {
+            color: #ff4d6d !important;
+            border: 1px solid rgba(255, 0, 60, 0.4) !important;
+        }
+        .admin-section .btn-outline-primary:hover {
+            background: rgba(255, 0, 60, 0.1) !important;
+        }
+
+        /* Fix Input Group Text */
+        .admin-section .input-group-text {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            color: #fff;
+        }
+
+        /* Modals Text Fix */
         .modal-content {
-            background: rgba(5, 5, 5, 0.85) !important;
+            background: rgba(10, 10, 10, 0.95) !important;
             backdrop-filter: blur(20px);
             border: 1px solid var(--glass-border) !important;
             border-radius: 20px !important;
-            color: #fff;
+            color: #ffffff !important;
             box-shadow: 0 0 30px var(--red-glow);
         }
         .modal-header, .modal-footer { border-color: var(--glass-border) !important; }
-        .modal-title { color: #fff; font-weight: 700; }
+        .modal-title { color: #ffffff !important; font-weight: 700; }
+        .modal-body { color: #ffffff !important; }
         .btn-close { filter: invert(1); }
-        .form-text { color: var(--text-muted) !important; }
+        
+        .modal .form-label {
+            color: #d1d5db !important;
+            text-transform: none;
+            letter-spacing: 0;
+            font-size: 0.9rem;
+        }
+        .modal .form-control,
+        .modal .form-select {
+            background: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            color: #ffffff !important;
+        }
+        .modal .form-text { color: #9ca3af !important; }
+        .modal .btn-secondary { background: #374151; border-color: #374151; }
+        .modal .btn-primary { background: linear-gradient(45deg, var(--neon-red), var(--dark-red)); border: none; }
 
         /* Toast Container */
         #toastContainer {
