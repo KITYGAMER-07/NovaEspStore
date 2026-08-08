@@ -1749,12 +1749,33 @@ Thank you for your purchase!
         #admin-durations .card-header h5, #admin-prices .card-header h5,
         #admin-keys .card-header h5, #admin-coupons .card-header h5,
         #admin-orders .card-header h5, #admin-payments .card-header h5 {
-            color: #fff;
+            color: #fff !important;
             font-weight: 600;
         }
 
+        #admin-payments label.form-label,
+        #admin-dashboard label.form-label,
+        #admin-products label.form-label,
+        #admin-durations label.form-label,
+        #admin-prices label.form-label,
+        #admin-keys label.form-label,
+        #admin-coupons label.form-label,
+        #admin-orders label.form-label {
+            color: rgba(255,255,255,0.9) !important;
+            font-weight: 600;
+        }
+
+        #admin-payments .form-text,
+        #admin-payments .text-muted {
+            color: rgba(255,255,255,0.5) !important;
+        }
+
         .table {
-            color: rgba(255,255,255,0.8);
+            color: rgba(255,255,255,0.9) !important;
+        }
+
+        .table tbody td {
+            color: rgba(255,255,255,0.85) !important;
         }
 
         .table thead th {
@@ -1917,7 +1938,11 @@ Thank you for your purchase!
         .alert.alert-warning {
             background: rgba(234, 179, 8, 0.08);
             border: 1px solid rgba(234, 179, 8, 0.2);
-            color: #eab308;
+            color: #eab308 !important;
+        }
+
+        .alert.alert-warning * {
+            color: #eab308 !important;
         }
 
         .alert.alert-info {
@@ -1963,6 +1988,16 @@ Thank you for your purchase!
         #stockSummaryCards .col-md-4 > div:hover {
             border-color: rgba(220, 38, 38, 0.25) !important;
             box-shadow: 0 4px 20px rgba(220, 38, 38, 0.1);
+        }
+
+        /* Responsive Tables */
+        .table-responsive-wrapper {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .table-responsive-wrapper table {
+            min-width: 600px;
         }
 
         /* Scrollbar */
@@ -2158,7 +2193,7 @@ Thank you for your purchase!
                     </div>
                     <div class="card">
                         <div class="card-header bg-white"><h5 class="mb-0">Recent Orders</h5></div>
-                        <div class="card-body p-0">
+                        <div class="card-body p-0 table-responsive-wrapper">
                             <table class="table table-hover mb-0">
                                 <thead class="table-light"><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Status</th></tr></thead>
                                 <tbody id="recentOrdersTable"><tr><td colspan="5" class="text-center">Loading...</td></tr></tbody>
@@ -2178,7 +2213,7 @@ Thank you for your purchase!
                 <button class="btn btn-primary" onclick="openProductModal()"><i class="bi bi-plus-lg me-1"></i>Add Product</button>
             </div>
             <div class="card">
-                <div class="card-body p-0">
+                <div class="card-body p-0 table-responsive-wrapper">
                     <table class="table table-hover mb-0">
                         <thead class="table-light"><tr><th>Product Name</th><th>Status</th><th>Actions</th></tr></thead>
                         <tbody id="productsTable"><tr><td colspan="3" class="text-center">Loading...</td></tr></tbody>
@@ -2196,7 +2231,7 @@ Thank you for your purchase!
                 <button class="btn btn-primary" onclick="openDurationModal()"><i class="bi bi-plus-lg me-1"></i>Add Duration</button>
             </div>
             <div class="card">
-                <div class="card-body p-0">
+                <div class="card-body p-0 table-responsive-wrapper">
                     <table class="table table-hover mb-0">
                         <thead class="table-light"><tr><th>Product</th><th>Duration</th><th>Unit</th><th>Actions</th></tr></thead>
                         <tbody id="durationsTable"><tr><td colspan="2" class="text-center">Loading...</td></tr></tbody>
@@ -2214,7 +2249,7 @@ Thank you for your purchase!
                 <button class="btn btn-primary" onclick="openPriceModal()"><i class="bi bi-plus-lg me-1"></i>Set Price</button>
             </div>
             <div class="card">
-                <div class="card-body p-0">
+                <div class="card-body p-0 table-responsive-wrapper">
                     <table class="table table-hover mb-0">
                         <thead class="table-light"><tr><th>Product</th><th>Duration</th><th>Price</th><th>Actions</th></tr></thead>
                         <tbody id="pricesTable"><tr><td colspan="4" class="text-center">Loading...</td></tr></tbody>
@@ -2242,28 +2277,28 @@ Thank you for your purchase!
             </div>
 
             <div class="card mb-4">
-                <div class="card-header bg-white"><h5 class="mb-0">Import Keys</h5></div>
+                <div class="card-header bg-white"><h5 class="mb-0" style="color: #fff;">Import Keys</h5></div>
                 <div class="card-body">
                     <div class="row g-3">
                         <div class="col-md-4">
-                            <label class="form-label fw-semibold">Select Product</label>
-                            <select class="form-select" id="keyProduct" onchange="onKeyProductChange()"><option value="">Select Product</option></select>
+                            <label class="form-label fw-semibold" style="color: rgba(255,255,255,0.9) !important;">Select Product</label>
+                            <select class="form-select" id="keyProduct" onchange="onKeyProductChange()" style="color: #fff !important;"><option value="">Select Product</option></select>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label fw-semibold">Select Duration</label>
-                            <select class="form-select" id="keyDuration"><option value="">Select Duration</option></select>
+                            <label class="form-label fw-semibold" style="color: rgba(255,255,255,0.9) !important;">Select Duration</label>
+                            <select class="form-select" id="keyDuration" style="color: #fff !important;"><option value="">Select Duration</option></select>
                         </div>
                         <div class="col-md-4">
-                            <label class="form-label fw-semibold">Or add single key</label>
+                            <label class="form-label fw-semibold" style="color: rgba(255,255,255,0.9) !important;">Or add single key</label>
                             <div class="input-group">
-                                <input type="text" class="form-control" id="singleKeyInput" placeholder="Enter single key">
+                                <input type="text" class="form-control" id="singleKeyInput" placeholder="Enter single key" style="color: #fff !important;">
                                 <button class="btn btn-outline-primary" onclick="addSingleKey()">Add Key</button>
                             </div>
                         </div>
                     </div>
                     <div class="mt-3">
-                        <label class="form-label fw-semibold">Paste keys (one per line)</label>
-                        <textarea class="form-control" id="keysTextarea" rows="4" placeholder="Paste keys here (one per line)"></textarea>
+                        <label class="form-label fw-semibold" style="color: rgba(255,255,255,0.9) !important;">Paste keys (one per line)</label>
+                        <textarea class="form-control" id="keysTextarea" rows="4" placeholder="Paste keys here (one per line)" style="color: #fff !important;"></textarea>
                         <button class="btn btn-primary mt-2" onclick="importKeys()"><i class="bi bi-upload me-1"></i>Import Keys</button>
                     </div>
                 </div>
@@ -2275,7 +2310,7 @@ Thank you for your purchase!
             </ul>
             <div class="tab-content">
                 <div class="tab-pane fade show active" id="activeKeys">
-                    <div class="card"><div class="card-body p-0">
+                    <div class="card"><div class="card-body p-0 table-responsive-wrapper">
                         <table class="table table-hover mb-0">
                             <thead class="table-light"><tr><th>Product</th><th>Duration</th><th>Key</th><th>Added</th><th>Actions</th></tr></thead>
                             <tbody id="activeKeysTable"><tr><td colspan="4" class="text-center">Loading...</td></tr></tbody>
@@ -2283,7 +2318,7 @@ Thank you for your purchase!
                     </div></div>
                 </div>
                 <div class="tab-pane fade" id="usedKeys">
-                    <div class="card"><div class="card-body p-0">
+                    <div class="card"><div class="card-body p-0 table-responsive-wrapper">
                         <table class="table table-hover mb-0">
                             <thead class="table-light"><tr><th>Product</th><th>Duration</th><th>Key</th><th>Used Date</th><th>Actions</th></tr></thead>
                             <tbody id="usedKeysTable"><tr><td colspan="4" class="text-center">Loading...</td></tr></tbody>
@@ -2302,7 +2337,7 @@ Thank you for your purchase!
                 <button class="btn btn-primary" onclick="openCouponModal()"><i class="bi bi-plus-lg me-1"></i>Create Coupon</button>
             </div>
             <div class="card">
-                <div class="card-body p-0">
+                <div class="card-body p-0 table-responsive-wrapper">
                     <table class="table table-hover mb-0">
                         <thead class="table-light"><tr><th>Code</th><th>Discount</th><th>Min Order</th><th>Expiry</th><th>Actions</th></tr></thead>
                         <tbody id="couponsTable"><tr><td colspan="4" class="text-center">Loading...</td></tr></tbody>
@@ -2325,7 +2360,7 @@ Thank you for your purchase!
             </ul>
             <div class="tab-content">
                 <div class="tab-pane fade show active" id="paidOrders">
-                    <div class="card"><div class="card-body p-0">
+                    <div class="card"><div class="card-body p-0 table-responsive-wrapper">
                         <table class="table table-hover mb-0">
                             <thead class="table-light"><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Key</th><th>Date</th></tr></thead>
                             <tbody id="paidOrdersTable"><tr><td colspan="6" class="text-center">Loading...</td></tr></tbody>
@@ -2333,7 +2368,7 @@ Thank you for your purchase!
                     </div></div>
                 </div>
                 <div class="tab-pane fade" id="failedOrders">
-                    <div class="card"><div class="card-body p-0">
+                    <div class="card"><div class="card-body p-0 table-responsive-wrapper">
                         <table class="table table-hover mb-0">
                             <thead class="table-light"><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Key</th><th>Date</th></tr></thead>
                             <tbody id="failedOrdersTable"><tr><td colspan="6" class="text-center">Loading...</td></tr></tbody>
@@ -2353,7 +2388,7 @@ Thank you for your purchase!
                     <div class="card mb-4">
                         <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-credit-card me-2"></i>Razorpay</h5></div>
                         <div class="card-body">
-                            <div class="mb-3"><label class="form-label">Razorpay Key ID (Merchant ID)</label><input type="text" class="form-control" id="rzpKeyId" placeholder="rzp_test_..."></div>
+                            <div class="mb-3"><label class="form-label" style="color: rgba(255,255,255,0.9) !important;">Razorpay Key ID (Merchant ID)</label><input type="text" class="form-control" id="rzpKeyId" placeholder="rzp_test_..." style="color: #fff !important;"></div>
                         </div>
                     </div>
                 </div>
@@ -2362,8 +2397,8 @@ Thank you for your purchase!
                     <div class="card mb-4 border-warning">
                         <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Admin Credentials</h5></div>
                         <div class="card-body">
-                            <div class="mb-3"><label class="form-label">Username</label><input type="text" class="form-control" id="adminUsername" placeholder="admin"></div>
-                            <div class="mb-3"><label class="form-label">Password</label><input type="password" class="form-control" id="adminPassword" placeholder="••••••"></div>
+                            <div class="mb-3"><label class="form-label" style="color: rgba(255,255,255,0.9) !important;">Username</label><input type="text" class="form-control" id="adminUsername" placeholder="admin" style="color: #fff !important;"></div>
+                            <div class="mb-3"><label class="form-label" style="color: rgba(255,255,255,0.9) !important;">Password</label><input type="password" class="form-control" id="adminPassword" placeholder="••••••" style="color: #fff !important;"></div>
                             <div class="alert alert-warning py-2 small mb-0"><i class="bi bi-exclamation-triangle me-1"></i>Stored as plain text. Use strong values.</div>
                         </div>
                     </div>
@@ -2377,14 +2412,14 @@ Thank you for your purchase!
                         <div class="card-header bg-white"><h5 class="mb-0"><i class="bi bi-phone me-2"></i>APK Download Settings</h5></div>
                         <div class="card-body">
                             <div class="mb-3">
-                                <label class="form-label">GitHub APK Download URL</label>
-                                <input type="url" class="form-control" id="apkUrl" placeholder="https://github.com/username/repo/releases/download/v1.0/app.apk">
+                                <label class="form-label" style="color: rgba(255,255,255,0.9) !important;">GitHub APK Download URL</label>
+                                <input type="url" class="form-control" id="apkUrl" placeholder="https://github.com/username/repo/releases/download/v1.0/app.apk" style="color: #fff !important;">
                                 <div class="form-text text-muted">Paste the GitHub release APK link here. Customers will see a download button after purchase.</div>
                             </div>
                             <div class="mb-0" id="apkPreviewBox" style="display:none;">
-                                <label class="form-label">Current APK Link</label>
+                                <label class="form-label" style="color: rgba(255,255,255,0.9) !important;">Current APK Link</label>
                                 <div class="input-group">
-                                    <input type="text" class="form-control" id="apkUrlPreview" readonly>
+                                    <input type="text" class="form-control" id="apkUrlPreview" readonly style="color: #fff !important;">
                                     <a id="apkUrlLink" href="#" target="_blank" class="btn btn-outline-primary"><i class="bi bi-box-arrow-up-right"></i></a>
                                 </div>
                             </div>
@@ -2448,8 +2483,8 @@ Thank you for your purchase!
         <div class="modal-header"><h5 class="modal-title" id="productModalTitle">Add Product</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
             <input type="hidden" id="productEditId">
-            <div class="mb-3"><label class="form-label">Product Name</label><input type="text" class="form-control" id="productName"></div>
-            <div class="form-check"><input class="form-check-input" type="checkbox" id="productEnabled" checked><label class="form-check-label">Enabled</label></div>
+            <div class="mb-3"><label class="form-label" style="color: rgba(255,255,255,0.9) !important;">Product Name</label><input type="text" class="form-control" id="productName" style="color: #fff !important;"></div>
+            <div class="form-check"><input class="form-check-input" type="checkbox" id="productEnabled" checked><label class="form-check-label" style="color: rgba(255,255,255,0.9) !important;">Enabled</label></div>
         </div>
         <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" onclick="saveProduct()">Save</button></div>
     </div></div></div>
@@ -2458,9 +2493,9 @@ Thank you for your purchase!
         <div class="modal-header"><h5 class="modal-title" id="durationModalTitle">Add Duration</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
             <input type="hidden" id="durationEditId">
-            <div class="mb-3"><label class="form-label">Select Product</label><select class="form-select" id="durationProduct"><option value="">Select Product</option></select></div>
-            <div class="mb-3"><label class="form-label">Duration Name</label><input type="text" class="form-control" id="durationName" placeholder="e.g. 30"></div>
-            <div class="mb-3"><label class="form-label">Time Unit</label><select class="form-select" id="durationUnit"><option value="hours">Hours</option><option value="days">Days</option><option value="weeks">Weeks</option><option value="months">Months</option><option value="years">Years</option></select></div>
+            <div class="mb-3"><label class="form-label" style="color: rgba(255,255,255,0.9) !important;">Select Product</label><select class="form-select" id="durationProduct" style="color: #fff !important;"><option value="">Select Product</option></select></div>
+            <div class="mb-3"><label class="form-label" style="color: rgba(255,255,255,0.9) !important;">Duration Name</label><input type="text" class="form-control" id="durationName" placeholder="e.g. 30" style="color: #fff !important;"></div>
+            <div class="mb-3"><label class="form-label" style="color: rgba(255,255,255,0.9) !important;">Time Unit</label><select class="form-select" id="durationUnit" style="color: #fff !important;"><option value="hours">Hours</option><option value="days">Days</option><option value="weeks">Weeks</option><option value="months">Months</option><option value="years">Years</option></select></div>
         </div>
         <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" onclick="saveDuration()">Save</button></div>
     </div></div></div>
@@ -2469,9 +2504,9 @@ Thank you for your purchase!
         <div class="modal-header"><h5 class="modal-title" id="priceModalTitle">Set Price</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
             <input type="hidden" id="priceEditId">
-            <div class="mb-3"><label class="form-label">Product</label><select class="form-select" id="priceProduct" onchange="onPriceProductChange()"><option value="">Select Product</option></select></div>
-            <div class="mb-3"><label class="form-label">Duration</label><select class="form-select" id="priceDuration"><option value="">Select Duration</option></select></div>
-            <div class="mb-3"><label class="form-label">Price (₹)</label><input type="number" class="form-control" id="priceValue" min="1"></div>
+            <div class="mb-3"><label class="form-label" style="color: rgba(255,255,255,0.9) !important;">Product</label><select class="form-select" id="priceProduct" onchange="onPriceProductChange()" style="color: #fff !important;"><option value="">Select Product</option></select></div>
+            <div class="mb-3"><label class="form-label" style="color: rgba(255,255,255,0.9) !important;">Duration</label><select class="form-select" id="priceDuration" style="color: #fff !important;"><option value="">Select Duration</option></select></div>
+            <div class="mb-3"><label class="form-label" style="color: rgba(255,255,255,0.9) !important;">Price (₹)</label><input type="number" class="form-control" id="priceValue" min="1" style="color: #fff !important;"></div>
         </div>
         <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" onclick="savePrice()">Save</button></div>
     </div></div></div>
@@ -2479,11 +2514,11 @@ Thank you for your purchase!
     <div class="modal fade" id="couponModal"><div class="modal-dialog"><div class="modal-content">
         <div class="modal-header"><h5 class="modal-title">Create Coupon</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
-            <div class="mb-3"><label class="form-label">Coupon Code</label><input type="text" class="form-control" id="couponCode" placeholder="SAVE20"></div>
-            <div class="mb-3"><label class="form-label">Type</label><select class="form-select" id="couponType"><option value="percentage">Percentage (%)</option><option value="fixed">Fixed Amount (₹)</option></select></div>
-            <div class="mb-3"><label class="form-label">Value</label><input type="number" class="form-control" id="couponValue" min="1"></div>
-            <div class="mb-3"><label class="form-label">Min Order Value (₹)</label><input type="number" class="form-control" id="couponMinOrder" min="0" placeholder="0 = Any amount"></div>
-            <div class="mb-3"><label class="form-label">Expiry Date (Optional)</label><input type="date" class="form-control" id="couponExpiry"></div>
+            <div class="mb-3"><label class="form-label" style="color: rgba(255,255,255,0.9) !important;">Coupon Code</label><input type="text" class="form-control" id="couponCode" placeholder="SAVE20" style="color: #fff !important;"></div>
+            <div class="mb-3"><label class="form-label" style="color: rgba(255,255,255,0.9) !important;">Type</label><select class="form-select" id="couponType" style="color: #fff !important;"><option value="percentage">Percentage (%)</option><option value="fixed">Fixed Amount (₹)</option></select></div>
+            <div class="mb-3"><label class="form-label" style="color: rgba(255,255,255,0.9) !important;">Value</label><input type="number" class="form-control" id="couponValue" min="1" style="color: #fff !important;"></div>
+            <div class="mb-3"><label class="form-label" style="color: rgba(255,255,255,0.9) !important;">Min Order Value (₹)</label><input type="number" class="form-control" id="couponMinOrder" min="0" placeholder="0 = Any amount" style="color: #fff !important;"></div>
+            <div class="mb-3"><label class="form-label" style="color: rgba(255,255,255,0.9) !important;">Expiry Date (Optional)</label><input type="date" class="form-control" id="couponExpiry" style="color: #fff !important;"></div>
         </div>
         <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" onclick="saveCoupon()">Create</button></div>
     </div></div></div>
