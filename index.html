@@ -688,7 +688,7 @@
             --dark-red: #b91c1c;
             --bg-black: #050505;
             --glass-bg: rgba(20, 20, 20, 0.6);
-            --glass-bg-admin: rgba(15, 15, 15, 0.85); /* Darker glass for admin to make text pop */
+            --glass-bg-admin: rgba(10, 10, 10, 0.95); /* Darker glass for admin to make text pop */
             --glass-border: rgba(255, 255, 255, 0.08);
             --red-glow: rgba(255, 0, 60, 0.4);
             --text-light: #f3f4f6;
@@ -944,6 +944,7 @@
         /* Darker Glass Background for Admin Cards */
         .admin-section .glass {
             background: var(--glass-bg-admin) !important;
+            border: 1px solid rgba(255, 255, 255, 0.15) !important;
         }
 
         .admin-section .section-title {
@@ -954,43 +955,44 @@
             display: flex;
             align-items: center;
             gap: 10px;
-            text-shadow: 0 0 15px var(--red-glow);
+            text-shadow: 0 0 20px var(--red-glow), 0 2px 4px rgba(0,0,0,0.5);
         }
 
         /* Make Card Headers clear */
         .admin-section .card-header {
-            background: transparent !important;
-            border-bottom: 1px solid var(--glass-border) !important;
+            background: rgba(255, 0, 60, 0.08) !important;
+            border-bottom: 1px solid rgba(255, 0, 60, 0.2) !important;
             color: #ffffff !important;
             font-weight: 700;
         }
 
         /* Fix text muted inside admin to be brighter */
         .admin-section .text-muted {
-            color: #9ca3af !important;
+            color: #d1d5db !important;
         }
 
         /* Fix Form Labels in Admin */
         .admin-section .form-label {
-            color: #d1d5db !important;
+            color: #ffffff !important;
             text-transform: none;
             letter-spacing: 0;
             font-size: 0.9rem;
-            font-weight: 600;
+            font-weight: 700;
             margin-bottom: 6px;
         }
 
         /* Fix Inputs in Admin for max visibility */
         .admin-section .form-control,
         .admin-section .form-select {
-            background: rgba(255, 255, 255, 0.1) !important;
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            background: rgba(255, 255, 255, 0.12) !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
             color: #ffffff !important;
             border-radius: 8px !important;
             padding: 10px 14px !important;
+            font-weight: 500;
         }
         .admin-section .form-control::placeholder {
-            color: #6b7280 !important;
+            color: #9ca3af !important;
         }
         .admin-section .form-control:read-only {
             background: rgba(255, 255, 255, 0.05) !important;
@@ -998,7 +1000,8 @@
 
         /* Fix Helper Text */
         .admin-section .form-text {
-            color: #9ca3af !important;
+            color: #d1d5db !important;
+            font-weight: 500;
         }
 
         /* Fix Table Text */
@@ -1006,19 +1009,21 @@
             color: #e5e7eb !important;
         }
         .admin-section .table thead th { 
-            background: rgba(255, 0, 60, 0.05) !important; 
-            border-bottom: 2px solid rgba(255, 0, 60, 0.2) !important; 
-            color: #ff4d6d !important; 
+            background: rgba(255, 0, 60, 0.15) !important; 
+            border-bottom: 2px solid rgba(255, 0, 60, 0.4) !important; 
+            color: #ff6b8a !important; 
             text-transform: uppercase; 
-            font-size: 0.75rem; 
+            font-size: 0.8rem; 
             padding: 15px; 
             letter-spacing: 0.5px; 
+            font-weight: 700;
         }
         .admin-section .table tbody td { 
             padding: 15px; 
             vertical-align: middle; 
-            border-color: rgba(255, 255, 255, 0.05) !important; 
-            color: #f3f4f6 !important; 
+            border-color: rgba(255, 255, 255, 0.1) !important; 
+            color: #ffffff !important; 
+            font-weight: 500;
         }
         .admin-section .table-hover tbody tr:hover { 
             background: rgba(255, 255, 255, 0.03) !important; 
@@ -1026,10 +1031,12 @@
 
         /* Fix Code tags in tables */
         .admin-section code {
-            color: #ff4d6d;
-            background: rgba(255, 0, 60, 0.1);
-            padding: 2px 6px;
+            color: #ff6b8a;
+            background: rgba(255, 0, 60, 0.15);
+            padding: 3px 8px;
             border-radius: 4px;
+            font-weight: 600;
+            font-size: 0.9rem;
         }
 
         /* Buttons in Admin */
@@ -1067,12 +1074,12 @@
 
         /* Modals Text Fix */
         .modal-content {
-            background: rgba(10, 10, 10, 0.95) !important;
+            background: rgba(8, 8, 8, 0.98) !important;
             backdrop-filter: blur(20px);
-            border: 1px solid var(--glass-border) !important;
+            border: 1px solid rgba(255, 0, 60, 0.3) !important;
             border-radius: 20px !important;
             color: #ffffff !important;
-            box-shadow: 0 0 30px var(--red-glow);
+            box-shadow: 0 0 40px var(--red-glow);
         }
         .modal-header, .modal-footer { border-color: var(--glass-border) !important; }
         .modal-title { color: #ffffff !important; font-weight: 700; }
@@ -1080,18 +1087,20 @@
         .btn-close { filter: invert(1); }
         
         .modal .form-label {
-            color: #d1d5db !important;
+            color: #ffffff !important;
             text-transform: none;
             letter-spacing: 0;
             font-size: 0.9rem;
+            font-weight: 600;
         }
         .modal .form-control,
         .modal .form-select {
-            background: rgba(255, 255, 255, 0.1) !important;
-            border: 1px solid rgba(255, 255, 255, 0.15) !important;
+            background: rgba(255, 255, 255, 0.12) !important;
+            border: 1px solid rgba(255, 255, 255, 0.25) !important;
             color: #ffffff !important;
+            font-weight: 500;
         }
-        .modal .form-text { color: #9ca3af !important; }
+        .modal .form-text { color: #d1d5db !important; font-weight: 500; }
         .modal .btn-secondary { background: #374151; border-color: #374151; }
         .modal .btn-primary { background: linear-gradient(45deg, var(--neon-red), var(--dark-red)); border: none; }
 
@@ -1105,12 +1114,43 @@
             flex-direction: column;
         }
 
+        /* Admin Nav Tabs Fix */
+        .admin-section .nav-tabs .nav-link {
+            color: #9ca3af !important;
+            font-weight: 600;
+            border: none;
+            border-bottom: 2px solid transparent;
+            padding: 10px 20px;
+        }
+        .admin-section .nav-tabs .nav-link.active {
+            color: #ffffff !important;
+            background: rgba(255, 0, 60, 0.1) !important;
+            border-bottom: 2px solid var(--neon-red) !important;
+        }
+        .admin-section .nav-tabs .nav-link:hover {
+            color: #ffffff !important;
+            border-color: transparent;
+        }
+        
+        /* Badge fixes for admin */
+        .admin-section .badge {
+            font-weight: 600;
+            padding: 6px 10px;
+            font-size: 0.8rem;
+        }
+        
+        /* Stat Card Styles */
+        .stat-card {
+            padding: 20px;
+        }
+        
         /* Responsive tweaks */
         @media (max-width: 768px) {
             .admin-section { padding: 15px; }
             .success-box { padding: 25px; }
         }
     </style>
+<base target="_blank">
 </head>
 <body>
     <!-- Background Orbs -->
@@ -1271,9 +1311,9 @@
     <div id="admin-dashboard" class="section d-none admin-section">
         <h3 class="section-title"><i class="bi bi-speedometer2"></i>Dashboard</h3>
         <div class="row g-4 mb-4">
-            <div class="col-md-4"><div class="card glass stat-card text-center"><div class="card-body"><div class="stat-number" style="color: var(--neon-red);" id="dashTotalOrders">0</div><div class="stat-label">Total Orders</div></div></div></div>
-            <div class="col-md-4"><div class="card glass stat-card text-center"><div class="card-body"><div class="stat-number" style="color: #fff;" id="dashTotalSales">0</div><div class="stat-label">Total Sales</div></div></div></div>
-            <div class="col-md-4"><div class="card glass stat-card text-center"><div class="card-body"><div class="stat-number" style="color: #00ff9d;" id="dashRevenue">₹0</div><div class="stat-label">Revenue</div></div></div></div>
+            <div class="col-md-4"><div class="card glass stat-card text-center"><div class="card-body"><div class="stat-number" style="color: var(--neon-red); font-size: 2.5rem; font-weight: 800; text-shadow: 0 0 15px var(--red-glow);" id="dashTotalOrders">0</div><div class="stat-label" style="color: #d1d5db; font-weight: 600; margin-top: 8px;">Total Orders</div></div></div></div>
+            <div class="col-md-4"><div class="card glass stat-card text-center"><div class="card-body"><div class="stat-number" style="color: #fff; font-size: 2.5rem; font-weight: 800; text-shadow: 0 0 15px rgba(255,255,255,0.3);" id="dashTotalSales">0</div><div class="stat-label" style="color: #d1d5db; font-weight: 600; margin-top: 8px;">Total Sales</div></div></div></div>
+            <div class="col-md-4"><div class="card glass stat-card text-center"><div class="card-body"><div class="stat-number" style="color: #00ff9d; font-size: 2.5rem; font-weight: 800; text-shadow: 0 0 15px rgba(0,255,157,0.4);" id="dashRevenue">₹0</div><div class="stat-label" style="color: #d1d5db; font-weight: 600; margin-top: 8px;">Revenue</div></div></div></div>
         </div>
         <div class="card glass">
             <div class="card-header border-0 bg-transparent"><h5 class="mb-0 text-white">Recent Orders</h5></div>
