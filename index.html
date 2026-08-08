@@ -85,12 +85,10 @@
             document.querySelectorAll('.section').forEach(s => s.classList.add('d-none'));
             document.getElementById(sectionId).classList.remove('d-none');
             
-            // Update Active Nav Link
             document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
             const activeLink = document.querySelector(`.nav-link[onclick*="${sectionId}"]`);
             if (activeLink) activeLink.classList.add('active');
 
-            // Load Section Data
             const loaders = {
                 'admin-dashboard': loadAdminDashboard,
                 'admin-products': loadAdminProducts,
@@ -759,7 +757,8 @@
             color: var(--accent-color);
         }
 
-        .form-label {
+        /* Strictly scope dark form styling so Admin panel doesn't get affected */
+        #home .form-label, #faq .form-label, #contact .form-label, #admin-login .form-label {
             color: rgba(255,255,255,0.5);
             font-size: 0.75rem;
             font-weight: 600;
@@ -767,7 +766,9 @@
             letter-spacing: 1px;
         }
 
-        .form-select, .form-control {
+        #home .form-select, #home .form-control,
+        #faq .form-control, #contact .form-control, 
+        #admin-login .form-control, #admin-login .form-select {
             background: rgba(255,255,255,0.05) !important;
             border: 1px solid var(--glass-border) !important;
             color: #fff !important;
@@ -778,17 +779,19 @@
             transition: all 0.3s ease;
         }
 
-        .form-select:focus, .form-control:focus {
+        #home .form-control:focus, #home .form-select:focus,
+        #faq .form-control:focus, #contact .form-control:focus, 
+        #admin-login .form-control:focus, #admin-login .form-select:focus {
             background: rgba(255,255,255,0.08) !important;
             border-color: rgba(16, 185, 129, 0.5) !important;
             box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1) !important;
             color: #fff !important;
         }
 
-        .form-select option { background: #0f172a; color: #fff; }
-        .form-select:disabled { background: rgba(255,255,255,0.02) !important; color: rgba(255,255,255,0.3) !important; }
+        #home .form-select option, #admin-login .form-select option { background: #0f172a; color: #fff; }
+        #home .form-select:disabled { background: rgba(255,255,255,0.02) !important; color: rgba(255,255,255,0.3) !important; }
 
-        #purchaseBtn {
+        #home #purchaseBtn {
             background: #fff !important;
             color: #0a0a0f !important;
             border: none !important;
@@ -800,26 +803,26 @@
             box-shadow: 0 4px 20px rgba(255,255,255,0.15) !important;
         }
 
-        #purchaseBtn:hover:not(:disabled) {
+        #home #purchaseBtn:hover:not(:disabled) {
             transform: translateY(-2px);
             box-shadow: 0 8px 30px rgba(255,255,255,0.25) !important;
             background: #f8f9fa !important;
         }
 
-        #purchaseBtn:disabled {
+        #home #purchaseBtn:disabled {
             background: rgba(255,255,255,0.1) !important;
             color: rgba(255,255,255,0.3) !important;
             box-shadow: none !important;
         }
 
-        .btn-outline-primary {
+        #home .btn-outline-primary {
             border-color: var(--glass-border) !important;
             color: rgba(255,255,255,0.7) !important;
             border-radius: 12px !important;
             font-weight: 600;
         }
 
-        .btn-outline-primary:hover {
+        #home .btn-outline-primary:hover {
             background: rgba(255,255,255,0.1) !important;
             border-color: rgba(255,255,255,0.3) !important;
             color: #fff !important;
@@ -902,6 +905,22 @@
             border-bottom: 1px solid #eee;
             padding: 18px 24px;
             font-weight: 700;
+        }
+
+        /* Enforce Admin form styling specifically to fix hidden inputs/buttons */
+        .admin-section .form-control, 
+        .admin-section .form-select {
+            background: #fff !important;
+            border: 1px solid #ced4da !important;
+            color: #495057 !important;
+            border-radius: 8px !important;
+            padding: 10px 14px !important;
+        }
+        
+        .admin-section .form-control:focus, 
+        .admin-section .form-select:focus {
+            border-color: #86b7fe !important;
+            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
         }
 
         .table { margin-bottom: 0; color: #333; }
@@ -1216,7 +1235,7 @@
     <div id="admin-orders" class="section d-none admin-section">
         <h3 class="section-title mb-4"><i class="bi bi-receipt"></i>Order Management</h3>
         <div class="mb-4">
-            <input type="text" class="form-control" id="orderSearch" placeholder="Search orders..." onkeyup="searchOrders()" style="max-width:300px; background:#fff !important; color:#333 !important; border-color:#ddd !important;">
+            <input type="text" class="form-control" id="orderSearch" placeholder="Search orders..." onkeyup="searchOrders()" style="max-width:300px;">
         </div>
         <ul class="nav nav-tabs mb-3">
             <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#paidOrders">Paid Orders</a></li>
@@ -1275,7 +1294,7 @@
                         <div id="apkPreviewBox" style="display:none;">
                             <label class="form-label text-muted">Current APK Link</label>
                             <div class="input-group">
-                                <input type="text" class="form-control" id="apkUrlPreview" readonly style="background:#f8f9fa !important; color:#333 !important;">
+                                <input type="text" class="form-control" id="apkUrlPreview" readonly>
                                 <a id="apkUrlLink" href="#" target="_blank" class="btn btn-outline-primary"><i class="bi bi-box-arrow-up-right"></i></a>
                             </div>
                         </div>
@@ -1336,7 +1355,7 @@
         <div class="modal-header"><h5 class="modal-title" id="productModalTitle">Add Product</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
             <input type="hidden" id="productEditId">
-            <div class="mb-3"><label class="form-label">Product Name</label><input type="text" class="form-control" id="productName" style="color:#333 !important; border-color:#ddd !important;"></div>
+            <div class="mb-3"><label class="form-label">Product Name</label><input type="text" class="form-control" id="productName"></div>
             <div class="form-check"><input class="form-check-input" type="checkbox" id="productEnabled" checked><label class="form-check-label">Enabled</label></div>
         </div>
         <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" onclick="saveProduct()">Save</button></div>
@@ -1346,9 +1365,9 @@
         <div class="modal-header"><h5 class="modal-title" id="durationModalTitle">Add Duration</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
             <input type="hidden" id="durationEditId">
-            <div class="mb-3"><label class="form-label">Select Product</label><select class="form-select" id="durationProduct" style="color:#333 !important; border-color:#ddd !important;"><option value="">Select Product</option></select></div>
-            <div class="mb-3"><label class="form-label">Duration Name</label><input type="text" class="form-control" id="durationName" placeholder="e.g. 30" style="color:#333 !important; border-color:#ddd !important;"></div>
-            <div class="mb-3"><label class="form-label">Time Unit</label><select class="form-select" id="durationUnit" style="color:#333 !important; border-color:#ddd !important;"><option value="hours">Hours</option><option value="days">Days</option><option value="weeks">Weeks</option><option value="months">Months</option><option value="years">Years</option></select></div>
+            <div class="mb-3"><label class="form-label">Select Product</label><select class="form-select" id="durationProduct"><option value="">Select Product</option></select></div>
+            <div class="mb-3"><label class="form-label">Duration Name</label><input type="text" class="form-control" id="durationName" placeholder="e.g. 30"></div>
+            <div class="mb-3"><label class="form-label">Time Unit</label><select class="form-select" id="durationUnit"><option value="hours">Hours</option><option value="days">Days</option><option value="weeks">Weeks</option><option value="months">Months</option><option value="years">Years</option></select></div>
         </div>
         <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" onclick="saveDuration()">Save</button></div>
     </div></div></div>
@@ -1357,9 +1376,9 @@
         <div class="modal-header"><h5 class="modal-title" id="priceModalTitle">Set Price</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
             <input type="hidden" id="priceEditId">
-            <div class="mb-3"><label class="form-label">Product</label><select class="form-select" id="priceProduct" onchange="onPriceProductChange()" style="color:#333 !important; border-color:#ddd !important;"><option value="">Select Product</option></select></div>
-            <div class="mb-3"><label class="form-label">Duration</label><select class="form-select" id="priceDuration" style="color:#333 !important; border-color:#ddd !important;"><option value="">Select Duration</option></select></div>
-            <div class="mb-3"><label class="form-label">Price (₹)</label><input type="number" class="form-control" id="priceValue" min="1" style="color:#333 !important; border-color:#ddd !important;"></div>
+            <div class="mb-3"><label class="form-label">Product</label><select class="form-select" id="priceProduct" onchange="onPriceProductChange()"><option value="">Select Product</option></select></div>
+            <div class="mb-3"><label class="form-label">Duration</label><select class="form-select" id="priceDuration"><option value="">Select Duration</option></select></div>
+            <div class="mb-3"><label class="form-label">Price (₹)</label><input type="number" class="form-control" id="priceValue" min="1"></div>
         </div>
         <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" onclick="savePrice()">Save</button></div>
     </div></div></div>
@@ -1367,11 +1386,11 @@
     <div class="modal fade" id="couponModal"><div class="modal-dialog modal-dialog-centered"><div class="modal-content">
         <div class="modal-header"><h5 class="modal-title">Create Coupon</h5><button class="btn-close" data-bs-dismiss="modal"></button></div>
         <div class="modal-body">
-            <div class="mb-3"><label class="form-label">Coupon Code</label><input type="text" class="form-control" id="couponCode" placeholder="SAVE20" style="color:#333 !important; border-color:#ddd !important;"></div>
-            <div class="mb-3"><label class="form-label">Type</label><select class="form-select" id="couponType" style="color:#333 !important; border-color:#ddd !important;"><option value="percentage">Percentage (%)</option><option value="fixed">Fixed Amount (₹)</option></select></div>
-            <div class="mb-3"><label class="form-label">Value</label><input type="number" class="form-control" id="couponValue" min="1" style="color:#333 !important; border-color:#ddd !important;"></div>
-            <div class="mb-3"><label class="form-label">Min Order Value (₹)</label><input type="number" class="form-control" id="couponMinOrder" min="0" placeholder="0 = Any amount" style="color:#333 !important; border-color:#ddd !important;"></div>
-            <div class="mb-3"><label class="form-label">Expiry Date</label><input type="date" class="form-control" id="couponExpiry" style="color:#333 !important; border-color:#ddd !important;"></div>
+            <div class="mb-3"><label class="form-label">Coupon Code</label><input type="text" class="form-control" id="couponCode" placeholder="SAVE20"></div>
+            <div class="mb-3"><label class="form-label">Type</label><select class="form-select" id="couponType"><option value="percentage">Percentage (%)</option><option value="fixed">Fixed Amount (₹)</option></select></div>
+            <div class="mb-3"><label class="form-label">Value</label><input type="number" class="form-control" id="couponValue" min="1"></div>
+            <div class="mb-3"><label class="form-label">Min Order Value (₹)</label><input type="number" class="form-control" id="couponMinOrder" min="0" placeholder="0 = Any amount"></div>
+            <div class="mb-3"><label class="form-label">Expiry Date</label><input type="date" class="form-control" id="couponExpiry"></div>
         </div>
         <div class="modal-footer"><button class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button><button class="btn btn-primary" onclick="saveCoupon()">Create</button></div>
     </div></div></div>
