@@ -44,9 +44,9 @@
             const container = document.getElementById('toastContainer');
             const toast = document.createElement('div');
             const icon = type === 'success' ? 'bi-check-circle-fill' : (type === 'error' ? 'bi-x-circle-fill' : 'bi-info-circle-fill');
-            const bg = type === 'success' ? '#10b981' : (type === 'error' ? '#ef4444' : '#3b82f6');
+            const bg = type === 'success' ? 'linear-gradient(135deg, #10b981, #059669)' : (type === 'error' ? 'linear-gradient(135deg, #ef4444, #dc2626)' : 'linear-gradient(135deg, #3b82f6, #2563eb)');
             
-            toast.style.cssText = `background: ${bg}; color: #fff; padding: 14px 20px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 8px 20px rgba(0,0,0,0.2); display: flex; align-items: center; gap: 10px; transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); min-width: 280px; max-width: 350px; font-weight: 500;`;
+            toast.style.cssText = `background: ${bg}; color: #fff; padding: 14px 20px; border-radius: 12px; margin-bottom: 10px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 10px; transform: translateX(120%); transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); min-width: 280px; max-width: 350px; font-weight: 500; backdrop-filter: blur(10px); border: 1px solid rgba(255,255,255,0.1);`;
             toast.innerHTML = `<i class="bi ${icon}" style="font-size: 1.2rem;"></i> <span>${message}</span>`;
             container.appendChild(toast);
             
@@ -225,7 +225,7 @@
                 html += `<div class="text-decoration-line-through text-muted">₹${currentPrice}</div>`;
                 html += `<div class="text-success mb-1">Discount: -₹${discountAmount}</div>`;
             }
-            html += `<div class="h3 text-primary fw-bold mb-0">Total: ₹${finalAmount}</div>`;
+            html += `<div class="h3 fw-bold mb-0" style="color: #ff003c; text-shadow: 0 0 15px rgba(255, 0, 60, 0.5);">Total: ₹${finalAmount}</div>`;
             document.getElementById('totalDisplay').innerHTML = html;
         }
 
@@ -244,7 +244,7 @@
                 name: currentProduct.name,
                 description: `${currentProduct.name} - ${currentDuration.name}`,
                 handler: async (res) => await processSuccessPayment(res, orderId),
-                theme: { color: "#0d6efd" }
+                theme: { color: "#dc2626" }
             };
 
             try {
@@ -546,7 +546,7 @@
                 const d = durations[dId];
                 const dName = d ? `${d.name} ${d.unit ? d.unit.charAt(0).toUpperCase() + d.unit.slice(1) : ''}` : 'Unknown';
                 const low = c.active <= 2, out = c.active === 0;
-                stockHtml += `<div class="col-md-4 col-lg-3"><div class="p-3" style="background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);"><div class="d-flex justify-content-between mb-2"><div><div class="fw-bold text-white" style="font-size: 0.9rem;">${pName}</div><div class="text-white-50" style="font-size: 0.75rem;">${dName}</div></div><span class="badge ${out ? 'bg-danger' : low ? 'bg-warning text-dark' : 'bg-success'}" style="font-size: 0.7rem;">${out ? 'Out' : low ? 'Low' : 'In Stock'}</span></div><div class="d-flex gap-3 mt-2"><div class="text-center"><div class="fw-bold ${c.active > 0 ? 'text-success' : 'text-danger'}" style="font-size: 1.3rem;">${c.active}</div><div class="text-white-50" style="font-size: 0.65rem;">AVAIL</div></div><div class="text-center"><div class="fw-bold text-white" style="font-size: 1.3rem;">${c.used}</div><div class="text-white-50" style="font-size: 0.65rem;">SOLD</div></div><div class="text-center"><div class="fw-bold text-info" style="font-size: 1.3rem;">${c.total}</div><div class="text-white-50" style="font-size: 0.65rem;">TOTAL</div></div></div></div></div>`;
+                stockHtml += `<div class="col-md-4 col-lg-3"><div class="p-3" style="background: rgba(255,255,255,0.03); border-radius: 12px; border: 1px solid rgba(255,0,60,0.2);"><div class="d-flex justify-content-between mb-2"><div><div class="fw-bold text-white" style="font-size: 0.9rem;">${pName}</div><div class="text-white-50" style="font-size: 0.75rem;">${dName}</div></div><span class="badge ${out ? 'bg-danger' : low ? 'bg-warning text-dark' : 'bg-success'}" style="font-size: 0.7rem;">${out ? 'Out' : low ? 'Low' : 'In Stock'}</span></div><div class="d-flex gap-3 mt-2"><div class="text-center"><div class="fw-bold ${c.active > 0 ? 'text-success' : 'text-danger'}" style="font-size: 1.3rem;">${c.active}</div><div class="text-white-50" style="font-size: 0.65rem;">AVAIL</div></div><div class="text-center"><div class="fw-bold text-white" style="font-size: 1.3rem;">${c.used}</div><div class="text-white-50" style="font-size: 0.65rem;">SOLD</div></div><div class="text-center"><div class="fw-bold text-info" style="font-size: 1.3rem;">${c.total}</div><div class="text-white-50" style="font-size: 0.65rem;">TOTAL</div></div></div></div></div>`;
             });
             document.getElementById('stockSummaryCards').innerHTML = stockHtml || '<div class="col-12 text-center text-white-50">No keys in stock</div>';
 
@@ -684,30 +684,55 @@
     </script>
     <style>
         :root {
-            --primary-dark: #0d1a1a;
-            --secondary-dark: #0a0a0f;
-            --accent-dark: #1a0a0a;
-            --glass-bg: rgba(15, 23, 42, 0.85);
-            --glass-border: rgba(255,255,255,0.08);
-            --accent-color: #10b981;
+            --neon-red: #ff003c;
+            --dark-red: #b91c1c;
+            --bg-black: #050505;
+            --glass-bg: rgba(20, 20, 20, 0.6);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --red-glow: rgba(255, 0, 60, 0.4);
+            --text-light: #f3f4f6;
+            --text-muted: rgba(255, 255, 255, 0.6);
         }
         
         body { 
-            background: #f8f9fa; 
-            font-family: 'Segoe UI', system-ui, sans-serif; 
-            color: #333;
-        }
-        
-        /* === USER PANEL DARK THEME === */
-        #home, #faq, #contact, #success-page, #admin-login {
-            background: linear-gradient(180deg, var(--primary-dark) 0%, var(--secondary-dark) 50%, var(--accent-dark) 100%);
-            min-height: calc(100vh - 56px);
-            color: #fff;
+            background: var(--bg-black); 
+            font-family: 'Inter', 'Segoe UI', system-ui, sans-serif; 
+            color: var(--text-light);
+            overflow-x: hidden;
+            position: relative;
         }
 
+        /* Animated Background Orbs - Red & Black Theme */
+        .orb {
+            position: fixed;
+            border-radius: 50%;
+            filter: blur(80px);
+            z-index: -1;
+            opacity: 0.4;
+        }
+        .orb-1 { width: 400px; height: 400px; background: var(--neon-red); top: -100px; left: -100px; animation: float 8s ease-in-out infinite; }
+        .orb-2 { width: 350px; height: 350px; background: #450a0a; bottom: -100px; right: -100px; animation: float 10s ease-in-out infinite reverse; }
+        .orb-3 { width: 300px; height: 300px; background: #7f1d1d; top: 40%; left: 50%; transform: translate(-50%, -50%); animation: float 12s ease-in-out infinite; }
+
+        @keyframes float {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            50% { transform: translate(30px, 30px) scale(1.1); }
+        }
+
+        /* === GLASSMORPHISM GLOBAL === */
+        .glass {
+            background: var(--glass-bg) !important;
+            backdrop-filter: blur(16px) !important;
+            -webkit-backdrop-filter: blur(16px) !important;
+            border: 1px solid var(--glass-border) !important;
+            border-radius: 20px !important;
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.5) !important;
+        }
+
+        /* Navbar */
         .navbar {
-            background: rgba(10, 10, 15, 0.9) !important;
-            backdrop-filter: blur(20px);
+            background: rgba(5, 5, 5, 0.8) !important;
+            backdrop-filter: blur(16px);
             border-bottom: 1px solid var(--glass-border);
             padding: 12px 0;
         }
@@ -715,60 +740,71 @@
         .navbar-brand {
             color: #fff !important;
             font-weight: 800;
-            letter-spacing: 0.5px;
+            letter-spacing: -0.5px;
             display: flex;
             align-items: center;
             gap: 10px;
+            text-shadow: 0 0 10px var(--red-glow);
         }
 
         .nav-link {
-            color: rgba(255,255,255,0.6) !important;
+            color: var(--text-muted) !important;
             font-weight: 500;
-            font-size: 0.9rem;
+            font-size: 0.95rem;
             transition: all 0.3s ease;
             padding: 8px 15px !important;
-            border-radius: 8px;
+            border-radius: 10px;
         }
 
         .nav-link:hover, .nav-link.active {
             color: #fff !important;
-            background: rgba(255,255,255,0.08);
+            background: rgba(255, 0, 60, 0.1);
+            text-shadow: 0 0 8px var(--red-glow);
         }
 
-        /* Purchase Card Glassmorphism */
-        .purchase-card {
-            background: var(--glass-bg) !important;
-            backdrop-filter: blur(24px);
-            -webkit-backdrop-filter: blur(24px);
+        .nav-link i { color: var(--neon-red); }
+
+        /* Dropdown Menu Glass */
+        .dropdown-menu {
+            background: rgba(5, 5, 5, 0.9) !important;
+            backdrop-filter: blur(16px);
             border: 1px solid var(--glass-border) !important;
-            border-radius: 24px !important;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.05) !important;
+            border-radius: 12px !important;
+            box-shadow: 0 8px 32px rgba(0,0,0,0.6) !important;
+        }
+        .dropdown-item { color: var(--text-muted) !important; border-radius: 8px; margin: 2px 8px; }
+        .dropdown-item:hover { background: rgba(255,0,60,0.1) !important; color: #fff !important; }
+
+        /* === USER PANEL === */
+        #home, #faq, #contact, #success-page, #admin-login {
+            min-height: calc(100vh - 65px);
+            color: #fff;
+        }
+
+        .purchase-card {
             max-width: 450px;
             margin: 0 auto;
         }
-
-        .purchase-card h4 {
-            color: #fff;
-            font-size: 1.6rem;
-            font-weight: 700;
+        
+        .store-logo {
+            max-width: 120px;
+            border-radius: 15px;
+            box-shadow: 0 0 25px var(--red-glow);
+            margin: 0 auto 20px auto;
+            display: block;
+            border: 1px solid var(--glass-border);
         }
 
-        .purchase-card h4 i {
-            color: var(--accent-color);
-        }
-
-        /* Strictly scope dark form styling so Admin panel doesn't get affected */
-        #home .form-label, #faq .form-label, #contact .form-label, #admin-login .form-label {
-            color: rgba(255,255,255,0.5);
-            font-size: 0.75rem;
+        .form-label {
+            color: rgba(255,255,255,0.7);
+            font-size: 0.85rem;
             font-weight: 600;
+            margin-bottom: 8px;
             text-transform: uppercase;
             letter-spacing: 1px;
         }
 
-        #home .form-select, #home .form-control,
-        #faq .form-control, #contact .form-control, 
-        #admin-login .form-control, #admin-login .form-select {
+        .form-select, .form-control {
             background: rgba(255,255,255,0.05) !important;
             border: 1px solid var(--glass-border) !important;
             color: #fff !important;
@@ -779,156 +815,164 @@
             transition: all 0.3s ease;
         }
 
-        #home .form-control:focus, #home .form-select:focus,
-        #faq .form-control:focus, #contact .form-control:focus, 
-        #admin-login .form-control:focus, #admin-login .form-select:focus {
+        .form-control::placeholder { color: rgba(255,255,255,0.4); }
+
+        .form-select:focus, .form-control:focus {
             background: rgba(255,255,255,0.08) !important;
-            border-color: rgba(16, 185, 129, 0.5) !important;
-            box-shadow: 0 0 0 4px rgba(16, 185, 129, 0.1) !important;
+            border-color: var(--neon-red) !important;
+            box-shadow: 0 0 0 4px rgba(255, 0, 60, 0.15) !important;
             color: #fff !important;
         }
 
-        #home .form-select option, #admin-login .form-select option { background: #0f172a; color: #fff; }
-        #home .form-select:disabled { background: rgba(255,255,255,0.02) !important; color: rgba(255,255,255,0.3) !important; }
+        .form-select option { background: var(--bg-black); color: #fff; }
+        .form-select:disabled { background: rgba(255,255,255,0.02) !important; color: rgba(255,255,255,0.3) !important; }
 
-        #home #purchaseBtn {
-            background: #fff !important;
-            color: #0a0a0f !important;
+        #purchaseBtn {
+            background: linear-gradient(45deg, var(--neon-red), var(--dark-red));
+            color: #fff !important;
             border: none !important;
-            border-radius: 50px !important;
+            border-radius: 12px !important;
             padding: 16px 30px !important;
             font-weight: 700;
-            font-size: 1rem;
+            font-size: 1.1rem;
             transition: all 0.3s ease;
-            box-shadow: 0 4px 20px rgba(255,255,255,0.15) !important;
+            box-shadow: 0 4px 15px var(--red-glow) !important;
         }
 
-        #home #purchaseBtn:hover:not(:disabled) {
+        #purchaseBtn:hover:not(:disabled) {
             transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(255,255,255,0.25) !important;
-            background: #f8f9fa !important;
+            box-shadow: 0 8px 25px var(--red-glow) !important;
         }
 
-        #home #purchaseBtn:disabled {
+        #purchaseBtn:disabled {
             background: rgba(255,255,255,0.1) !important;
-            color: rgba(255,255,255,0.3) !important;
+            color: rgba(255,255,255,0.4) !important;
             box-shadow: none !important;
         }
 
-        #home .btn-outline-primary {
-            border-color: var(--glass-border) !important;
-            color: rgba(255,255,255,0.7) !important;
+        .btn-outline-primary {
+            border: 1px solid var(--glass-border) !important;
+            color: var(--text-muted) !important;
             border-radius: 12px !important;
             font-weight: 600;
+            background: transparent;
         }
 
-        #home .btn-outline-primary:hover {
-            background: rgba(255,255,255,0.1) !important;
-            border-color: rgba(255,255,255,0.3) !important;
-            color: #fff !important;
+        .btn-outline-primary:hover {
+            background: rgba(255,0,60,0.08) !important;
+            border-color: var(--neon-red) !important;
+            color: var(--neon-red) !important;
         }
 
         #totalDisplay { color: #fff; }
-        #totalDisplay .h3 { color: var(--accent-color) !important; font-size: 1.8rem; }
-        #totalDisplay .text-muted { color: rgba(255,255,255,0.4) !important; }
-        #totalDisplay .text-success { color: #34d399 !important; font-weight: 600; }
+        #totalDisplay .text-muted { color: rgba(255,255,255,0.5) !important; }
+        #totalDisplay .text-success { color: #00ff9d !important; font-weight: 600; }
+
+        /* FAQ Accordion */
+        .accordion-item {
+            background: var(--glass-bg) !important;
+            border: 1px solid var(--glass-border) !important;
+            border-radius: 16px !important;
+            margin-bottom: 15px;
+            overflow: hidden;
+            backdrop-filter: blur(16px);
+        }
+        .accordion-button {
+            background: transparent !important;
+            color: #fff !important;
+            font-weight: 600;
+            box-shadow: none !important;
+        }
+        .accordion-button:not(.collapsed) { color: var(--neon-red) !important; }
+        .accordion-button::after { filter: invert(1); }
+        .accordion-body { color: rgba(255,255,255,0.7); border-top: 1px solid var(--glass-border); }
 
         /* Success Page */
         .success-box {
-            background: var(--glass-bg);
-            backdrop-filter: blur(24px);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            border-radius: 24px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.4);
-            padding: 40px;
             text-align: center;
         }
 
         .success-box i.bi-check-circle-fill {
-            color: var(--accent-color);
+            color: #00ff9d;
             font-size: 4rem;
+            text-shadow: 0 0 20px rgba(0, 255, 157, 0.5);
         }
 
         .key-display {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid rgba(16, 185, 129, 0.2);
-            color: var(--accent-color);
+            background: rgba(255, 0, 60, 0.05);
+            border: 1px solid rgba(255, 0, 60, 0.3);
+            color: #ff4d6d;
             border-radius: 12px;
             padding: 15px;
             font-family: 'Courier New', monospace;
             font-size: 1.2rem;
             word-break: break-all;
             font-weight: 700;
+            box-shadow: 0 0 15px rgba(255, 0, 60, 0.1);
         }
 
-        /* === ADMIN PANEL CLEAN UI === */
+        .btn-light {
+            background: rgba(255,255,255,0.1) !important;
+            border: 1px solid rgba(255,255,255,0.2) !important;
+            color: #fff !important;
+            font-weight: 600;
+        }
+        .btn-light:hover {
+            background: rgba(255,255,255,0.2) !important;
+        }
+
+        /* === ADMIN PANEL === */
         .admin-section {
-            background: #f8f9fa;
-            min-height: calc(100vh - 56px);
+            min-height: calc(100vh - 65px);
             padding: 30px;
         }
 
         .admin-section .section-title {
             font-weight: 800;
-            color: #1a1a2e;
-            font-size: 1.5rem;
+            color: #fff;
+            font-size: 1.75rem;
             margin-bottom: 25px;
             display: flex;
             align-items: center;
             gap: 10px;
+            text-shadow: 0 0 15px var(--red-glow);
         }
 
         .stat-card {
-            background: #fff;
-            border-radius: 16px;
-            padding: 24px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
             transition: transform 0.3s ease;
-            border: 1px solid rgba(0,0,0,0.05);
         }
+        .stat-card:hover { transform: translateY(-3px); border-color: var(--neon-red) !important; }
 
-        .stat-card:hover { transform: translateY(-3px); box-shadow: 0 8px 25px rgba(0,0,0,0.08); }
+        .stat-number { font-size: 2rem; font-weight: 800; margin-bottom: 5px; text-shadow: 0 0 10px var(--red-glow); }
+        .stat-label { color: var(--text-muted); font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
 
-        .stat-number { font-size: 2rem; font-weight: 800; color: #0d6efd; margin-bottom: 5px; }
-        .stat-label { color: #6c757d; font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; }
-
-        .admin-card {
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-            border: none;
-            overflow: hidden;
+        .table { margin-bottom: 0; color: #fff; }
+        .table thead th { 
+            background: rgba(255,0,60,0.05) !important; 
+            border-bottom: 1px solid var(--glass-border) !important; 
+            font-weight: 700; 
+            color: var(--neon-red) !important; 
+            text-transform: uppercase; 
+            font-size: 0.75rem; 
+            padding: 15px; 
+            letter-spacing: 0.5px; 
         }
+        .table tbody td { padding: 15px; vertical-align: middle; border-color: var(--glass-border) !important; color: rgba(255,255,255,0.8); }
+        .table-hover tbody tr:hover { background: rgba(255,255,255,0.03) !important; }
 
-        .admin-card .card-header {
-            background: #fff;
-            border-bottom: 1px solid #eee;
-            padding: 18px 24px;
-            font-weight: 700;
+        /* Modals */
+        .modal-content {
+            background: rgba(5, 5, 5, 0.85) !important;
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border) !important;
+            border-radius: 20px !important;
+            color: #fff;
+            box-shadow: 0 0 30px var(--red-glow);
         }
-
-        /* Enforce Admin form styling specifically to fix hidden inputs/buttons */
-        .admin-section .form-control, 
-        .admin-section .form-select {
-            background: #fff !important;
-            border: 1px solid #ced4da !important;
-            color: #495057 !important;
-            border-radius: 8px !important;
-            padding: 10px 14px !important;
-        }
-        
-        .admin-section .form-control:focus, 
-        .admin-section .form-select:focus {
-            border-color: #86b7fe !important;
-            box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25) !important;
-        }
-
-        .table { margin-bottom: 0; color: #333; }
-        .table thead th { background: #f8f9fa; border-bottom: 2px solid #dee2e6; font-weight: 700; color: #495057; text-transform: uppercase; font-size: 0.8rem; padding: 15px; }
-        .table tbody td { padding: 15px; vertical-align: middle; border-color: #f1f1f1; }
-
-        .btn-primary { background: #0d6efd; border: none; font-weight: 600; padding: 10px 20px; border-radius: 10px; }
-        .btn-primary:hover { background: #0b5ed7; }
+        .modal-header, .modal-footer { border-color: var(--glass-border) !important; }
+        .modal-title { color: #fff; font-weight: 700; }
+        .btn-close { filter: invert(1); }
+        .form-text { color: var(--text-muted) !important; }
 
         /* Toast Container */
         #toastContainer {
@@ -948,11 +992,16 @@
     </style>
 </head>
 <body>
+    <!-- Background Orbs -->
+    <div class="orb orb-1"></div>
+    <div class="orb orb-2"></div>
+    <div class="orb orb-3"></div>
+
     <!-- TOAST CONTAINER -->
     <div id="toastContainer"></div>
 
     <!-- NAVBAR -->
-    <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container">
             <a class="navbar-brand" href="#" onclick="showSection('home'); return false;">
                 <img src="logo.jpg" alt="NovaEsp" style="width:32px;height:32px;object-fit:cover;border-radius:8px;"> NovaEsp
@@ -977,7 +1026,7 @@
                             <li><a class="dropdown-item" href="#" onclick="showSection('admin-coupons'); return false;">Coupons</a></li>
                             <li><a class="dropdown-item" href="#" onclick="showSection('admin-orders'); return false;">Orders</a></li>
                             <li><a class="dropdown-item" href="#" onclick="showSection('admin-payments'); return false;">Settings</a></li>
-                            <li><hr class="dropdown-divider"></li>
+                            <li><hr class="dropdown-divider" style="border-color: var(--glass-border);"></li>
                             <li><a class="dropdown-item text-danger" href="#" onclick="adminLogout(); return false;"><i class="bi bi-box-arrow-right me-1"></i>Logout</a></li>
                         </ul>
                     </li>
@@ -989,10 +1038,11 @@
     <!-- HOME PAGE -->
     <div id="home" class="section">
         <div class="container py-5">
-            <div class="card purchase-card">
+            <div class="card glass purchase-card">
                 <div class="card-body p-4 p-md-5">
-                    <h4 class="mb-4 text-center"><i class="bi bi-cart3 me-2"></i>NovaEsp Store</h4>
-
+                    <!-- Replaced Shop Icon and Text with Logo Image -->
+                    <img src="logo.jpg" alt="NovaEsp Store" class="store-logo">
+                    
                     <div class="mb-3">
                         <label class="form-label">Select Product</label>
                         <select class="form-select form-select-lg" id="productSelect" onchange="onProductChange()">
@@ -1029,26 +1079,26 @@
     <!-- FAQ PAGE -->
     <div id="faq" class="section d-none">
         <div class="container py-5">
-            <h2 class="section-title text-center mb-5" style="color:#fff;">Frequently Asked Questions</h2>
+            <h2 class="text-center mb-5 fw-bold" style="text-shadow: 0 0 15px var(--red-glow);">Frequently Asked Questions</h2>
             <div class="row justify-content-center">
                 <div class="col-md-8">
                     <div class="accordion" id="faqAccordion">
-                        <div class="accordion-item" style="background:var(--glass-bg); border:1px solid var(--glass-border); margin-bottom:15px; border-radius:12px !important; overflow:hidden;">
-                            <h2 class="accordion-header"><button class="accordion-button bg-transparent text-white" style="font-weight:600;" data-bs-toggle="collapse" data-bs-target="#faq1">How do I receive my license key?</button></h2>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header"><button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">How do I receive my license key?</button></h2>
                             <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body" style="color:rgba(255,255,255,0.7);">After successful payment, your license key is displayed instantly on the success page. You can copy it to your clipboard.</div>
+                                <div class="accordion-body">After successful payment, your license key is displayed instantly on the success page. You can copy it to your clipboard.</div>
                             </div>
                         </div>
-                        <div class="accordion-item" style="background:var(--glass-bg); border:1px solid var(--glass-border); margin-bottom:15px; border-radius:12px !important; overflow:hidden;">
-                            <h2 class="accordion-header"><button class="accordion-button collapsed bg-transparent text-white" style="font-weight:600;" data-bs-toggle="collapse" data-bs-target="#faq2">What payment methods are accepted?</button></h2>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">What payment methods are accepted?</button></h2>
                             <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body" style="color:rgba(255,255,255,0.7);">We accept all major payment methods via Razorpay including UPI, Credit/Debit cards, Net Banking, and Wallets.</div>
+                                <div class="accordion-body">We accept all major payment methods via Razorpay including UPI, Credit/Debit cards, Net Banking, and Wallets.</div>
                             </div>
                         </div>
-                        <div class="accordion-item" style="background:var(--glass-bg); border:1px solid var(--glass-border); margin-bottom:15px; border-radius:12px !important; overflow:hidden;">
-                            <h2 class="accordion-header"><button class="accordion-button collapsed bg-transparent text-white" style="font-weight:600;" data-bs-toggle="collapse" data-bs-target="#faq3">Is there a refund policy?</button></h2>
+                        <div class="accordion-item">
+                            <h2 class="accordion-header"><button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">Is there a refund policy?</button></h2>
                             <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
-                                <div class="accordion-body" style="color:rgba(255,255,255,0.7);">Due to the digital nature of license keys, all sales are final. Please ensure you select the correct product before purchasing.</div>
+                                <div class="accordion-body">Due to the digital nature of license keys, all sales are final. Please ensure you select the correct product before purchasing.</div>
                             </div>
                         </div>
                     </div>
@@ -1060,10 +1110,10 @@
     <!-- CONTACT PAGE -->
     <div id="contact" class="section d-none">
         <div class="container py-5">
-            <h2 class="section-title text-center mb-5" style="color:#fff;">Contact Us</h2>
+            <h2 class="text-center mb-5 fw-bold" style="text-shadow: 0 0 15px var(--red-glow);">Contact Us</h2>
             <div class="row justify-content-center">
                 <div class="col-md-6">
-                    <div class="card purchase-card">
+                    <div class="card glass purchase-card">
                         <div class="card-body p-4 p-md-5">
                             <div class="mb-3"><label class="form-label">Name</label><input type="text" class="form-control" placeholder="Your name"></div>
                             <div class="mb-3"><label class="form-label">Email</label><input type="email" class="form-control" placeholder="your@email.com"></div>
@@ -1081,11 +1131,11 @@
         <div class="container py-5">
             <div class="row justify-content-center align-items-center" style="min-height:70vh;">
                 <div class="col-md-5 col-lg-4">
-                    <div class="card purchase-card">
+                    <div class="card glass purchase-card">
                         <div class="card-body p-4 p-md-5">
                             <div class="text-center mb-4">
-                                <i class="bi bi-shield-lock display-1" style="color:var(--accent-color);"></i>
-                                <h3 class="mt-3 mb-0" style="color:#fff;">Admin Login</h3>
+                                <i class="bi bi-shield-lock display-1" style="color: var(--neon-red); text-shadow: 0 0 20px var(--red-glow);"></i>
+                                <h3 class="mt-3 mb-0 fw-bold text-white">Admin Login</h3>
                             </div>
                             <div class="mb-3"><label class="form-label">Username</label><input type="text" class="form-control" id="adminUser" placeholder="admin"></div>
                             <div class="mb-4"><label class="form-label">Password</label><input type="password" class="form-control" id="adminPass" placeholder="••••••" onkeydown="if(event.key==='Enter') adminLogin()"></div>
@@ -1101,12 +1151,12 @@
     <div id="admin-dashboard" class="section d-none admin-section">
         <h3 class="section-title"><i class="bi bi-speedometer2"></i>Dashboard</h3>
         <div class="row g-4 mb-4">
-            <div class="col-md-4"><div class="stat-card text-center"><div class="stat-number" id="dashTotalOrders">0</div><div class="stat-label">Total Orders</div></div></div>
-            <div class="col-md-4"><div class="stat-card text-center"><div class="stat-number" id="dashTotalSales">0</div><div class="stat-label">Total Sales</div></div></div>
-            <div class="col-md-4"><div class="stat-card text-center"><div class="stat-number" id="dashRevenue">₹0</div><div class="stat-label">Revenue</div></div></div>
+            <div class="col-md-4"><div class="card glass stat-card text-center"><div class="card-body"><div class="stat-number" style="color: var(--neon-red);" id="dashTotalOrders">0</div><div class="stat-label">Total Orders</div></div></div></div>
+            <div class="col-md-4"><div class="card glass stat-card text-center"><div class="card-body"><div class="stat-number" style="color: #fff;" id="dashTotalSales">0</div><div class="stat-label">Total Sales</div></div></div></div>
+            <div class="col-md-4"><div class="card glass stat-card text-center"><div class="card-body"><div class="stat-number" style="color: #00ff9d;" id="dashRevenue">₹0</div><div class="stat-label">Revenue</div></div></div></div>
         </div>
-        <div class="admin-card">
-            <div class="card-header"><h5 class="mb-0">Recent Orders</h5></div>
+        <div class="card glass">
+            <div class="card-header border-0 bg-transparent"><h5 class="mb-0 text-white">Recent Orders</h5></div>
             <div class="table-responsive">
                 <table class="table table-hover">
                     <thead><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Status</th></tr></thead>
@@ -1122,7 +1172,7 @@
             <h3 class="section-title mb-0"><i class="bi bi-box"></i>Product Management</h3>
             <button class="btn btn-primary" onclick="openProductModal()"><i class="bi bi-plus-lg me-1"></i>Add Product</button>
         </div>
-        <div class="admin-card">
+        <div class="card glass">
             <div class="table-responsive">
                 <table class="table table-hover">
                     <thead><tr><th>Product Name</th><th>Status</th><th>Actions</th></tr></thead>
@@ -1138,7 +1188,7 @@
             <h3 class="section-title mb-0"><i class="bi bi-clock"></i>Duration Management</h3>
             <button class="btn btn-primary" onclick="openDurationModal()"><i class="bi bi-plus-lg me-1"></i>Add Duration</button>
         </div>
-        <div class="admin-card">
+        <div class="card glass">
             <div class="table-responsive">
                 <table class="table table-hover">
                     <thead><tr><th>Product</th><th>Duration</th><th>Unit</th><th>Actions</th></tr></thead>
@@ -1154,7 +1204,7 @@
             <h3 class="section-title mb-0"><i class="bi bi-tag"></i>Price Management</h3>
             <button class="btn btn-primary" onclick="openPriceModal()"><i class="bi bi-plus-lg me-1"></i>Set Price</button>
         </div>
-        <div class="admin-card">
+        <div class="card glass">
             <div class="table-responsive">
                 <table class="table table-hover">
                     <thead><tr><th>Product</th><th>Duration</th><th>Price</th><th>Actions</th></tr></thead>
@@ -1168,8 +1218,8 @@
     <div id="admin-keys" class="section d-none admin-section">
         <h3 class="section-title"><i class="bi bi-key"></i>License Key Management</h3>
 
-        <div class="admin-card mb-4 border-0" style="background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%); border-radius:16px;">
-            <div class="card-header border-0" style="background: transparent; color: #fff;"><h5 class="mb-0"><i class="bi bi-box-seam me-2"></i>Stock Summary</h5></div>
+        <div class="card glass mb-4" style="background: linear-gradient(135deg, rgba(255,0,60,0.1), rgba(80,0,20,0.2));">
+            <div class="card-header border-0 bg-transparent"><h5 class="mb-0 text-white"><i class="bi bi-box-seam me-2"></i>Stock Summary</h5></div>
             <div class="card-body">
                 <div class="row g-3" id="stockSummaryCards">
                     <div class="col-12 text-center text-white-50">Loading stock data...</div>
@@ -1177,27 +1227,27 @@
             </div>
         </div>
 
-        <div class="admin-card mb-4">
-            <div class="card-header"><h5 class="mb-0">Import / Add Keys</h5></div>
+        <div class="card glass mb-4">
+            <div class="card-header border-0 bg-transparent"><h5 class="mb-0 text-white">Import / Add Keys</h5></div>
             <div class="card-body">
                 <div class="row g-3 mb-3">
-                    <div class="col-md-4"><label class="form-label text-muted">Select Product</label><select class="form-select" id="keyProduct" onchange="onKeyProductChange()"><option value="">Select Product</option></select></div>
-                    <div class="col-md-4"><label class="form-label text-muted">Select Duration</label><select class="form-select" id="keyDuration"><option value="">Select Duration</option></select></div>
-                    <div class="col-md-4"><label class="form-label text-muted">Add Single Key</label><div class="input-group"><input type="text" class="form-control" id="singleKeyInput" placeholder="Enter key"><button class="btn btn-outline-primary" onclick="addSingleKey()">Add</button></div></div>
+                    <div class="col-md-4"><label class="form-label">Select Product</label><select class="form-select" id="keyProduct" onchange="onKeyProductChange()"><option value="">Select Product</option></select></div>
+                    <div class="col-md-4"><label class="form-label">Select Duration</label><select class="form-select" id="keyDuration"><option value="">Select Duration</option></select></div>
+                    <div class="col-md-4"><label class="form-label">Add Single Key</label><div class="input-group"><input type="text" class="form-control" id="singleKeyInput" placeholder="Enter key"><button class="btn btn-outline-primary" onclick="addSingleKey()">Add</button></div></div>
                 </div>
-                <label class="form-label text-muted">Paste keys (one per line)</label>
+                <label class="form-label">Paste keys (one per line)</label>
                 <textarea class="form-control mb-2" id="keysTextarea" rows="4" placeholder="Paste keys here..."></textarea>
                 <button class="btn btn-primary" onclick="importKeys()"><i class="bi bi-upload me-1"></i>Import Keys</button>
             </div>
         </div>
 
-        <ul class="nav nav-tabs mb-3">
-            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#activeKeys">Active Keys</a></li>
-            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#usedKeys">Used Keys</a></li>
+        <ul class="nav nav-tabs mb-3" style="border-color: var(--glass-border);">
+            <li class="nav-item"><a class="nav-link active" style="background: transparent; color: #fff; border-bottom: 2px solid var(--neon-red);" data-bs-toggle="tab" href="#activeKeys">Active Keys</a></li>
+            <li class="nav-item"><a class="nav-link" style="background: transparent; color: var(--text-muted); border: none;" data-bs-toggle="tab" href="#usedKeys">Used Keys</a></li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane fade show active" id="activeKeys">
-                <div class="admin-card"><div class="table-responsive">
+                <div class="card glass"><div class="table-responsive">
                     <table class="table table-hover">
                         <thead><tr><th>Product</th><th>Duration</th><th>Key</th><th>Added</th><th>Actions</th></tr></thead>
                         <tbody id="activeKeysTable"><tr><td colspan="5" class="text-center">Loading...</td></tr></tbody>
@@ -1205,7 +1255,7 @@
                 </div></div>
             </div>
             <div class="tab-pane fade" id="usedKeys">
-                <div class="admin-card"><div class="table-responsive">
+                <div class="card glass"><div class="table-responsive">
                     <table class="table table-hover">
                         <thead><tr><th>Product</th><th>Duration</th><th>Key</th><th>Used Date</th><th>Actions</th></tr></thead>
                         <tbody id="usedKeysTable"><tr><td colspan="5" class="text-center">Loading...</td></tr></tbody>
@@ -1221,7 +1271,7 @@
             <h3 class="section-title mb-0"><i class="bi bi-ticket-perforated"></i>Coupon Management</h3>
             <button class="btn btn-primary" onclick="openCouponModal()"><i class="bi bi-plus-lg me-1"></i>Create Coupon</button>
         </div>
-        <div class="admin-card">
+        <div class="card glass">
             <div class="table-responsive">
                 <table class="table table-hover">
                     <thead><tr><th>Code</th><th>Discount</th><th>Min Order</th><th>Expiry</th><th>Actions</th></tr></thead>
@@ -1237,13 +1287,13 @@
         <div class="mb-4">
             <input type="text" class="form-control" id="orderSearch" placeholder="Search orders..." onkeyup="searchOrders()" style="max-width:300px;">
         </div>
-        <ul class="nav nav-tabs mb-3">
-            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#paidOrders">Paid Orders</a></li>
-            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#failedOrders">Failed Orders</a></li>
+        <ul class="nav nav-tabs mb-3" style="border-color: var(--glass-border);">
+            <li class="nav-item"><a class="nav-link active" style="background: transparent; color: #fff; border-bottom: 2px solid var(--neon-red);" data-bs-toggle="tab" href="#paidOrders">Paid Orders</a></li>
+            <li class="nav-item"><a class="nav-link" style="background: transparent; color: var(--text-muted); border: none;" data-bs-toggle="tab" href="#failedOrders">Failed Orders</a></li>
         </ul>
         <div class="tab-content">
             <div class="tab-pane fade show active" id="paidOrders">
-                <div class="admin-card"><div class="table-responsive">
+                <div class="card glass"><div class="table-responsive">
                     <table class="table table-hover">
                         <thead><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Key</th><th>Date</th></tr></thead>
                         <tbody id="paidOrdersTable"><tr><td colspan="6" class="text-center">Loading...</td></tr></tbody>
@@ -1251,7 +1301,7 @@
                 </div></div>
             </div>
             <div class="tab-pane fade" id="failedOrders">
-                <div class="admin-card"><div class="table-responsive">
+                <div class="card glass"><div class="table-responsive">
                     <table class="table table-hover">
                         <thead><tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Key</th><th>Date</th></tr></thead>
                         <tbody id="failedOrdersTable"><tr><td colspan="6" class="text-center">Loading...</td></tr></tbody>
@@ -1266,33 +1316,33 @@
         <h3 class="section-title mb-4"><i class="bi bi-gear"></i>Payment & Admin Settings</h3>
         <div class="row g-4">
             <div class="col-lg-6">
-                <div class="admin-card h-100">
-                    <div class="card-header"><h5 class="mb-0"><i class="bi bi-credit-card me-2"></i>Razorpay</h5></div>
+                <div class="card glass h-100">
+                    <div class="card-header border-0 bg-transparent"><h5 class="mb-0 text-white"><i class="bi bi-credit-card me-2"></i>Razorpay</h5></div>
                     <div class="card-body">
-                        <label class="form-label text-muted">Razorpay Key ID</label>
+                        <label class="form-label">Razorpay Key ID</label>
                         <input type="text" class="form-control" id="rzpKeyId" placeholder="rzp_test_...">
                     </div>
                 </div>
             </div>
             <div class="col-lg-6">
-                <div class="admin-card h-100" style="border-top:4px solid #ffc107;">
-                    <div class="card-header"><h5 class="mb-0"><i class="bi bi-shield-lock me-2"></i>Admin Credentials</h5></div>
+                <div class="card glass h-100">
+                    <div class="card-header border-0 bg-transparent"><h5 class="mb-0 text-white"><i class="bi bi-shield-lock me-2"></i>Admin Credentials</h5></div>
                     <div class="card-body">
-                        <div class="mb-3"><label class="form-label text-muted">Username</label><input type="text" class="form-control" id="adminUsername" placeholder="admin"></div>
-                        <label class="form-label text-muted">Password</label>
+                        <div class="mb-3"><label class="form-label">Username</label><input type="text" class="form-control" id="adminUsername" placeholder="admin"></div>
+                        <label class="form-label">Password</label>
                         <input type="password" class="form-control" id="adminPassword" placeholder="••••••">
                     </div>
                 </div>
             </div>
             <div class="col-12">
-                <div class="admin-card" style="border-top:4px solid #0dcaf0;">
-                    <div class="card-header"><h5 class="mb-0"><i class="bi bi-phone me-2"></i>APK Download Settings</h5></div>
+                <div class="card glass">
+                    <div class="card-header border-0 bg-transparent"><h5 class="mb-0 text-white"><i class="bi bi-phone me-2"></i>APK Download Settings</h5></div>
                     <div class="card-body">
-                        <label class="form-label text-muted">GitHub APK Download URL</label>
+                        <label class="form-label">GitHub APK Download URL</label>
                         <input type="url" class="form-control mb-2" id="apkUrl" placeholder="https://github.com/username/repo/releases/download/v1.0/app.apk">
-                        <div class="form-text text-muted mb-3">Customers will see a download button after purchase.</div>
+                        <div class="form-text mb-3">Customers will see a download button after purchase.</div>
                         <div id="apkPreviewBox" style="display:none;">
-                            <label class="form-label text-muted">Current APK Link</label>
+                            <label class="form-label">Current APK Link</label>
                             <div class="input-group">
                                 <input type="text" class="form-control" id="apkUrlPreview" readonly>
                                 <a id="apkUrlLink" href="#" target="_blank" class="btn btn-outline-primary"><i class="bi bi-box-arrow-up-right"></i></a>
@@ -1310,30 +1360,30 @@
         <div class="container py-5">
             <div class="row justify-content-center">
                 <div class="col-md-7 col-lg-6">
-                    <div class="success-box">
+                    <div class="card glass success-box p-4 p-md-5">
                         <i class="bi bi-check-circle-fill"></i>
-                        <h2 class="mt-3 mb-4">Payment Successful!</h2>
-                        <div class="text-start mb-4 p-3" style="background: rgba(255,255,255,0.05); border-radius: 12px;">
-                            <p class="mb-2"><span class="text-white-50">Order ID:</span> <strong id="successOrderId"></strong></p>
-                            <p class="mb-2"><span class="text-white-50">Product:</span> <strong id="successProduct"></strong></p>
-                            <p class="mb-0"><span class="text-white-50">Duration:</span> <strong id="successDuration"></strong></p>
+                        <h2 class="mt-3 mb-4 fw-bold text-white">Payment Successful!</h2>
+                        <div class="text-start mb-4 p-3" style="background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid var(--glass-border);">
+                            <p class="mb-2"><span class="text-muted">Order ID:</span> <strong id="successOrderId"></strong></p>
+                            <p class="mb-2"><span class="text-muted">Product:</span> <strong id="successProduct"></strong></p>
+                            <p class="mb-0"><span class="text-muted">Duration:</span> <strong id="successDuration"></strong></p>
                         </div>
                         
                         <div class="mb-4">
-                            <div class="text-white-50 small mb-2 text-uppercase" style="letter-spacing:1px;">Your License Key</div>
+                            <div class="text-muted small mb-2 text-uppercase" style="letter-spacing:1px;">Your License Key</div>
                             <div class="key-display" id="successKey"></div>
                         </div>
 
                         <div class="mb-4" id="apkDownloadCard" style="display:none;">
-                            <div class="p-3" style="background: rgba(255,255,255,0.1); border-radius: 16px; border: 1px solid rgba(255,255,255,0.15);">
+                            <div class="p-3" style="background: rgba(255, 0, 60, 0.05); border-radius: 16px; border: 1px solid rgba(255, 0, 60, 0.2);">
                                 <div class="d-flex align-items-center gap-3 mb-2">
                                     <img src="logo.jpg" alt="App" style="width: 48px; height: 48px; border-radius: 12px;">
                                     <div class="text-start">
                                         <div class="fw-bold text-white">Download APK</div>
-                                        <div class="text-white-50 small">Get the latest Android app</div>
+                                        <div class="text-muted small">Get the latest Android app</div>
                                     </div>
                                 </div>
-                                <a id="apkDownloadBtn" href="#" target="_blank" class="btn w-100 mt-2" style="background: #3ddc84; color: #000; font-weight: 700; border-radius: 12px; padding: 12px;">
+                                <a id="apkDownloadBtn" href="#" target="_blank" class="btn w-100 mt-2" style="background: linear-gradient(45deg, var(--neon-red), var(--dark-red)); color: #fff; font-weight: 700; border-radius: 12px; padding: 12px;">
                                     <i class="bi bi-download me-2"></i>Download Now
                                 </a>
                             </div>
@@ -1343,7 +1393,7 @@
                             <button class="btn btn-light flex-fill" onclick="copyKey()"><i class="bi bi-clipboard me-1"></i>Copy</button>
                             <button class="btn btn-light flex-fill" onclick="downloadInvoice()"><i class="bi bi-download me-1"></i>Invoice</button>
                         </div>
-                        <button class="btn btn-outline-light mt-3 w-100" onclick="showSection('home')">Buy Another Key</button>
+                        <button class="btn btn-primary mt-3 w-100" onclick="showSection('home')">Buy Another Key</button>
                     </div>
                 </div>
             </div>
