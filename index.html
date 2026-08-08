@@ -1109,7 +1109,8 @@ Thank you for your purchase!
             border: 1px solid rgba(220, 38, 38, 0.15) !important;
             box-shadow: 
                 0 8px 32px rgba(0, 0, 0, 0.5),
-                inset 0 1px 0 rgba(255, 255, 255, 0.05) !important;
+                inset 0 1px 0 rgba(255, 255, 255, 0.05),
+                0 0 60px rgba(220, 38, 38, 0.05) !important;
         }
 
         .glass-strong {
@@ -1119,7 +1120,8 @@ Thank you for your purchase!
             border: 1px solid rgba(220, 38, 38, 0.2) !important;
             box-shadow: 
                 0 12px 40px rgba(0, 0, 0, 0.6),
-                inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+                inset 0 1px 0 rgba(255, 255, 255, 0.08),
+                0 0 80px rgba(220, 38, 38, 0.08) !important;
         }
 
         /* ===== NAVBAR ===== */
@@ -1128,7 +1130,7 @@ Thank you for your purchase!
             backdrop-filter: blur(20px) saturate(150%);
             -webkit-backdrop-filter: blur(20px) saturate(150%);
             border-bottom: 1px solid rgba(220, 38, 38, 0.2);
-            box-shadow: 0 4px 30px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 30px rgba(0,0,0,0.4), 0 0 40px rgba(220, 38, 38, 0.05);
         }
 
         .navbar-brand {
@@ -1140,7 +1142,6 @@ Thank you for your purchase!
 
         .navbar-brand img {
             border-radius: 10px !important;
-            box-shadow: 0 0 15px rgba(220, 38, 38, 0.3);
         }
 
         .nav-link {
@@ -1153,6 +1154,7 @@ Thank you for your purchase!
 
         .nav-link:hover {
             color: #ef4444 !important;
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.5);
         }
 
         .nav-link::after {
@@ -1177,7 +1179,7 @@ Thank you for your purchase!
             backdrop-filter: blur(24px) saturate(180%);
             border: 1px solid rgba(220, 38, 38, 0.2);
             border-radius: 16px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.5);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.5), 0 0 40px rgba(220, 38, 38, 0.08);
         }
 
         .dropdown-item {
@@ -1199,7 +1201,10 @@ Thank you for your purchase!
 
         /* ===== SECTION BACKGROUNDS ===== */
         #home, #faq, #contact, #success-page, #admin-login {
-            background: linear-gradient(180deg, #0a0a0a 0%, #0d0000 30%, #0a0a0a 70%, #0d0000 100%);
+            background: 
+                radial-gradient(ellipse at 20% 20%, rgba(139, 0, 0, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(220, 38, 38, 0.08) 0%, transparent 50%),
+                linear-gradient(180deg, #0a0a0a 0%, #0d0000 30%, #0a0a0a 70%, #0d0000 100%);
             min-height: 100vh;
             position: relative;
         }
@@ -1228,7 +1233,16 @@ Thank you for your purchase!
             overflow: hidden;
         }
 
-        /* No glow overlay */
+        #home .purchase-card::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(220, 38, 38, 0.08) 0%, transparent 70%);
+            pointer-events: none;
+        }
 
         #home .purchase-card .card-body {
             padding: 32px !important;
@@ -1241,10 +1255,12 @@ Thank you for your purchase!
             font-size: 1.5rem;
             font-weight: 800;
             letter-spacing: -0.5px;
+            text-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
         }
 
         #home .purchase-card h4 i {
             color: #ef4444;
+            text-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
         }
 
         /* ===== FORM ELEMENTS ===== */
@@ -1378,6 +1394,7 @@ Thank you for your purchase!
 
         #home #totalDisplay .h3 {
             color: #ef4444 !important;
+            text-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
         }
 
         #home #totalDisplay .text-muted {
@@ -1421,6 +1438,7 @@ Thank you for your purchase!
         .telegram-btn:hover {
             background: rgba(220, 38, 38, 0.15);
             color: #fff;
+            box-shadow: 0 0 20px rgba(220, 38, 38, 0.1);
         }
 
         /* ===== FOOTER ===== */
@@ -1434,6 +1452,7 @@ Thank you for your purchase!
         /* ===== FAQ PAGE ===== */
         #faq .section-title {
             color: #fff;
+            text-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
         }
 
         #faq .accordion-item {
@@ -1472,6 +1491,7 @@ Thank you for your purchase!
         /* ===== CONTACT PAGE ===== */
         #contact .section-title {
             color: #fff;
+            text-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
         }
 
         #contact .card {
@@ -1479,7 +1499,7 @@ Thank you for your purchase!
             backdrop-filter: blur(24px) saturate(180%);
             border: 1px solid rgba(220, 38, 38, 0.15);
             border-radius: 24px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 40px rgba(220, 38, 38, 0.05);
         }
 
         #contact .btn-primary {
@@ -1501,6 +1521,7 @@ Thank you for your purchase!
         /* ===== ADMIN LOGIN ===== */
         #admin-login .section-title, #admin-login h3 {
             color: #fff;
+            text-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
         }
 
         #admin-login .card {
@@ -1508,7 +1529,7 @@ Thank you for your purchase!
             backdrop-filter: blur(24px) saturate(180%);
             border: 1px solid rgba(220, 38, 38, 0.15);
             border-radius: 24px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3), 0 0 40px rgba(220, 38, 38, 0.05);
         }
 
         #admin-login .btn-primary {
@@ -1538,12 +1559,22 @@ Thank you for your purchase!
             border: 1px solid rgba(220, 38, 38, 0.2);
             border-radius: 24px;
             box-shadow: 
-                0 8px 32px rgba(0,0,0,0.4);
+                0 8px 32px rgba(0,0,0,0.4),
+                0 0 60px rgba(220, 38, 38, 0.08);
             position: relative;
             overflow: hidden;
         }
 
-        /* No glow overlay */
+        #success-page .success-box::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(220, 38, 38, 0.1) 0%, transparent 60%);
+            pointer-events: none;
+        }
 
         #success-page .success-box > * {
             position: relative;
@@ -1552,12 +1583,14 @@ Thank you for your purchase!
 
         #success-page .success-box i.bi-check-circle-fill {
             color: #ef4444;
+            text-shadow: 0 0 30px rgba(239, 68, 68, 0.5);
         }
 
         #success-page .key-display {
             background: rgba(255,255,255,0.05);
             border: 1px solid rgba(220, 38, 38, 0.2);
             color: #ef4444;
+            text-shadow: 0 0 10px rgba(239, 68, 68, 0.3);
         }
 
         #success-page .btn-light {
@@ -1570,6 +1603,7 @@ Thank you for your purchase!
 
         #success-page .btn-light:hover {
             background: rgba(220, 38, 38, 0.2);
+            box-shadow: 0 0 15px rgba(220, 38, 38, 0.1);
         }
 
         #success-page .btn-outline-light {
@@ -1614,6 +1648,7 @@ Thank you for your purchase!
             letter-spacing: 3px;
             text-transform: uppercase;
             margin: 0;
+            text-shadow: 0 0 20px rgba(220, 38, 38, 0.3);
         }
 
         .store-header .sub-text {
@@ -1658,12 +1693,14 @@ Thank you for your purchase!
         .admin-sidebar .nav-link:hover, .admin-sidebar .nav-link.active { 
             background: rgba(220, 38, 38, 0.15); 
             color: #ef4444;
+            box-shadow: 0 0 15px rgba(220, 38, 38, 0.1);
         }
 
         .section-title { 
             font-weight: 800; 
             margin-bottom: 20px; 
             color: #fff;
+            text-shadow: 0 0 20px rgba(220, 38, 38, 0.2);
         }
 
         .stat-card { 
@@ -1672,7 +1709,7 @@ Thank you for your purchase!
             border-radius: 16px; 
             padding: 24px; 
             text-align: center; 
-            box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.3), 0 0 30px rgba(220, 38, 38, 0.05);
             border: 1px solid rgba(220, 38, 38, 0.1);
         }
 
@@ -1680,6 +1717,7 @@ Thank you for your purchase!
             font-size: 2.2rem; 
             font-weight: 800; 
             color: #ef4444;
+            text-shadow: 0 0 20px rgba(239, 68, 68, 0.3);
         }
 
         .stat-card .text-muted {
@@ -1694,7 +1732,7 @@ Thank you for your purchase!
             backdrop-filter: blur(20px);
             border: 1px solid rgba(220, 38, 38, 0.1);
             border-radius: 16px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.2), 0 0 30px rgba(220, 38, 38, 0.03);
             overflow: hidden;
         }
 
@@ -1812,7 +1850,7 @@ Thank you for your purchase!
             backdrop-filter: blur(30px);
             border: 1px solid rgba(220, 38, 38, 0.2);
             border-radius: 20px;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+            box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 40px rgba(220, 38, 38, 0.1);
         }
 
         .modal-header {
@@ -1924,6 +1962,7 @@ Thank you for your purchase!
 
         #stockSummaryCards .col-md-4 > div:hover {
             border-color: rgba(220, 38, 38, 0.25) !important;
+            box-shadow: 0 4px 20px rgba(220, 38, 38, 0.1);
         }
 
         /* Scrollbar */
