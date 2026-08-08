@@ -1279,12 +1279,13 @@ Thank you for your purchase!
 
         /* ===== FORM ELEMENTS ===== */
         #home .form-label, #contact .form-label, #admin-login .form-label {
-            color: rgba(255,255,255,0.4);
-            font-size: 0.7rem;
-            font-weight: 600;
+            color: rgba(255,255,255,0.85) !important;
+            font-size: 0.8rem;
+            font-weight: 700;
             text-transform: uppercase;
-            letter-spacing: 1.5px;
-            margin-bottom: 8px;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+            display: block;
         }
 
         #home .form-select, #home .form-control,
@@ -2090,7 +2091,7 @@ Thank you for your purchase!
                     
 
                     <div class="mb-3">
-                        <label class="form-label" style="color: rgba(255,255,255,0.85) !important; font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1.5px;">Coupon Code (Optional)</label>
+                        <label class="form-label" style="color: rgba(255,255,255,0.9) !important; font-size: 0.85rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; display: block; margin-bottom: 10px;">Coupon Code (Optional)</label>
                         <div class="d-flex gap-2">
                             <input type="text" class="form-control flex-grow-1" id="couponInput" placeholder="Enter coupon code" style="border-radius: 14px; color: #fff !important; background: rgba(255,255,255,0.06) !important;">
                             <button class="btn btn-outline-primary px-4" type="button" onclick="applyCoupon()" style="border-radius: 14px; border-width: 1.5px; white-space: nowrap;">Apply</button>
