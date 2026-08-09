@@ -3,1315 +3,2906 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KUTY STORY - Digital Book Store</title>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <title>NovaEsp Store</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Paytm Checkout JS - Replace YOUR_MERCHANT_ID with your actual Paytm MID -->
+    <!-- For Production: https://securegw.paytm.in/merchantpgpui/checkoutjs/merchants/YOUR_MERCHANT_ID.js -->
+    <!-- For Testing: https://securegw-stage.paytm.in/merchantpgpui/checkoutjs/merchants/YOUR_MERCHANT_ID.js -->
+    <script src="https://securegw.paytm.in/merchantpgpui/checkoutjs/merchants/YOUR_MERCHANT_ID.js"></script>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
+        :root {
+            --black-deep: #050505;
+            --black: #080808;
+            --charcoal: #111111;
+            --dark-gray: #181818;
+            --red: #E50914;
+            --red-bright: #FF1A1A;
+            --red-dark: #8B0000;
+            --white: #FFFFFF;
+            --white-muted: rgba(255,255,255,0.55);
+            --glass: rgba(255,255,255,0.04);
+            --glass-strong: rgba(255,255,255,0.06);
+            --glass-red: rgba(229,9,20,0.10);
+            --border: rgba(255,255,255,0.08);
+            --border-red: rgba(229,9,20,0.35);
         }
-
+        * { box-sizing: border-box; }
         body {
-            font-family: 'Poppins', sans-serif;
-            background: linear-gradient(135deg, #fff8f0 0%, #ffe8d6 100%);
-            color: #333;
-            line-height: 1.6;
+            background: var(--black-deep);
+            color: var(--white);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            min-height: 100vh;
             overflow-x: hidden;
+            -webkit-font-smoothing: antialiased;
         }
-
-        /* Header */
-        header {
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            background: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            border-bottom: 1px solid #f0d5b8;
-            box-shadow: 0 2px 20px rgba(0,0,0,0.05);
-        }
-
-        .header-container {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 12px 20px;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .logo {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            font-size: 22px;
-            font-weight: 800;
-            color: #8B4513;
-            text-decoration: none;
-        }
-
-        .logo img {
-            width: 42px;
-            height: 42px;
-            border-radius: 10px;
-            object-fit: cover;
-            box-shadow: 0 2px 8px rgba(139, 69, 19, 0.2);
-        }
-
-        nav ul {
-            display: flex;
-            list-style: none;
-            gap: 30px;
-        }
-
-        nav a {
-            text-decoration: none;
-            color: #666;
-            font-weight: 500;
-            font-size: 14px;
-            transition: color 0.3s;
-            position: relative;
-        }
-
-        nav a:hover {
-            color: #8B4513;
-        }
-
-        nav a::after {
+        body::before {
             content: '';
-            position: absolute;
-            bottom: -5px;
-            left: 0;
-            width: 0;
-            height: 2px;
-            background: #8B4513;
-            transition: width 0.3s;
-        }
-
-        nav a:hover::after {
-            width: 100%;
-        }
-
-        .mobile-menu-btn {
-            display: none;
-            background: none;
-            border: none;
-            font-size: 24px;
-            cursor: pointer;
-            color: #8B4513;
-        }
-
-        /* Hero Section */
-        .hero {
-            padding: 80px 20px 80px;
-            text-align: center;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .hero-bg-icon {
-            position: absolute;
-            top: -30px;
-            right: -30px;
-            opacity: 0.04;
-            transform: rotate(-15deg);
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(229,9,20,0.06) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(139,0,0,0.04) 0%, transparent 50%),
+                radial-gradient(ellipse at 50% 50%, rgba(229,9,20,0.02) 0%, transparent 60%);
             pointer-events: none;
+            z-index: -1;
         }
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: var(--black); }
+        ::-webkit-scrollbar-thumb { background: var(--dark-gray); border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #333; }
+        h1,h2,h3,h4,h5,h6 { font-weight: 700; letter-spacing: -0.02em; }
+        .text-muted { color: var(--white-muted) !important; }
+        .text-red { color: var(--red) !important; }
+        .font-mono { font-family: 'SF Mono', Monaco, monospace; }
 
-        .hero-bg-icon svg {
-            width: 300px;
-            height: 300px;
-        }
-
-        .hero-logo {
-            margin-bottom: 25px;
-            animation: float 3s ease-in-out infinite;
-        }
-
-        .hero-logo img {
-            width: 220px;
-            height: 220px;
-            object-fit: cover;
+        /* Glass Card */
+        .glass-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
             border-radius: 24px;
-            box-shadow: 0 20px 60px rgba(139, 69, 19, 0.2);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.03);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
         }
+        .glass-card:hover { transform: translateY(-1px); }
 
-        @keyframes float {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-15px); }
-        }
-
-        .hero h1 {
-            font-size: 56px;
-            font-weight: 800;
-            color: #5D2E0C;
-            margin-bottom: 10px;
-            letter-spacing: -1px;
-        }
-
-        .hero h2 {
-            font-size: 24px;
-            color: #8B4513;
-            font-weight: 400;
-            margin-bottom: 8px;
-        }
-
-        .hero p {
-            font-size: 18px;
-            color: #888;
-            max-width: 500px;
-            margin: 0 auto 40px;
-        }
-
-        .hero-buttons {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            padding: 16px 40px;
-            border-radius: 50px;
-            font-size: 16px;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s;
-            cursor: pointer;
-            border: none;
-        }
-
-        .btn-primary {
-            background: linear-gradient(135deg, #D2691E, #8B4513);
-            color: white;
-            box-shadow: 0 10px 30px rgba(139, 69, 19, 0.3);
-        }
-
-        .btn-primary:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 40px rgba(139, 69, 19, 0.4);
-        }
-
-        .btn-secondary {
-            background: white;
-            color: #666;
-            border: 2px solid #e0d5c8;
-        }
-
-        .btn-secondary:hover {
-            border-color: #8B4513;
-            color: #8B4513;
-            transform: translateY(-3px);
-        }
-
-        .btn svg {
-            width: 20px;
-            height: 20px;
-            fill: currentColor;
-        }
-
-        /* Section Styles */
-        .section {
-            padding: 80px 20px;
+        /* Navbar */
+        .main-navbar {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
             max-width: 1200px;
-            margin: 0 auto;
+            z-index: 1030;
+            background: rgba(8,8,8,0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 12px 24px;
+            box-shadow: 0 4px 30px rgba(0,0,0,0.3);
         }
-
-        .section-title {
-            text-align: center;
-            font-size: 36px;
-            font-weight: 700;
-            color: #5D2E0C;
-            margin-bottom: 50px;
-            position: relative;
+        .main-navbar .navbar-brand {
+            color: #fff !important;
+            font-weight: 800;
+            font-size: 1.3rem;
+            letter-spacing: -0.5px;
         }
-
-        .section-title::after {
-            content: '';
-            display: block;
-            width: 60px;
-            height: 4px;
-            background: linear-gradient(90deg, #D2691E, #8B4513);
-            border-radius: 2px;
-            margin: 15px auto 0;
+        .main-navbar .navbar-brand img {
+            border-radius: 10px;
+            width: 32px;
+            height: 32px;
+            object-fit: cover;
         }
-
-        /* About Section */
-        .about-content {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 60px;
-            align-items: center;
+        .main-navbar .nav-link {
+            color: rgba(255,255,255,0.6) !important;
+            font-weight: 500;
+            font-size: 0.9rem;
+            padding: 8px 16px !important;
+            border-radius: 10px;
+            transition: all 0.2s ease;
+            margin: 0 2px;
         }
-
-        .about-text {
-            font-size: 16px;
-            color: #555;
-            line-height: 1.8;
+        .main-navbar .nav-link:hover, .main-navbar .nav-link.active {
+            color: #fff !important;
+            background: rgba(255,255,255,0.05);
         }
-
-        .about-text p {
-            margin-bottom: 15px;
+        .main-navbar .nav-link i { margin-right: 6px; }
+        .navbar-toggler {
+            border: none !important;
+            padding: 4px;
+            color: #fff;
         }
-
-        .about-text strong {
-            color: #8B4513;
+        .navbar-toggler:focus { box-shadow: none; }
+        .dropdown-menu {
+            background: rgba(17,17,17,0.95);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            padding: 8px;
+            margin-top: 8px !important;
         }
-
-        .about-card {
-            background: linear-gradient(135deg, #fff5eb, #ffe8d6);
-            border-radius: 24px;
-            padding: 50px;
-            text-align: center;
-            border: 1px solid #f0d5b8;
+        .dropdown-item {
+            color: rgba(255,255,255,0.7);
+            border-radius: 10px;
+            padding: 10px 16px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.15s ease;
         }
-
-        .about-card-icon {
-            margin-bottom: 20px;
+        .dropdown-item:hover, .dropdown-item:focus {
+            background: rgba(255,255,255,0.06);
+            color: #fff;
         }
+        .dropdown-divider { border-color: var(--border); margin: 8px; }
 
-        .about-card-icon svg {
-            width: 70px;
-            height: 70px;
-        }
+        /* Sections */
+        .section { min-height: 100vh; padding-top: 100px; padding-bottom: 60px; }
 
-        .about-card h3 {
-            font-size: 22px;
-            color: #5D2E0C;
-            margin-bottom: 10px;
-        }
-
-        .about-card p {
-            color: #777;
-            font-size: 15px;
-        }
-
-        /* Categories */
-        .categories-grid {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 20px;
-        }
-
-        .category-card {
-            background: white;
-            border-radius: 20px;
-            padding: 35px 20px;
-            text-align: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            transition: all 0.3s;
-            border: 1px solid #f5efe8;
-        }
-
-        .category-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
-            border-color: #D2691E;
-        }
-
-        .category-icon {
+        /* Home / Store */
+        .hero-title {
+            font-size: 2.5rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, rgba(255,255,255,0.7) 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
             margin-bottom: 12px;
         }
-
-        .category-icon svg {
-            width: 45px;
-            height: 45px;
+        .hero-subtitle {
+            color: var(--white-muted);
+            font-size: 1.05rem;
+            font-weight: 400;
         }
-
-        .category-name {
-            font-weight: 600;
-            color: #444;
-            font-size: 14px;
-        }
-
-        /* How It Works */
-        .steps-container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .step {
-            display: flex;
-            align-items: flex-start;
-            gap: 25px;
-            padding: 30px;
-            margin-bottom: 20px;
-            border-radius: 20px;
-            transition: all 0.3s;
-        }
-
-        .step:nth-child(odd) {
-            background: linear-gradient(135deg, #fff8f0, #fff0e0);
-        }
-
-        .step:nth-child(even) {
-            background: linear-gradient(135deg, #fff0e0, #ffe8d6);
-        }
-
-        .step:hover {
-            transform: translateX(10px);
-        }
-
-        .step-number {
-            width: 50px;
-            height: 50px;
-            background: linear-gradient(135deg, #D2691E, #8B4513);
-            color: white;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            font-size: 18px;
-            flex-shrink: 0;
-            box-shadow: 0 5px 15px rgba(139, 69, 19, 0.3);
-        }
-
-        .step-content h4 {
-            font-size: 18px;
-            color: #5D2E0C;
-            margin-bottom: 5px;
-        }
-
-        .step-content p {
-            color: #777;
-            font-size: 15px;
-        }
-
-        /* Why Choose Us */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 25px;
-        }
-
-        .feature-card {
-            background: white;
-            border-radius: 20px;
-            padding: 40px 25px;
-            text-align: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            transition: all 0.3s;
-            border: 1px solid #f5efe8;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-8px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
-        }
-
-        .feature-icon {
-            margin-bottom: 15px;
-        }
-
-        .feature-icon svg {
-            width: 50px;
-            height: 50px;
-        }
-
-        .feature-card h4 {
-            font-size: 17px;
-            color: #5D2E0C;
-            margin-bottom: 8px;
-        }
-
-        .feature-card p {
-            color: #888;
-            font-size: 14px;
-        }
-
-        /* FAQ */
-        .faq-container {
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .faq-item {
-            background: white;
-            border-radius: 16px;
-            margin-bottom: 15px;
-            overflow: hidden;
-            box-shadow: 0 3px 15px rgba(0,0,0,0.05);
-            border: 1px solid #f5efe8;
-        }
-
-        .faq-question {
-            padding: 22px 25px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: 600;
-            color: #5D2E0C;
-            font-size: 16px;
-            transition: background 0.3s;
-        }
-
-        .faq-question:hover {
-            background: #fff8f0;
-        }
-
-        .faq-arrow {
-            font-size: 12px;
-            color: #D2691E;
-            transition: transform 0.3s;
-        }
-
-        .faq-item.active .faq-arrow {
-            transform: rotate(180deg);
-        }
-
-        .faq-answer {
-            padding: 0 25px;
-            max-height: 0;
-            overflow: hidden;
-            transition: all 0.3s;
-            color: #666;
-            font-size: 15px;
-            line-height: 1.7;
-        }
-
-        .faq-item.active .faq-answer {
-            padding: 0 25px 22px;
-            max-height: 200px;
-        }
-
-        /* Contact */
-        .contact-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 25px;
-            max-width: 800px;
-            margin: 0 auto;
-        }
-
-        .contact-card {
-            background: white;
-            border-radius: 20px;
-            padding: 40px 30px;
-            text-align: center;
-            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
-            transition: all 0.3s;
-            border: 1px solid #f5efe8;
-        }
-
-        .contact-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 40px rgba(0,0,0,0.1);
-        }
-
-        .contact-icon {
-            margin-bottom: 15px;
-        }
-
-        .contact-icon svg {
-            width: 50px;
-            height: 50px;
-        }
-
-        .contact-card h4 {
-            font-size: 17px;
-            color: #5D2E0C;
-            margin-bottom: 8px;
-        }
-
-        .contact-card a {
-            color: #D2691E;
-            text-decoration: none;
-            font-weight: 500;
-            font-size: 15px;
-        }
-
-        .contact-card a:hover {
-            text-decoration: underline;
-        }
-
-        .contact-card p {
-            color: #888;
-            font-size: 15px;
-        }
-
-        /* Policies */
-        .policies-grid {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 25px;
-        }
-
-        .policy-card {
-            background: white;
-            border-radius: 20px;
-            padding: 35px 25px;
-            border: 1px solid #f0d5b8;
-            transition: all 0.3s;
-        }
-
-        .policy-card:hover {
-            box-shadow: 0 10px 30px rgba(0,0,0,0.08);
-            transform: translateY(-5px);
-        }
-
-        .policy-card h4 {
-            font-size: 18px;
-            color: #5D2E0C;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .policy-card h4 svg {
-            width: 28px;
-            height: 28px;
-        }
-
-        .policy-card ul {
-            list-style: none;
-        }
-
-        .policy-card li {
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 10px;
-            padding-left: 5px;
-            line-height: 1.6;
-        }
-
-        /* Footer */
-        footer {
-            background: linear-gradient(135deg, #3d1f0a, #5D2E0C);
-            color: #e8c9a8;
-            padding: 60px 20px 30px;
-        }
-
-        .footer-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        .footer-grid {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr 1fr;
-            gap: 40px;
-            margin-bottom: 40px;
-        }
-
-        .footer-brand {
-            font-size: 22px;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 15px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .footer-brand img {
-            width: 30px;
-            height: 30px;
-            border-radius: 6px;
-            object-fit: cover;
-        }
-
-        .footer-desc {
-            font-size: 14px;
-            line-height: 1.7;
-            color: #c9a87c;
-        }
-
-        .footer-col h4 {
-            color: white;
-            font-size: 16px;
-            margin-bottom: 20px;
-        }
-
-        .footer-col ul {
-            list-style: none;
-        }
-
-        .footer-col li {
-            margin-bottom: 10px;
-        }
-
-        .footer-col a {
-            color: #c9a87c;
-            text-decoration: none;
-            font-size: 14px;
-            transition: color 0.3s;
-        }
-
-        .footer-col a:hover {
-            color: white;
-        }
-
-        .footer-bot-btn {
+        .status-badge {
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(255,255,255,0.1);
-            color: white;
-            padding: 10px 20px;
-            border-radius: 10px;
-            text-decoration: none;
-            font-size: 14px;
-            transition: all 0.3s;
+            background: rgba(16,185,129,0.1);
+            border: 1px solid rgba(16,185,129,0.2);
+            color: #34d399;
+            padding: 6px 14px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            letter-spacing: 0.3px;
         }
-
-        .footer-bot-btn:hover {
-            background: rgba(255,255,255,0.2);
+        .status-dot {
+            width: 6px;
+            height: 6px;
+            background: #34d399;
+            border-radius: 50%;
+            box-shadow: 0 0 8px rgba(16,185,129,0.4);
+            animation: pulse 2s infinite;
         }
-
-        .footer-bot-btn svg {
-            width: 20px;
-            height: 20px;
-            fill: currentColor;
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
         }
-
-        .footer-bottom {
-            border-top: 1px solid rgba(255,255,255,0.1);
-            padding-top: 25px;
+        .store-icon {
+            width: 56px;
+            height: 56px;
+            background: var(--glass-red);
+            border: 1px solid var(--border-red);
+            border-radius: 16px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            color: var(--red);
+        }
+        .form-label-small {
+            display: block;
+            color: var(--white-muted);
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            margin-bottom: 10px;
+        }
+        .glass-select, .glass-input {
+            width: 100%;
+            background: rgba(255,255,255,0.04) !important;
+            border: 1px solid var(--border) !important;
+            color: #fff !important;
+            border-radius: 16px !important;
+            padding: 16px 20px !important;
+            font-size: 0.95rem;
+            font-weight: 600;
+            appearance: none;
+            -webkit-appearance: none;
+            transition: all 0.2s ease;
+        }
+        .glass-select {
+            background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3e%3cpath fill='none' stroke='rgba(255,255,255,0.4)' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='m2 5 6 6 6-6'/%3e%3c/svg%3e") !important;
+            background-repeat: no-repeat !important;
+            background-position: right 18px center !important;
+            background-size: 16px 12px !important;
+            padding-right: 48px !important;
+        }
+        .glass-select:focus, .glass-input:focus {
+            border-color: var(--border-red) !important;
+            box-shadow: 0 0 0 4px rgba(229,9,20,0.08) !important;
+            outline: none;
+            background: rgba(255,255,255,0.06) !important;
+        }
+        .glass-select option, .glass-select optgroup {
+            background: var(--charcoal);
+            color: #fff;
+            padding: 12px;
+        }
+        .glass-select:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+        }
+        .coupon-toggle {
+            width: 100%;
+            background: transparent;
+            border: 1px dashed var(--border);
+            color: var(--white-muted);
+            padding: 14px;
+            border-radius: 14px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
             text-align: center;
-            font-size: 13px;
-            color: #a08060;
+            cursor: pointer;
         }
-
-        .footer-bottom a {
-            color: #e8c9a8;
+        .coupon-toggle:hover {
+            border-color: var(--border-red);
+            color: #fff;
+            background: var(--glass-red);
+        }
+        #totalDisplay .h3, #totalDisplay h3 {
+            font-size: 2rem;
+            font-weight: 800;
+            color: #fff !important;
+            margin-top: 8px;
+        }
+        #totalDisplay .text-decoration-line-through {
+            color: rgba(255,255,255,0.3) !important;
+            font-size: 1.1rem;
+        }
+        #totalDisplay .text-success {
+            color: #34d399 !important;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+        .btn-red {
+            background: var(--red);
+            color: #fff;
+            border: none;
+            border-radius: 16px;
+            padding: 16px 32px;
+            font-weight: 700;
+            font-size: 1rem;
+            letter-spacing: 0.2px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 24px rgba(229,9,20,0.35);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .btn-red:hover:not(:disabled) {
+            background: var(--red-bright);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 32px rgba(229,9,20,0.45);
+        }
+        .btn-red:disabled {
+            background: rgba(255,255,255,0.08) !important;
+            color: rgba(255,255,255,0.3) !important;
+            box-shadow: none !important;
+            cursor: not-allowed;
+            transform: none !important;
+        }
+        .btn-glass {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            color: rgba(255,255,255,0.9);
+            border-radius: 14px;
+            padding: 12px 24px;
+            font-weight: 600;
+            font-size: 0.9rem;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .btn-glass:hover {
+            background: var(--glass-strong);
+            border-color: rgba(255,255,255,0.15);
+            color: #fff;
+        }
+        .btn-sm-glass { padding: 8px 16px; font-size: 0.8rem; }
+        .trust-badges {
+            display: flex;
+            justify-content: center;
+            gap: 16px;
+            flex-wrap: wrap;
+        }
+        .trust-item {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: var(--white-muted);
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+        .trust-item i { color: var(--red); font-size: 0.9rem; }
+        .telegram-btn {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            color: rgba(255,255,255,0.7);
+            padding: 12px 28px;
+            border-radius: 50px;
             text-decoration: none;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        .telegram-btn:hover {
+            background: var(--glass-strong);
+            border-color: rgba(255,255,255,0.15);
+            color: #fff;
+        }
+        .telegram-btn i { color: #229ED9; }
+
+        /* Success Page */
+        .success-card { padding: 48px 40px !important; }
+        .success-icon { font-size: 4rem; color: #34d399; line-height: 1; }
+        .success-card h2 { font-weight: 800; font-size: 1.8rem; }
+        .detail-list {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 4px;
+        }
+        .detail-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 14px 18px;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            font-size: 0.9rem;
+        }
+        .detail-item:last-child { border-bottom: none; }
+        .detail-item span:first-child { color: var(--white-muted); }
+        .detail-item span:last-child { font-weight: 600; color: #fff; }
+        .key-section { text-align: center; }
+        .key-box {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid var(--border);
+            border-radius: 16px;
+            padding: 20px;
+            font-family: 'SF Mono', Monaco, monospace;
+            font-size: 1.1rem;
+            color: var(--red);
+            font-weight: 700;
+            letter-spacing: 1px;
+            word-break: break-all;
+        }
+        .btn-apk {
+            background: #3ddc84;
+            color: #000;
+            font-weight: 700;
+            border-radius: 14px;
+            padding: 14px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
+        .btn-apk:hover { background: #4ee895; transform: translateY(-1px); }
+
+        /* FAQ */
+        .section-title { font-size: 2rem; font-weight: 800; margin-bottom: 12px; }
+        .glass-accordion .accordion-item {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 20px !important;
+            margin-bottom: 12px;
+            overflow: hidden;
+        }
+        .glass-accordion .accordion-button {
+            background: transparent;
+            color: #fff;
+            font-weight: 600;
+            padding: 22px 24px;
+            font-size: 1rem;
+            box-shadow: none;
+            border: none;
+        }
+        .glass-accordion .accordion-button:not(.collapsed) {
+            background: var(--glass-red);
+            color: #fff;
+            box-shadow: none;
+        }
+        .glass-accordion .accordion-button::after {
+            filter: invert(1);
+            opacity: 0.5;
+        }
+        .glass-accordion .accordion-body {
+            color: var(--white-muted);
+            padding: 0 24px 24px;
+            font-size: 0.95rem;
+            line-height: 1.7;
         }
 
-        .footer-bottom a:hover {
-            text-decoration: underline;
+        /* Contact */
+        .contact-icon {
+            width: 64px;
+            height: 64px;
+            background: var(--glass-red);
+            border: 1px solid var(--border-red);
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.8rem;
+            color: var(--red);
+            margin-bottom: 20px;
         }
 
-        /* Responsive */
-        @media (max-width: 900px) {
-            .hero h1 { font-size: 40px; }
-            .about-content { grid-template-columns: 1fr; }
-            .categories-grid { grid-template-columns: repeat(2, 1fr); }
-            .features-grid { grid-template-columns: repeat(2, 1fr); }
-            .policies-grid { grid-template-columns: 1fr; }
-            .footer-grid { grid-template-columns: 1fr 1fr; }
-            .hero-logo img { width: 180px; height: 180px; }
+        /* Admin Sidebar */
+        .admin-sidebar {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 260px;
+            height: 100vh;
+            background: rgba(8,8,8,0.95);
+            backdrop-filter: blur(30px);
+            -webkit-backdrop-filter: blur(30px);
+            border-right: 1px solid var(--border);
+            z-index: 1040;
+            display: flex;
+            flex-direction: column;
+            padding: 24px 16px;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
         }
-
-        @media (max-width: 600px) {
-            nav ul { display: none; }
-            .mobile-menu-btn { display: block; }
-            .hero h1 { font-size: 32px; }
-            .hero h2 { font-size: 18px; }
-            .categories-grid { grid-template-columns: 1fr 1fr; }
-            .features-grid { grid-template-columns: 1fr; }
-            .contact-grid { grid-template-columns: 1fr; }
-            .footer-grid { grid-template-columns: 1fr; }
-            .step { flex-direction: column; text-align: center; }
-            .hero-logo img { width: 150px; height: 150px; }
-            .logo img { width: 36px; height: 36px; }
-            .logo { font-size: 18px; }
+        .sidebar-brand {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 0 12px 24px;
+            border-bottom: 1px solid var(--border);
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #fff;
         }
-
-        /* Mobile Menu */
-        .mobile-menu {
-            display: none;
+        .sidebar-brand i { color: var(--red); font-size: 1.4rem; }
+        .nav-section {
+            color: var(--white-muted);
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            padding: 16px 12px 8px;
+        }
+        .sidebar-nav { flex: 1; }
+        .sidebar-nav .nav-link {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: rgba(255,255,255,0.6);
+            padding: 12px 14px;
+            border-radius: 12px;
+            margin: 2px 0;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-decoration: none;
+            transition: all 0.15s ease;
+            border: 1px solid transparent;
+            position: relative;
+        }
+        .sidebar-nav .nav-link i { font-size: 1.1rem; width: 20px; text-align: center; }
+        .sidebar-nav .nav-link:hover {
+            background: rgba(255,255,255,0.04);
+            color: #fff;
+        }
+        .sidebar-nav .nav-link.active {
+            background: var(--glass-red);
+            border-color: var(--border-red);
+            color: #fff;
+            box-shadow: 0 4px 20px rgba(229,9,20,0.15);
+        }
+        .sidebar-nav .nav-link.active::before {
+            content: '';
             position: absolute;
-            top: 100%;
+            left: 0;
+            width: 3px;
+            height: 24px;
+            background: var(--red);
+            border-radius: 0 3px 3px 0;
+        }
+        .sidebar-footer {
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+            margin-top: auto;
+        }
+        .logout-btn {
+            width: 100%;
+            background: transparent;
+            border: 1px solid var(--border);
+            color: rgba(255,255,255,0.6);
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 0.9rem;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            cursor: pointer;
+        }
+        .logout-btn:hover {
+            background: rgba(229,9,20,0.1);
+            border-color: var(--border-red);
+            color: var(--red);
+        }
+
+        /* Admin Topbar */
+        .admin-topbar {
+            position: fixed;
+            top: 0;
+            left: 260px;
+            right: 0;
+            height: 64px;
+            background: rgba(5,5,5,0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-bottom: 1px solid var(--border);
+            z-index: 1030;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 32px;
+        }
+        .topbar-title {
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 0;
+        }
+        .mobile-menu-btn {
+            display: none;
+            background: var(--glass);
+            border: 1px solid var(--border);
+            color: #fff;
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.2rem;
+            cursor: pointer;
+        }
+        .topbar-profile {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--white-muted);
+            font-size: 0.9rem;
+            font-weight: 500;
+        }
+        .topbar-profile i { font-size: 1.4rem; color: #fff; }
+
+        /* Admin Sections */
+        .admin-section {
+            margin-left: 260px;
+            min-height: 100vh;
+            padding: 84px 32px 32px;
+        }
+        .page-title {
+            font-size: 1.6rem;
+            font-weight: 800;
+            margin-bottom: 28px;
+        }
+        .stat-card {
+            background: var(--glass);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 28px;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.2s ease;
+        }
+        .stat-card:hover { transform: translateY(-2px); }
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
             left: 0;
             right: 0;
-            background: white;
-            border-top: 1px solid #f0d5b8;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            padding: 20px;
+            height: 3px;
+            background: linear-gradient(90deg, var(--red), transparent);
         }
-
-        .mobile-menu.active {
-            display: block;
+        .stat-label {
+            font-size: 0.75rem;
+            color: var(--white-muted);
+            text-transform: uppercase;
+            letter-spacing: 1.2px;
+            font-weight: 600;
         }
-
-        .mobile-menu a {
-            display: block;
-            padding: 12px 0;
-            color: #666;
-            text-decoration: none;
-            font-weight: 500;
-            border-bottom: 1px solid #f5efe8;
+        .stat-value {
+            font-size: 2.2rem;
+            font-weight: 800;
+            color: #fff;
+            margin-top: 8px;
+            letter-spacing: -1px;
         }
-
-        .mobile-menu a:last-child {
-            border-bottom: none;
+        .card-header-glass {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 24px 28px;
+            border-bottom: 1px solid var(--border);
+            flex-wrap: wrap;
+            gap: 16px;
         }
+        .card-header-glass h5 { font-weight: 700; font-size: 1.1rem; margin: 0; }
+        .glass-table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+            margin-bottom: 0;
+        }
+        .glass-table th {
+            background: rgba(255,255,255,0.02);
+            color: var(--white-muted);
+            font-size: 0.7rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            padding: 16px 20px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+        }
+        .glass-table td {
+            padding: 16px 20px;
+            border-bottom: 1px solid rgba(255,255,255,0.03);
+            color: rgba(255,255,255,0.85);
+            font-size: 0.9rem;
+            vertical-align: middle;
+        }
+        .glass-table tbody tr:hover td {
+            background: rgba(255,255,255,0.02);
+        }
+        .glass-table tbody tr:last-child td { border-bottom: none; }
+        .glass-table code {
+            background: rgba(255,255,255,0.05);
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            color: var(--red);
+            border: 1px solid rgba(229,9,20,0.15);
+        }
+        .badge-glass {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 700;
+            letter-spacing: 0.3px;
+        }
+        .badge-success {
+            background: rgba(16,185,129,0.1);
+            color: #34d399;
+            border: 1px solid rgba(16,185,129,0.2);
+        }
+        .badge-danger {
+            background: rgba(229,9,20,0.1);
+            color: var(--red-bright);
+            border: 1px solid rgba(229,9,20,0.25);
+        }
+        .badge-warning {
+            background: rgba(245,158,11,0.1);
+            color: #fbbf24;
+            border: 1px solid rgba(245,158,11,0.2);
+        }
+        .badge-info {
+            background: rgba(255,255,255,0.05);
+            color: rgba(255,255,255,0.7);
+            border: 1px solid var(--border);
+        }
+        .badge-secondary {
+            background: rgba(255,255,255,0.05);
+            color: var(--white-muted);
+            border: 1px solid var(--border);
+        }
+        .stock-card {
+            background: var(--glass);
+            border: 1px solid var(--border);
+            border-radius: 20px;
+            padding: 24px;
+            transition: all 0.2s ease;
+            height: 100%;
+        }
+        .stock-card:hover {
+            border-color: rgba(255,255,255,0.12);
+            transform: translateY(-2px);
+        }
+        .stock-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 20px;
+        }
+        .stock-card-title {
+            font-weight: 700;
+            font-size: 0.95rem;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+        .stock-card-subtitle {
+            font-size: 0.8rem;
+            color: var(--white-muted);
+        }
+        .stock-count { display: flex; gap: 20px; }
+        .stock-count-item { text-align: center; }
+        .stock-count-value {
+            font-size: 1.6rem;
+            font-weight: 800;
+            color: #fff;
+            line-height: 1;
+        }
+        .stock-count-value.active { color: #34d399; }
+        .stock-count-value.danger { color: var(--red); }
+        .stock-count-value.warning { color: #fbbf24; }
+        .stock-count-label {
+            font-size: 0.65rem;
+            color: var(--white-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-top: 6px;
+            font-weight: 600;
+        }
+        .glass-tabs {
+            border-bottom: 1px solid var(--border);
+            gap: 4px;
+        }
+        .glass-tabs .nav-link {
+            color: var(--white-muted);
+            font-weight: 600;
+            font-size: 0.85rem;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 12px 12px 0 0;
+            background: transparent;
+            transition: all 0.2s ease;
+        }
+        .glass-tabs .nav-link:hover {
+            color: #fff;
+            background: rgba(255,255,255,0.03);
+        }
+        .glass-tabs .nav-link.active {
+            color: #fff;
+            background: var(--glass-red);
+            border-bottom: 2px solid var(--red);
+        }
+        .tab-content { padding-top: 24px; }
+        .modal-content {
+            background: rgba(17,17,17,0.98);
+            backdrop-filter: blur(40px);
+            -webkit-backdrop-filter: blur(40px);
+            border: 1px solid var(--border);
+            border-radius: 24px;
+            color: #fff;
+            box-shadow: 0 25px 80px rgba(0,0,0,0.6);
+        }
+        .modal-header {
+            border-bottom: 1px solid var(--border);
+            padding: 24px 28px;
+        }
+        .modal-title { font-weight: 700; font-size: 1.2rem; }
+        .modal-body { padding: 24px 28px; }
+        .modal-footer {
+            border-top: 1px solid var(--border);
+            padding: 20px 28px;
+        }
+        .btn-close {
+            filter: invert(1);
+            opacity: 0.4;
+            width: 32px;
+            height: 32px;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+        }
+        .btn-close:hover { opacity: 0.8; background: rgba(255,255,255,0.05); }
+        .form-check-input {
+            background-color: rgba(255,255,255,0.05);
+            border-color: var(--border);
+            width: 1.2em;
+            height: 1.2em;
+        }
+        .form-check-input:checked {
+            background-color: var(--red);
+            border-color: var(--red);
+        }
+        .form-check-label { color: rgba(255,255,255,0.8); font-size: 0.9rem; }
+        .alert-glass {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--border);
+            color: var(--white-muted);
+            border-radius: 14px;
+        }
+        .alert-warning-glass {
+            background: rgba(245,158,11,0.08);
+            border: 1px solid rgba(245,158,11,0.2);
+            color: #fbbf24;
+            border-radius: 14px;
+        }
+        #home, #faq, #contact, #success-page, #admin-login {
+            background: var(--black-deep);
+        }
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 1035;
+            backdrop-filter: blur(4px);
+        }
+        .sidebar-overlay.show { display: block; }
 
-        /* Smooth Scroll */
-        html {
-            scroll-behavior: smooth;
+        @media (max-width: 991px) {
+            .admin-sidebar { transform: translateX(-100%); }
+            .admin-sidebar.show { transform: translateX(0); }
+            .admin-section {
+                margin-left: 0;
+                padding: 80px 20px 20px;
+            }
+            .admin-topbar { left: 0; }
+            .mobile-menu-btn { display: inline-flex; }
+            .hero-title { font-size: 2rem; }
+            .main-navbar {
+                width: calc(100% - 24px);
+                top: 12px;
+            }
+            .section { padding-top: 90px; }
+        }
+        @media (max-width: 576px) {
+            .hero-title { font-size: 1.7rem; }
+            .stat-value { font-size: 1.8rem; }
+            .glass-card { border-radius: 20px; }
+            .success-card { padding: 32px 24px !important; }
+            .trust-badges { gap: 12px; }
+            .trust-item { font-size: 0.75rem; }
+            .admin-section { padding: 76px 16px 16px; }
+            .card-header-glass { padding: 20px; }
+            .glass-table th, .glass-table td { padding: 12px 16px; }
+            .main-navbar { padding: 10px 16px; }
+            .main-navbar .navbar-brand { font-size: 1.1rem; }
         }
     </style>
 <base target="_blank">
+<base target="_blank">
 </head>
 <body>
-    <!-- SVG Icons Definitions -->
-    <svg style="display:none;">
-        <defs>
-            <symbol id="icon-book" viewBox="0 0 64 64">
-                <rect x="8" y="4" width="48" height="56" rx="4" fill="none" stroke="#8B4513" stroke-width="3"/>
-                <line x1="24" y1="4" x2="24" y2="60" stroke="#8B4513" stroke-width="2"/>
-                <path d="M12 16h8M12 24h8M12 32h8M12 40h8" stroke="#D2691E" stroke-width="2" stroke-linecap="round"/>
-                <path d="M28 16h20M28 24h20M28 32h16" stroke="#8B4513" stroke-width="2" stroke-linecap="round" opacity="0.4"/>
-                <circle cx="44" cy="48" r="6" fill="#D2691E" opacity="0.8"/>
-            </symbol>
 
-            <symbol id="icon-telegram" viewBox="0 0 24 24">
-                <path d="M21.5 4.5L2.5 11.5L9.5 13.5L12.5 20.5L21.5 4.5Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/>
-                <path d="M9.5 13.5L14.5 9.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </symbol>
-
-            <symbol id="icon-message" viewBox="0 0 24 24">
-                <rect x="3" y="4" width="18" height="14" rx="3" fill="none" stroke="currentColor" stroke-width="2"/>
-                <path d="M8 18l4 3l4-3" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </symbol>
-
-            <symbol id="icon-target" viewBox="0 0 64 64">
-                <circle cx="32" cy="32" r="24" fill="none" stroke="#8B4513" stroke-width="3"/>
-                <circle cx="32" cy="32" r="14" fill="none" stroke="#D2691E" stroke-width="3"/>
-                <circle cx="32" cy="32" r="5" fill="#D2691E"/>
-                <line x1="32" y1="4" x2="32" y2="12" stroke="#8B4513" stroke-width="2" stroke-linecap="round"/>
-                <line x1="32" y1="52" x2="32" y2="60" stroke="#8B4513" stroke-width="2" stroke-linecap="round"/>
-                <line x1="4" y1="32" x2="12" y2="32" stroke="#8B4513" stroke-width="2" stroke-linecap="round"/>
-                <line x1="52" y1="32" x2="60" y2="32" stroke="#8B4513" stroke-width="2" stroke-linecap="round"/>
-            </symbol>
-
-            <symbol id="icon-adventure" viewBox="0 0 64 64">
-                <path d="M32 8L40 28L60 32L44 44L48 60L32 50L16 60L20 44L4 32L24 28Z" fill="none" stroke="#D2691E" stroke-width="2.5" stroke-linejoin="round"/>
-                <circle cx="32" cy="32" r="6" fill="#8B4513"/>
-            </symbol>
-
-            <symbol id="icon-romance" viewBox="0 0 64 64">
-                <path d="M32 56C32 56 8 40 8 24C8 16 14 10 22 10C27 10 30 13 32 16C34 13 37 10 42 10C50 10 56 16 56 24C56 40 32 56 32 56Z" fill="none" stroke="#D2691E" stroke-width="2.5"/>
-            </symbol>
-
-            <symbol id="icon-mystery" viewBox="0 0 64 64">
-                <circle cx="32" cy="28" r="16" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-                <path d="M32 20v8M32 36v2" stroke="#D2691E" stroke-width="2.5" stroke-linecap="round"/>
-                <path d="M20 48c0-6.6 5.4-12 12-12s12 5.4 12 12" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-            </symbol>
-
-            <symbol id="icon-horror" viewBox="0 0 64 64">
-                <path d="M32 8c-13.3 0-24 8-24 18c0 8 5 14 12 16v8l8-6l8 6v-8c7-2 12-8 12-16C48 16 37.3 8 32 8z" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-                <circle cx="24" cy="28" r="3" fill="#D2691E"/>
-                <circle cx="40" cy="28" r="3" fill="#D2691E"/>
-                <path d="M28 36c2 2 6 2 8 0" stroke="#D2691E" stroke-width="2" stroke-linecap="round" fill="none"/>
-            </symbol>
-
-            <symbol id="icon-fantasy" viewBox="0 0 64 64">
-                <path d="M32 4L36 24L56 28L36 32L32 52L28 32L8 28L28 24Z" fill="none" stroke="#D2691E" stroke-width="2" stroke-linejoin="round"/>
-                <circle cx="32" cy="28" r="4" fill="#8B4513"/>
-            </symbol>
-
-            <symbol id="icon-children" viewBox="0 0 64 64">
-                <circle cx="32" cy="20" r="10" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-                <path d="M16 56c0-8.8 7.2-16 16-16s16 7.2 16 16" fill="none" stroke="#D2691E" stroke-width="2.5"/>
-                <circle cx="28" cy="18" r="2" fill="#D2691E"/>
-                <circle cx="36" cy="18" r="2" fill="#D2691E"/>
-                <path d="M28 24c2 2 6 2 8 0" stroke="#D2691E" stroke-width="1.5" stroke-linecap="round" fill="none"/>
-            </symbol>
-
-            <symbol id="icon-historical" viewBox="0 0 64 64">
-                <path d="M32 8L12 20v24l20 12l20-12V20L32 8z" fill="none" stroke="#8B4513" stroke-width="2.5" stroke-linejoin="round"/>
-                <path d="M32 8v48M12 20l20 12l20-12" stroke="#8B4513" stroke-width="2" fill="none"/>
-                <circle cx="32" cy="32" r="6" fill="none" stroke="#D2691E" stroke-width="2"/>
-            </symbol>
-
-            <symbol id="icon-educational" viewBox="0 0 64 64">
-                <path d="M32 8L8 20v8c0 13.3 10.7 24 24 24s24-10.7 24-24v-8L32 8z" fill="none" stroke="#8B4513" stroke-width="2.5" stroke-linejoin="round"/>
-                <path d="M32 8v44" stroke="#8B4513" stroke-width="2"/>
-                <path d="M32 24l-8 4l8 4l8-4z" fill="none" stroke="#D2691E" stroke-width="2"/>
-            </symbol>
-
-            <symbol id="icon-lock" viewBox="0 0 64 64">
-                <rect x="12" y="28" width="40" height="28" rx="4" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-                <path d="M20 28V20a12 12 0 0124 0v8" fill="none" stroke="#D2691E" stroke-width="2.5"/>
-                <circle cx="32" cy="42" r="4" fill="#D2691E"/>
-                <line x1="32" y1="46" x2="32" y2="50" stroke="#D2691E" stroke-width="2" stroke-linecap="round"/>
-            </symbol>
-
-            <symbol id="icon-lightning" viewBox="0 0 64 64">
-                <path d="M36 4L16 32h16l-4 28l20-28H32l4-28z" fill="none" stroke="#D2691E" stroke-width="2.5" stroke-linejoin="round"/>
-            </symbol>
-
-            <symbol id="icon-phone" viewBox="0 0 64 64">
-                <rect x="18" y="4" width="28" height="56" rx="6" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-                <line x1="26" y1="12" x2="38" y2="12" stroke="#D2691E" stroke-width="2" stroke-linecap="round"/>
-                <rect x="22" y="18" width="20" height="28" rx="2" fill="none" stroke="#D2691E" stroke-width="2"/>
-                <circle cx="32" cy="52" r="3" fill="#D2691E"/>
-            </symbol>
-
-            <symbol id="icon-cart" viewBox="0 0 64 64">
-                <path d="M8 12h8l4 32h32l4-24H20" fill="none" stroke="#8B4513" stroke-width="2.5" stroke-linejoin="round"/>
-                <circle cx="26" cy="52" r="4" fill="none" stroke="#D2691E" stroke-width="2"/>
-                <circle cx="50" cy="52" r="4" fill="none" stroke="#D2691E" stroke-width="2"/>
-            </symbol>
-
-            <symbol id="icon-headset" viewBox="0 0 64 64">
-                <path d="M32 8c-13.3 0-24 10.7-24 24v8h6v-8c0-9.9 8.1-18 18-18s18 8.1 18 18v8h6v-8C56 18.7 45.3 8 32 8z" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-                <rect x="8" y="36" width="10" height="14" rx="3" fill="none" stroke="#D2691E" stroke-width="2.5"/>
-                <rect x="46" y="36" width="10" height="14" rx="3" fill="none" stroke="#D2691E" stroke-width="2.5"/>
-                <path d="M18 46c0 8 6 12 14 12s14-4 14-12" fill="none" stroke="#8B4513" stroke-width="2"/>
-            </symbol>
-
-            <symbol id="icon-money" viewBox="0 0 64 64">
-                <circle cx="32" cy="32" r="24" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-                <path d="M32 16v4M32 44v4M20 32h-4M48 32h-4" stroke="#D2691E" stroke-width="2" stroke-linecap="round"/>
-                <text x="32" y="38" text-anchor="middle" fill="#D2691E" font-size="20" font-weight="bold" font-family="Poppins,sans-serif">$</text>
-            </symbol>
-
-            <symbol id="icon-email" viewBox="0 0 64 64">
-                <rect x="8" y="12" width="48" height="40" rx="6" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-                <path d="M8 16l24 20 24-20" fill="none" stroke="#D2691E" stroke-width="2.5" stroke-linejoin="round"/>
-            </symbol>
-
-            <symbol id="icon-bot" viewBox="0 0 64 64">
-                <rect x="16" y="16" width="32" height="28" rx="6" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-                <circle cx="26" cy="28" r="3" fill="#D2691E"/>
-                <circle cx="38" cy="28" r="3" fill="#D2691E"/>
-                <rect x="28" y="36" width="8" height="3" rx="1.5" fill="#D2691E"/>
-                <line x1="32" y1="8" x2="32" y2="16" stroke="#8B4513" stroke-width="2.5" stroke-linecap="round"/>
-                <circle cx="32" cy="6" r="3" fill="#D2691E"/>
-                <rect x="12" y="40" width="8" height="12" rx="2" fill="none" stroke="#8B4513" stroke-width="2"/>
-                <rect x="44" y="40" width="8" height="12" rx="2" fill="none" stroke="#8B4513" stroke-width="2"/>
-            </symbol>
-
-            <symbol id="icon-chat" viewBox="0 0 64 64">
-                <rect x="8" y="8" width="48" height="36" rx="8" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-                <path d="M24 44l8 10 8-10" fill="none" stroke="#D2691E" stroke-width="2.5" stroke-linejoin="round"/>
-                <line x1="18" y1="22" x2="30" y2="22" stroke="#D2691E" stroke-width="2" stroke-linecap="round"/>
-                <line x1="18" y1="30" x2="42" y2="30" stroke="#D2691E" stroke-width="2" stroke-linecap="round"/>
-            </symbol>
-
-            <symbol id="icon-clock" viewBox="0 0 64 64">
-                <circle cx="32" cy="32" r="24" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-                <line x1="32" y1="32" x2="32" y2="16" stroke="#D2691E" stroke-width="2.5" stroke-linecap="round"/>
-                <line x1="32" y1="32" x2="42" y2="32" stroke="#D2691E" stroke-width="2.5" stroke-linecap="round"/>
-                <circle cx="32" cy="32" r="2" fill="#8B4513"/>
-            </symbol>
-
-            <symbol id="icon-privacy" viewBox="0 0 64 64">
-                <path d="M32 4L8 16v12c0 14.4 10.2 27.8 24 32 13.8-4.2 24-17.6 24-32V16L32 4z" fill="none" stroke="#8B4513" stroke-width="2.5" stroke-linejoin="round"/>
-                <path d="M22 32l8 8 12-14" fill="none" stroke="#D2691E" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-            </symbol>
-
-            <symbol id="icon-document" viewBox="0 0 64 64">
-                <path d="M16 4h24l16 16v40H16V4z" fill="none" stroke="#8B4513" stroke-width="2.5" stroke-linejoin="round"/>
-                <path d="M40 4v16h16" fill="none" stroke="#D2691E" stroke-width="2.5"/>
-                <line x1="22" y1="32" x2="42" y2="32" stroke="#D2691E" stroke-width="2" stroke-linecap="round"/>
-                <line x1="22" y1="40" x2="38" y2="40" stroke="#D2691E" stroke-width="2" stroke-linecap="round"/>
-                <line x1="22" y1="48" x2="34" y2="48" stroke="#D2691E" stroke-width="2" stroke-linecap="round"/>
-            </symbol>
-
-            <symbol id="icon-refund" viewBox="0 0 64 64">
-                <circle cx="32" cy="32" r="24" fill="none" stroke="#8B4513" stroke-width="2.5"/>
-                <path d="M32 16v16l10 6" fill="none" stroke="#D2691E" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>
-                <path d="M20 12l-4 4 4 4" fill="none" stroke="#8B4513" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-            </symbol>
-        </defs>
-    </svg>
-
-    <!-- Header -->
-    <header>
-        <div class="header-container">
-            <a href="#" class="logo">
-                <img src="logo.jpg" alt="KUTY STORY">
-                KUTY STORY
-            </a>
-            <nav>
-                <ul>
-                    <li><a href="#home">Home</a></li>
-                    <li><a href="#about">About Us</a></li>
-                    <li><a href="#howitworks">How It Works</a></li>
-                    <li><a href="#faq">FAQ</a></li>
-                    <li><a href="#contact">Contact</a></li>
-                </ul>
-            </nav>
-            <button class="mobile-menu-btn" onclick="toggleMenu()">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-                    <line x1="3" y1="6" x2="21" y2="6"/>
-                    <line x1="3" y1="12" x2="21" y2="12"/>
-                    <line x1="3" y1="18" x2="21" y2="18"/>
-                </svg>
-            </button>
-        </div>
-        <div class="mobile-menu" id="mobileMenu">
-            <a href="#home" onclick="toggleMenu()">Home</a>
-            <a href="#about" onclick="toggleMenu()">About Us</a>
-            <a href="#howitworks" onclick="toggleMenu()">How It Works</a>
-            <a href="#faq" onclick="toggleMenu()">FAQ</a>
-            <a href="#contact" onclick="toggleMenu()">Contact</a>
-        </div>
-    </header>
-
-    <!-- Hero Section -->
-    <section class="hero" id="home">
-        <div class="hero-bg-icon">
-            <svg><use href="#icon-book"/></svg>
-        </div>
-        <div class="hero-logo">
-            <img src="logo.jpg" alt="KUTY STORY Logo">
-        </div>
-        <h1>KUTY STORY</h1>
-        <h2>Read Your Favourite Story Books Anytime, Anywhere.</h2>
-        <p>We provide digital story books through our official Telegram Bot. Secure, fast, and easy digital book purchases.</p>
-        <div class="hero-buttons">
-            <a href="https://t.me/KUTYSTORYBOT" target="_blank" class="btn btn-primary">
-                <svg><use href="#icon-telegram"/></svg> Open Telegram Bot
-            </a>
-            <a href="https://t.me/KUTYSTORY" target="_blank" class="btn btn-secondary">
-                <svg><use href="#icon-message"/></svg> Contact Support
-            </a>
-        </div>
-    </section>
-
-    <!-- About Section -->
-    <section class="section" id="about">
-        <h2 class="section-title">About Us</h2>
-        <div class="about-content">
-            <div class="about-text">
-                <p><strong>KUTY STORY</strong> is an online digital book store.</p>
-                <p>We provide digital story books through our official Telegram Bot.</p>
-                <p>Our mission is to provide readers with an easy, secure and fast way to purchase digital books.</p>
-                <p>We focus on quality service, quick delivery and customer support.</p>
-            </div>
-            <div class="about-card">
-                <div class="about-card-icon">
-                    <svg><use href="#icon-target"/></svg>
-                </div>
-                <h3>Our Mission</h3>
-                <p>Making digital reading accessible to everyone through Telegram.</p>
-            </div>
-        </div>
-    </section>
-
-    <!-- Book Categories -->
-    <section class="section" style="background: linear-gradient(135deg, #fff0e0, #ffe8d6); margin: 0; max-width: 100%; padding: 80px 20px;">
-        <div style="max-width: 1200px; margin: 0 auto;">
-            <h2 class="section-title">Book Categories</h2>
-            <div class="categories-grid">
-                <div class="category-card">
-                    <div class="category-icon">
-                        <svg><use href="#icon-adventure"/></svg>
-                    </div>
-                    <div class="category-name">Adventure</div>
-                </div>
-                <div class="category-card">
-                    <div class="category-icon">
-                        <svg><use href="#icon-romance"/></svg>
-                    </div>
-                    <div class="category-name">Romance</div>
-                </div>
-                <div class="category-card">
-                    <div class="category-icon">
-                        <svg><use href="#icon-mystery"/></svg>
-                    </div>
-                    <div class="category-name">Mystery</div>
-                </div>
-                <div class="category-card">
-                    <div class="category-icon">
-                        <svg><use href="#icon-horror"/></svg>
-                    </div>
-                    <div class="category-name">Horror</div>
-                </div>
-                <div class="category-card">
-                    <div class="category-icon">
-                        <svg><use href="#icon-fantasy"/></svg>
-                    </div>
-                    <div class="category-name">Fantasy</div>
-                </div>
-                <div class="category-card">
-                    <div class="category-icon">
-                        <svg><use href="#icon-children"/></svg>
-                    </div>
-                    <div class="category-name">Children's Stories</div>
-                </div>
-                <div class="category-card">
-                    <div class="category-icon">
-                        <svg><use href="#icon-historical"/></svg>
-                    </div>
-                    <div class="category-name">Historical Stories</div>
-                </div>
-                <div class="category-card">
-                    <div class="category-icon">
-                        <svg><use href="#icon-educational"/></svg>
-                    </div>
-                    <div class="category-name">Educational Stories</div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- How It Works -->
-    <section class="section" id="howitworks">
-        <h2 class="section-title">How It Works</h2>
-        <div class="steps-container">
-            <div class="step">
-                <div class="step-number">1</div>
-                <div class="step-content">
-                    <h4>Open Telegram Bot</h4>
-                    <p>Click the button to open our official Telegram Bot @KUTYSTORYBOT</p>
-                </div>
-            </div>
-            <div class="step">
-                <div class="step-number">2</div>
-                <div class="step-content">
-                    <h4>Browse Available Story Books</h4>
-                    <p>Browse available story books across multiple categories.</p>
-                </div>
-            </div>
-            <div class="step">
-                <div class="step-number">3</div>
-                <div class="step-content">
-                    <h4>Select Your Favourite Book</h4>
-                    <p>Select your favourite book and complete secure payment.</p>
-                </div>
-            </div>
-            <div class="step">
-                <div class="step-number">4</div>
-                <div class="step-content">
-                    <h4>Receive Your Digital Book</h4>
-                    <p>After payment, your digital book is delivered instantly through Telegram.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Why Choose Us -->
-    <section class="section" style="background: linear-gradient(135deg, #fff0e0, #ffe8d6); margin: 0; max-width: 100%; padding: 80px 20px;">
-        <div style="max-width: 1200px; margin: 0 auto;">
-            <h2 class="section-title">Why Choose Us</h2>
-            <div class="features-grid">
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg><use href="#icon-lock"/></svg>
-                    </div>
-                    <h4>Secure Payment</h4>
-                    <p>All transactions are encrypted and secure.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg><use href="#icon-lightning"/></svg>
-                    </div>
-                    <h4>Fast Delivery</h4>
-                    <p>Instant digital delivery after payment.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg><use href="#icon-phone"/></svg>
-                    </div>
-                    <h4>Digital Books</h4>
-                    <p>Read anytime, anywhere on any device.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg><use href="#icon-cart"/></svg>
-                    </div>
-                    <h4>Easy Purchase</h4>
-                    <p>Simple 4-step purchase process.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg><use href="#icon-headset"/></svg>
-                    </div>
-                    <h4>Customer Support</h4>
-                    <p>24/7 support via Telegram & Email.</p>
-                </div>
-                <div class="feature-card">
-                    <div class="feature-icon">
-                        <svg><use href="#icon-money"/></svg>
-                    </div>
-                    <h4>Best Prices</h4>
-                    <p>Affordable digital books for everyone.</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- FAQ Section -->
-    <section class="section" id="faq">
-        <h2 class="section-title">Frequently Asked Questions</h2>
-        <div class="faq-container">
-            <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
-                    <span>How do I purchase a book?</span>
-                    <span class="faq-arrow">&#9660;</span>
-                </div>
-                <div class="faq-answer">
-                    Open our Telegram Bot @KUTYSTORYBOT, choose a book from the catalog, and complete the secure payment. Your book will be delivered instantly.
-                </div>
-            </div>
-            <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
-                    <span>How will I receive my book?</span>
-                    <span class="faq-arrow">&#9660;</span>
-                </div>
-                <div class="faq-answer">
-                    After successful payment, your digital book will be delivered directly through Telegram as a downloadable file.
-                </div>
-            </div>
-            <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
-                    <span>Can I contact support?</span>
-                    <span class="faq-arrow">&#9660;</span>
-                </div>
-                <div class="faq-answer">
-                    Yes! You can contact us through our Telegram Support @KUTYSTORY or email us at gamertrashbin@gmail.com
-                </div>
-            </div>
-            <div class="faq-item">
-                <div class="faq-question" onclick="toggleFaq(this)">
-                    <span>What payment methods are accepted?</span>
-                    <span class="faq-arrow">&#9660;</span>
-                </div>
-                <div class="faq-answer">
-                    We accept UPI, Paytm, and other secure digital payment methods through our Telegram Bot.
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Contact Section -->
-    <section class="section" id="contact" style="background: linear-gradient(135deg, #fff0e0, #ffe8d6); margin: 0; max-width: 100%; padding: 80px 20px;">
-        <div style="max-width: 800px; margin: 0 auto;">
-            <h2 class="section-title">Contact Us</h2>
-            <div class="contact-grid">
-                <div class="contact-card">
-                    <div class="contact-icon">
-                        <svg><use href="#icon-email"/></svg>
-                    </div>
-                    <h4>Support Email</h4>
-                    <a href="mailto:gamertrashbin@gmail.com">gamertrashbin@gmail.com</a>
-                </div>
-                <div class="contact-card">
-                    <div class="contact-icon">
-                        <svg><use href="#icon-bot"/></svg>
-                    </div>
-                    <h4>Official Telegram Bot</h4>
-                    <a href="https://t.me/KUTYSTORYBOT" target="_blank">@KUTYSTORYBOT</a>
-                </div>
-                <div class="contact-card">
-                    <div class="contact-icon">
-                        <svg><use href="#icon-chat"/></svg>
-                    </div>
-                    <h4>Telegram Support</h4>
-                    <a href="https://t.me/KUTYSTORE" target="_blank">@KUTYSTORE</a>
-                </div>
-                <div class="contact-card">
-                    <div class="contact-icon">
-                        <svg><use href="#icon-clock"/></svg>
-                    </div>
-                    <h4>Support Hours</h4>
-                    <p>24/7 Online Support</p>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- Policies Section -->
-    <section class="section">
-        <h2 class="section-title">Our Policies</h2>
-        <div class="policies-grid">
-            <div class="policy-card">
-                <h4><svg><use href="#icon-privacy"/></svg> Privacy Policy</h4>
-                <ul>
-                    <li>• Customer information is kept secure.</li>
-                    <li>• Personal information is used only for order processing.</li>
-                    <li>• Payment information is processed securely.</li>
-                    <li>• We never sell customer information.</li>
-                </ul>
-            </div>
-            <div class="policy-card">
-                <h4><svg><use href="#icon-document"/></svg> Terms & Conditions</h4>
-                <ul>
-                    <li>• All products are digital books.</li>
-                    <li>• Customers must provide correct information.</li>
-                    <li>• Purchased books are for personal use.</li>
-                    <li>• Unauthorized redistribution is prohibited.</li>
-                </ul>
-            </div>
-            <div class="policy-card">
-                <h4><svg><use href="#icon-refund"/></svg> Refund Policy</h4>
-                <ul>
-                    <li>• Refund requests are reviewed according to our policy.</li>
-                    <li>• Technical issues eligible for refund or replacement.</li>
-                    <li>• Replacement option available.</li>
-                    <li>• Contact support for assistance.</li>
-                </ul>
-            </div>
-        </div>
-    </section>
-
-    <!-- Footer -->
-    <footer>
-        <div class="footer-container">
-            <div class="footer-grid">
-                <div>
-                    <div class="footer-brand">
-                        <img src="logo.jpg" alt="KUTY STORY"> KUTY STORY
-                    </div>
-                    <p class="footer-desc">Your trusted digital bookstore on Telegram. Quality books, instant delivery, secure payments.</p>
-                </div>
-                <div class="footer-col">
-                    <h4>Quick Links</h4>
-                    <ul>
-                        <li><a href="#home">Home</a></li>
-                        <li><a href="#about">About Us</a></li>
-                        <li><a href="#howitworks">How It Works</a></li>
-                        <li><a href="#faq">FAQ</a></li>
+<!-- NAVBAR -->
+<nav class="navbar navbar-expand-lg main-navbar">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="#" onclick="showSection('home'); return false;">
+            <img src="logo.jpg" alt="NovaEsp" class="me-2">NovaEsp
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+            <span class="navbar-toggler-icon" style="filter:brightness(0) invert(1);"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav ms-auto align-items-center">
+                <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('home'); return false;"><i class="bi bi-house-door"></i>Home</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('faq'); return false;"><i class="bi bi-question-circle"></i>FAQ</a></li>
+                <li class="nav-item"><a class="nav-link" href="#" onclick="showSection('contact'); return false;"><i class="bi bi-envelope"></i>Contact</a></li>
+                <li class="nav-item" id="loginNav"><a class="nav-link" href="#" onclick="showSection('admin-login'); return false;"><i class="bi bi-shield-lock"></i>Admin</a></li>
+                <li class="nav-item dropdown d-none" id="adminNav">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown"><i class="bi bi-speedometer2"></i>Admin</a>
+                    <ul class="dropdown-menu dropdown-menu-end">
+                        <li><a class="dropdown-item" href="#" onclick="showSection('admin-dashboard'); return false;">Dashboard</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="showSection('admin-products'); return false;">Products</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="showSection('admin-durations'); return false;">Durations</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="showSection('admin-prices'); return false;">Pricing</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="showSection('admin-keys'); return false;">License Keys</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="showSection('admin-coupons'); return false;">Coupons</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="showSection('admin-orders'); return false;">Orders</a></li>
+                        <li><a class="dropdown-item" href="#" onclick="showSection('admin-payments'); return false;">Settings</a></li>
+                        <li><hr class="dropdown-divider"></li>
+                        <li><a class="dropdown-item text-danger" href="#" onclick="adminLogout(); return false;"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
                     </ul>
+                </li>
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<!-- HOME / STORE PAGE -->
+<div id="home" class="section">
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-5 col-md-8">
+                <div class="text-center mb-4">
+                    <div class="status-badge mb-3"><span class="status-dot"></span>All Systems Operational</div>
+                    <h1 class="hero-title">NovaEsp Online Shop</h1>
+                    <p class="hero-subtitle">Instant delivery. Secure payment. Simple activation.</p>
                 </div>
-                <div class="footer-col">
-                    <h4>Support</h4>
-                    <ul>
-                        <li><a href="#contact">Contact Us</a></li>
-                        <li><a href="https://t.me/KUTYSTORE" target="_blank">Telegram Support</a></li>
-                        <li><a href="mailto:gamertrashbin@gmail.com">Email Support</a></li>
-                    </ul>
+                <div class="glass-card">
+                    <div class="card-body p-4 p-md-5">
+                        <div class="text-center mb-4">
+                            <div class="store-icon"><i class="bi bi-cart3"></i></div>
+                            <h4 class="mt-3 mb-1">NovaEsp Store</h4>
+                            <p class="text-muted" style="font-size:0.85rem;">Select your product below</p>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label-small">Select Product</label>
+                            <select class="form-select glass-select" id="productSelect" onchange="onProductChange()">
+                                <option value="">Select Product</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <label class="form-label-small">Select Duration</label>
+                            <select class="form-select glass-select" id="durationSelect" onchange="onDurationChange()" disabled>
+                                <option value="">Select Duration</option>
+                            </select>
+                        </div>
+                        <div class="mb-4">
+                            <button class="coupon-toggle" type="button" data-bs-toggle="collapse" data-bs-target="#couponCollapse">
+                                <i class="bi bi-ticket-perforated me-2"></i>Have a coupon?
+                            </button>
+                            <div class="collapse" id="couponCollapse">
+                                <div class="mt-3">
+                                    <div class="d-flex gap-2">
+                                        <input type="text" class="form-control glass-input" id="couponInput" placeholder="Enter coupon code">
+                                        <button class="btn btn-glass" type="button" onclick="applyCoupon()" style="white-space:nowrap;">Apply</button>
+                                    </div>
+                                    <div id="couponMsg" class="mt-2 small"></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div id="totalDisplay" class="text-center mb-4"></div>
+                        <button class="btn btn-red w-100" id="purchaseBtn" onclick="initiatePayment()" disabled>
+                            Buy Now <i class="bi bi-arrow-right"></i>
+                        </button>
+                        <div class="trust-badges mt-4">
+                            <div class="trust-item"><i class="bi bi-lightning-charge-fill"></i> Instant</div>
+                            <div class="trust-item"><i class="bi bi-shield-check"></i> Secure</div>
+                            <div class="trust-item"><i class="bi bi-key-fill"></i> Auto Key</div>
+                        </div>
+                    </div>
                 </div>
-                <div class="footer-col">
-                    <h4>Connect</h4>
-                    <a href="https://t.me/KUTYSTORYBOT" target="_blank" class="footer-bot-btn">
-                        <svg><use href="#icon-bot"/></svg> Open Bot
+                <div class="text-center mt-4">
+                    <a href="https://t.me/KITYGAMER" target="_blank" class="telegram-btn">
+                        <i class="bi bi-telegram"></i> Contact Support
                     </a>
                 </div>
             </div>
-            <div class="footer-bottom">
-                <p>&copy; 2026 KUTY STORY. All Rights Reserved.</p>
-                <p style="margin-top: 8px;">Official Bot: <a href="https://t.me/KUTYSTORYBOT" target="_blank">@KUTYSTORYBOT</a> | Support: <a href="https://t.me/KUTYSTORE" target="_blank">@KUTYSTORE</a></p>
+        </div>
+    </div>
+</div>
+
+<!-- FAQ PAGE -->
+<div id="faq" class="section d-none">
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-md-8 col-lg-6">
+                <div class="text-center mb-5">
+                    <h2 class="section-title">Frequently Asked Questions</h2>
+                    <p class="text-muted">Everything you need to know</p>
+                </div>
+                <div class="accordion glass-accordion" id="faqAccordion">
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#faq1">
+                                How do I receive my license key?
+                            </button>
+                        </h2>
+                        <div id="faq1" class="accordion-collapse collapse show" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">After successful payment, your license key is displayed instantly on the success page. You can also copy it to your clipboard.</div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq2">
+                                What payment methods are accepted?
+                            </button>
+                        </h2>
+                        <div id="faq2" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">We accept all major payment methods via Razorpay including UPI, Credit/Debit cards, Net Banking, and Wallets.</div>
+                        </div>
+                    </div>
+                    <div class="accordion-item">
+                        <h2 class="accordion-header">
+                            <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#faq3">
+                                Is there a refund policy?
+                            </button>
+                        </h2>
+                        <div id="faq3" class="accordion-collapse collapse" data-bs-parent="#faqAccordion">
+                            <div class="accordion-body">Due to the digital nature of license keys, all sales are final. Please ensure you select the correct product and duration before purchasing.</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
-    </footer>
+    </div>
+</div>
 
-    <script>
-        function toggleMenu() {
-            document.getElementById('mobileMenu').classList.toggle('active');
+<!-- CONTACT PAGE -->
+<div id="contact" class="section d-none">
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="text-center mb-5">
+                    <div class="contact-icon"><i class="bi bi-headset"></i></div>
+                    <h2 class="section-title">Contact Us</h2>
+                    <p class="text-muted">We're here to help</p>
+                </div>
+                <div class="glass-card p-4 p-md-5">
+                    <div class="mb-3">
+                        <label class="form-label-small">Name</label>
+                        <input type="text" class="form-control glass-input" placeholder="Your name">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label-small">Email</label>
+                        <input type="email" class="form-control glass-input" placeholder="your@email.com">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label-small">Message</label>
+                        <textarea class="form-control glass-input" rows="4" placeholder="Your message..."></textarea>
+                    </div>
+                    <button class="btn btn-red w-100">Send Message</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ADMIN LOGIN -->
+<div id="admin-login" class="section d-none">
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-md-5 col-lg-4">
+                <div class="text-center mb-4">
+                    <div class="contact-icon"><i class="bi bi-shield-lock-fill"></i></div>
+                    <h2 class="section-title">Admin Login</h2>
+                    <p class="text-muted">Secure access only</p>
+                </div>
+                <div class="glass-card p-4 p-md-5">
+                    <div class="mb-3">
+                        <label class="form-label-small">Username</label>
+                        <input type="text" class="form-control glass-input" id="adminUser" placeholder="admin">
+                    </div>
+                    <div class="mb-4">
+                        <label class="form-label-small">Password</label>
+                        <input type="password" class="form-control glass-input" id="adminPass" placeholder="••••••">
+                    </div>
+                    <button class="btn btn-red w-100" onclick="adminLogin()">Login</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ADMIN SIDEBAR -->
+<aside id="adminSidebar" class="admin-sidebar d-none">
+    <div class="sidebar-brand">
+        <i class="bi bi-shield-lock-fill"></i>
+        <span>Admin Panel</span>
+    </div>
+    <nav class="sidebar-nav">
+        <div class="nav-section">Overview</div>
+        <a href="#" class="nav-link" data-section="admin-dashboard" onclick="showSection('admin-dashboard'); return false;">
+            <i class="bi bi-speedometer2"></i> Dashboard
+        </a>
+        <div class="nav-section">Store</div>
+        <a href="#" class="nav-link" data-section="admin-products" onclick="showSection('admin-products'); return false;">
+            <i class="bi bi-box-seam"></i> Products
+        </a>
+        <a href="#" class="nav-link" data-section="admin-durations" onclick="showSection('admin-durations'); return false;">
+            <i class="bi bi-clock-history"></i> Durations
+        </a>
+        <a href="#" class="nav-link" data-section="admin-prices" onclick="showSection('admin-prices'); return false;">
+            <i class="bi bi-tag"></i> Pricing
+        </a>
+        <div class="nav-section">Inventory</div>
+        <a href="#" class="nav-link" data-section="admin-keys" onclick="showSection('admin-keys'); return false;">
+            <i class="bi bi-key"></i> License Keys
+        </a>
+        <div class="nav-section">Sales</div>
+        <a href="#" class="nav-link" data-section="admin-orders" onclick="showSection('admin-orders'); return false;">
+            <i class="bi bi-receipt"></i> Orders
+        </a>
+        <a href="#" class="nav-link" data-section="admin-coupons" onclick="showSection('admin-coupons'); return false;">
+            <i class="bi bi-ticket-perforated"></i> Coupons
+        </a>
+        <div class="nav-section">System</div>
+        <a href="#" class="nav-link" data-section="admin-payments" onclick="showSection('admin-payments'); return false;">
+            <i class="bi bi-gear"></i> Settings
+        </a>
+    </nav>
+    <div class="sidebar-footer">
+        <button class="logout-btn" onclick="adminLogout()">
+            <i class="bi bi-box-arrow-right"></i> Logout
+        </button>
+    </div>
+</aside>
+<div class="sidebar-overlay" id="sidebarOverlay" onclick="toggleSidebar()"></div>
+
+<!-- ADMIN TOPBAR -->
+<div id="adminTopbar" class="admin-topbar d-none">
+    <div class="d-flex align-items-center gap-3">
+        <button class="mobile-menu-btn" onclick="toggleSidebar()">
+            <i class="bi bi-list"></i>
+        </button>
+        <h4 class="topbar-title" id="pageTitle">Dashboard</h4>
+    </div>
+    <div class="topbar-profile">
+        <span class="d-none d-sm-inline">Administrator</span>
+        <i class="bi bi-person-circle"></i>
+    </div>
+</div>
+
+<!-- ADMIN DASHBOARD -->
+<div id="admin-dashboard" class="section admin-section d-none">
+    <div class="container-fluid">
+        <h3 class="page-title">Dashboard</h3>
+        <div class="row g-4 mb-4">
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-label">Total Orders</div>
+                    <div class="stat-value" id="dashTotalOrders">0</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-label">Total Sales</div>
+                    <div class="stat-value" id="dashTotalSales">0</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-card">
+                    <div class="stat-label">Revenue</div>
+                    <div class="stat-value" id="dashRevenue">₹0</div>
+                </div>
+            </div>
+        </div>
+        <div class="glass-card">
+            <div class="card-header-glass">
+                <h5>Recent Orders</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="glass-table mb-0">
+                    <thead>
+                        <tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Status</th></tr>
+                    </thead>
+                    <tbody id="recentOrdersTable">
+                        <tr><td colspan="5" class="text-center py-4 text-muted">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ADMIN PRODUCTS -->
+<div id="admin-products" class="section admin-section d-none">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="page-title mb-0">Product Management</h3>
+            <button class="btn btn-red btn-sm" onclick="openProductModal()">
+                <i class="bi bi-plus-lg me-1"></i>Add Product
+            </button>
+        </div>
+        <div class="glass-card">
+            <div class="table-responsive">
+                <table class="glass-table mb-0">
+                    <thead>
+                        <tr><th>Product Name</th><th>Status</th><th class="text-end">Actions</th></tr>
+                    </thead>
+                    <tbody id="productsTable">
+                        <tr><td colspan="3" class="text-center py-4 text-muted">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ADMIN DURATIONS -->
+<div id="admin-durations" class="section admin-section d-none">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="page-title mb-0">Duration Management</h3>
+            <button class="btn btn-red btn-sm" onclick="openDurationModal()">
+                <i class="bi bi-plus-lg me-1"></i>Add Duration
+            </button>
+        </div>
+        <div class="glass-card">
+            <div class="table-responsive">
+                <table class="glass-table mb-0">
+                    <thead>
+                        <tr><th>Product</th><th>Duration</th><th>Unit</th><th class="text-end">Actions</th></tr>
+                    </thead>
+                    <tbody id="durationsTable">
+                        <tr><td colspan="4" class="text-center py-4 text-muted">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ADMIN PRICES -->
+<div id="admin-prices" class="section admin-section d-none">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="page-title mb-0">Price Management</h3>
+            <button class="btn btn-red btn-sm" onclick="openPriceModal()">
+                <i class="bi bi-plus-lg me-1"></i>Set Price
+            </button>
+        </div>
+        <div class="glass-card">
+            <div class="table-responsive">
+                <table class="glass-table mb-0">
+                    <thead>
+                        <tr><th>Product</th><th>Duration</th><th>Price</th><th class="text-end">Actions</th></tr>
+                    </thead>
+                    <tbody id="pricesTable">
+                        <tr><td colspan="4" class="text-center py-4 text-muted">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ADMIN LICENSE KEYS -->
+<div id="admin-keys" class="section admin-section d-none">
+    <div class="container-fluid">
+        <h3 class="page-title">License Key Management</h3>
+        <div class="glass-card mb-4" style="background: linear-gradient(135deg, rgba(229,9,20,0.05) 0%, rgba(8,8,8,0.5) 100%);">
+            <div class="card-header-glass">
+                <h5><i class="bi bi-box-seam me-2 text-red"></i>Stock Summary</h5>
+            </div>
+            <div class="p-4">
+                <div class="row g-3" id="stockSummaryCards">
+                    <div class="col-12 text-center text-muted py-4">Loading stock data...</div>
+                </div>
+            </div>
+        </div>
+        <div class="glass-card mb-4">
+            <div class="card-header-glass">
+                <h5>Import Keys</h5>
+            </div>
+            <div class="p-4">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label-small">Select Product</label>
+                        <select class="form-select glass-select" id="keyProduct" onchange="onKeyProductChange()">
+                            <option value="">Select Product</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label-small">Select Duration</label>
+                        <select class="form-select glass-select" id="keyDuration">
+                            <option value="">Select Duration</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label-small">Or add single key</label>
+                        <div class="input-group">
+                            <input type="text" class="form-control glass-input" id="singleKeyInput" placeholder="Enter single key">
+                            <button class="btn btn-glass" onclick="addSingleKey()">Add</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-3">
+                    <label class="form-label-small">Paste keys (one per line)</label>
+                    <textarea class="form-control glass-input" id="keysTextarea" rows="4" placeholder="Paste keys here (one per line)"></textarea>
+                    <button class="btn btn-red mt-3" onclick="importKeys()">
+                        <i class="bi bi-upload me-2"></i>Import Keys
+                    </button>
+                </div>
+            </div>
+        </div>
+        <ul class="nav nav-tabs glass-tabs mb-0">
+            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#activeKeys">Active Keys</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#usedKeys">Used Keys</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="activeKeys">
+                <div class="glass-card">
+                    <div class="table-responsive">
+                        <table class="glass-table mb-0">
+                            <thead>
+                                <tr><th>Product</th><th>Duration</th><th>Key</th><th>Added</th><th class="text-end">Actions</th></tr>
+                            </thead>
+                            <tbody id="activeKeysTable">
+                                <tr><td colspan="5" class="text-center py-4 text-muted">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="usedKeys">
+                <div class="glass-card">
+                    <div class="table-responsive">
+                        <table class="glass-table mb-0">
+                            <thead>
+                                <tr><th>Product</th><th>Duration</th><th>Key</th><th>Used Date</th><th class="text-end">Actions</th></tr>
+                            </thead>
+                            <tbody id="usedKeysTable">
+                                <tr><td colspan="5" class="text-center py-4 text-muted">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ADMIN COUPONS -->
+<div id="admin-coupons" class="section admin-section d-none">
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h3 class="page-title mb-0">Coupon Management</h3>
+            <button class="btn btn-red btn-sm" onclick="openCouponModal()">
+                <i class="bi bi-plus-lg me-1"></i>Create Coupon
+            </button>
+        </div>
+        <div class="glass-card">
+            <div class="table-responsive">
+                <table class="glass-table mb-0">
+                    <thead>
+                        <tr><th>Code</th><th>Discount</th><th>Min Order</th><th>Expiry</th><th class="text-end">Actions</th></tr>
+                    </thead>
+                    <tbody id="couponsTable">
+                        <tr><td colspan="5" class="text-center py-4 text-muted">Loading...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ADMIN ORDERS -->
+<div id="admin-orders" class="section admin-section d-none">
+    <div class="container-fluid">
+        <h3 class="page-title mb-4">Order Management</h3>
+        <div class="glass-card mb-4 p-3">
+            <div class="input-group">
+                <span class="input-group-text bg-transparent border-0 text-muted"><i class="bi bi-search"></i></span>
+                <input type="text" class="form-control glass-input border-0" id="orderSearch" placeholder="Search orders..." onkeyup="searchOrders()">
+            </div>
+        </div>
+        <ul class="nav nav-tabs glass-tabs mb-0">
+            <li class="nav-item"><a class="nav-link active" data-bs-toggle="tab" href="#paidOrders">Paid Orders</a></li>
+            <li class="nav-item"><a class="nav-link" data-bs-toggle="tab" href="#failedOrders">Failed Orders</a></li>
+        </ul>
+        <div class="tab-content">
+            <div class="tab-pane fade show active" id="paidOrders">
+                <div class="glass-card">
+                    <div class="table-responsive">
+                        <table class="glass-table mb-0">
+                            <thead>
+                                <tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Key</th><th>Date</th></tr>
+                            </thead>
+                            <tbody id="paidOrdersTable">
+                                <tr><td colspan="6" class="text-center py-4 text-muted">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="tab-pane fade" id="failedOrders">
+                <div class="glass-card">
+                    <div class="table-responsive">
+                        <table class="glass-table mb-0">
+                            <thead>
+                                <tr><th>Order ID</th><th>Product</th><th>Duration</th><th>Amount</th><th>Key</th><th>Date</th></tr>
+                            </thead>
+                            <tbody id="failedOrdersTable">
+                                <tr><td colspan="6" class="text-center py-4 text-muted">Loading...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ADMIN PAYMENT SETTINGS -->
+<div id="admin-payments" class="section admin-section d-none">
+    <div class="container-fluid">
+        <h3 class="page-title mb-4">Payment & Admin Settings</h3>
+        <div class="row g-4">
+            <div class="col-md-6">
+                <div class="glass-card h-100">
+                    <div class="card-header-glass">
+                        <h5><i class="bi bi-credit-card me-2 text-red"></i>Paytm</h5>
+                    </div>
+                    <div class="p-4">
+                        <div class="mb-3">
+                            <label class="form-label-small">Paytm Merchant ID (MID)</label>
+                            <input type="text" class="form-control glass-input" id="paytmMerchantId" placeholder="YOUR_MERCHANT_ID">
+                        </div>
+                        <div class="mb-0">
+                            <label class="form-label-small">Paytm Merchant Key</label>
+                            <input type="password" class="form-control glass-input" id="paytmMerchantKey" placeholder="YOUR_MERCHANT_KEY">
+                        </div>
+                        <div class="alert alert-warning-glass py-2 small mt-3 mb-0 d-flex align-items-center gap-2">
+                            <i class="bi bi-exclamation-triangle"></i> <span>Keep Merchant Key secret. Used for checksum generation on backend.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="glass-card h-100" style="border-color: rgba(245,158,11,0.2);">
+                    <div class="card-header-glass">
+                        <h5><i class="bi bi-shield-lock me-2" style="color:#fbbf24;"></i>Admin Credentials</h5>
+                    </div>
+                    <div class="p-4">
+                        <div class="mb-3">
+                            <label class="form-label-small">Username</label>
+                            <input type="text" class="form-control glass-input" id="adminUsername" placeholder="admin">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label-small">Password</label>
+                            <input type="password" class="form-control glass-input" id="adminPassword" placeholder="••••••">
+                        </div>
+                        <div class="alert alert-warning-glass py-2 small mb-0 d-flex align-items-center gap-2">
+                            <i class="bi bi-exclamation-triangle"></i> <span>Stored as plain text. Use strong values.</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="glass-card h-100" style="border-color: rgba(34,158,217,0.2);">
+                    <div class="card-header-glass">
+                        <h5><i class="bi bi-phone me-2" style="color:#229ED9;"></i>APK Download</h5>
+                    </div>
+                    <div class="p-4">
+                        <label class="form-label-small">GitHub APK URL</label>
+                        <input type="url" class="form-control glass-input" id="apkUrl" placeholder="https://github.com/.../app.apk">
+                        <div class="form-text text-muted mt-2" style="font-size:0.8rem;">Paste the GitHub release APK link here. Customers will see a download button after purchase.</div>
+                        <div class="mt-3" id="apkPreviewBox" style="display:none;">
+                            <label class="form-label-small">Current Link</label>
+                            <div class="input-group">
+                                <input type="text" class="form-control glass-input" id="apkUrlPreview" readonly>
+                                <a id="apkUrlLink" href="#" target="_blank" class="btn btn-glass"><i class="bi bi-box-arrow-up-right"></i></a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mt-4">
+            <button class="btn btn-red" onclick="savePaymentSettings()">
+                <i class="bi bi-save me-2"></i>Save All Settings
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- SUCCESS PAGE -->
+<div id="success-page" class="section d-none">
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-md-6 col-lg-5">
+                <div class="glass-card success-card text-center">
+                    <div class="success-icon mb-3"><i class="bi bi-check-circle-fill"></i></div>
+                    <h2 class="mb-1">Payment Successful</h2>
+                    <p class="text-muted mb-4">Your license key is ready</p>
+                    <div class="detail-list text-start mb-4">
+                        <div class="detail-item"><span>Order ID</span><span id="successOrderId" class="font-mono"></span></div>
+                        <div class="detail-item"><span>Product</span><span id="successProduct"></span></div>
+                        <div class="detail-item"><span>Duration</span><span id="successDuration"></span></div>
+                        <div class="detail-item"><span>Amount Paid</span><span id="successAmount" class="text-red"></span></div>
+                    </div>
+                    <div class="key-section mb-4">
+                        <div class="text-muted mb-2" style="font-size:0.8rem;font-weight:600;text-transform:uppercase;letter-spacing:1px;">Your License Key</div>
+                        <div class="key-box" id="successKey"></div>
+                        <button class="btn btn-glass mt-2 w-100" onclick="copyKey()">
+                            <i class="bi bi-clipboard me-2"></i>Copy Key
+                        </button>
+                    </div>
+                    <div class="mb-3" id="apkDownloadCard" style="display:none;">
+                        <a id="apkDownloadBtn" href="#" target="_blank" class="btn btn-apk w-100">
+                            <i class="bi bi-download me-2"></i>Download APK
+                        </a>
+                    </div>
+                    <div class="d-flex gap-2 mb-2">
+                        <button class="btn btn-glass flex-fill" onclick="downloadInvoice()">
+                            <i class="bi bi-receipt me-2"></i>Invoice
+                        </button>
+                        <button class="btn btn-red flex-fill" onclick="showSection('home')">
+                            Buy Another
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- MODALS -->
+<div class="modal fade" id="productModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="productModalTitle">Add Product</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="productEditId">
+                <div class="mb-3">
+                    <label class="form-label-small">Product Name</label>
+                    <input type="text" class="form-control glass-input" id="productName">
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" id="productEnabled" checked>
+                    <label class="form-check-label">Enabled</label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-glass" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-red" onclick="saveProduct()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="durationModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="durationModalTitle">Add Duration</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="durationEditId">
+                <div class="mb-3">
+                    <label class="form-label-small">Select Product</label>
+                    <select class="form-select glass-select" id="durationProduct">
+                        <option value="">Select Product</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label-small">Duration Name</label>
+                    <input type="text" class="form-control glass-input" id="durationName" placeholder="e.g. 30">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label-small">Time Unit</label>
+                    <select class="form-select glass-select" id="durationUnit">
+                        <option value="hours">Hours</option>
+                        <option value="days">Days</option>
+                        <option value="weeks">Weeks</option>
+                        <option value="months">Months</option>
+                        <option value="years">Years</option>
+                    </select>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-glass" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-red" onclick="saveDuration()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="priceModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="priceModalTitle">Set Price</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="priceEditId">
+                <div class="mb-3">
+                    <label class="form-label-small">Product</label>
+                    <select class="form-select glass-select" id="priceProduct" onchange="onPriceProductChange()">
+                        <option value="">Select Product</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label-small">Duration</label>
+                    <select class="form-select glass-select" id="priceDuration">
+                        <option value="">Select Duration</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label-small">Price (₹)</label>
+                    <input type="number" class="form-control glass-input" id="priceValue" min="1">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-glass" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-red" onclick="savePrice()">Save</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="couponModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Create Coupon</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="form-label-small">Coupon Code</label>
+                    <input type="text" class="form-control glass-input" id="couponCode" placeholder="SAVE20">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label-small">Type</label>
+                    <select class="form-select glass-select" id="couponType">
+                        <option value="percentage">Percentage (%)</option>
+                        <option value="fixed">Fixed Amount (₹)</option>
+                    </select>
+                </div>
+                <div class="mb-3">
+                    <label class="form-label-small">Value</label>
+                    <input type="number" class="form-control glass-input" id="couponValue" min="1">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label-small">Min Order Value (₹)</label>
+                    <input type="number" class="form-control glass-input" id="couponMinOrder" min="0" placeholder="0 = Any amount">
+                </div>
+                <div class="mb-3">
+                    <label class="form-label-small">Expiry Date (Optional)</label>
+                    <input type="date" class="form-control glass-input" id="couponExpiry">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-glass" data-bs-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-red" onclick="saveCoupon()">Create</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, get, set, push, update, remove, onValue, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        // ==========================================
+        // FIREBASE CONFIG - REPLACE WITH YOURSa
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDKupV0toRbcPDDW8sLd9JNrbVVMDkfb2E",
+            authDomain: "novaespstore.firebaseapp.com",
+            projectId: "novaespstore",
+            storageBucket: "novaespstore.firebasestorage.app",
+            messagingSenderId: "1087211684495",
+            appId: "1:1087211684495:web:5dd3025e9aa29340d626fa",
+            databaseURL: "https://novaespstore-default-rtdb.asia-southeast1.firebasedatabase.app"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        // Helper: Get data from RTDB
+        async function getData(path) {
+            const snapshot = await get(ref(db, path));
+            return snapshot.exists() ? snapshot.val() : null;
         }
 
-        function toggleFaq(element) {
-            const item = element.parentElement;
-            const wasActive = item.classList.contains('active');
+        // Helper: Get list from RTDB
+        async function getList(path) {
+            const data = await getData(path);
+            if (!data) return [];
+            return Object.entries(data).map(([id, val]) => ({ id, ...val }));
+        }
 
-            document.querySelectorAll('.faq-item').forEach(faq => {
-                faq.classList.remove('active');
+        // Helper: Set data
+        async function setData(path, data) {
+            await set(ref(db, path), data);
+        }
+
+        // Helper: Push data (auto ID)
+        async function pushData(path, data) {
+            const newRef = push(ref(db, path));
+            await set(newRef, { ...data, id: newRef.key });
+            return newRef.key;
+        }
+
+        // Helper: Update data
+        async function updateData(path, data) {
+            await update(ref(db, path), data);
+        }
+
+        // Helper: Delete data
+        async function deleteData(path) {
+            await remove(ref(db, path));
+        }
+
+        // ==========================================
+        // APP CONFIG (LOADED FROM RTDB)
+        // ==========================================
+        let appConfig = {
+            paytmMerchantId: '',
+            paytmMerchantKey: '',
+            adminUsername: '',
+            adminPassword: '',
+            apkUrl: ''
+        };
+
+        async function loadAppConfig() {
+            try {
+                const paytm = await getData('settings/paytm');
+                if (paytm) {
+                    appConfig.paytmMerchantId = paytm.merchantId || '';
+                    appConfig.paytmMerchantKey = paytm.merchantKey || '';
+                }
+
+                const admin = await getData('settings/admin');
+                if (admin) {
+                    appConfig.adminUsername = admin.username || '';
+                    appConfig.adminPassword = admin.password || '';
+                }
+
+                const apk = await getData('settings/apk');
+                if (apk) {
+                    appConfig.apkUrl = apk.url || '';
+                }
+            } catch (e) {
+                console.error('Config load error:', e);
+            }
+        }
+
+        // ==========================================
+        // GLOBAL STATE
+        // ==========================================
+        let currentProduct = null;
+        let currentDuration = null;
+        let currentPrice = 0;
+        let currentCoupon = null;
+        let discountAmount = 0;
+        let finalAmount = 0;
+        let isAdmin = false;
+
+        // ==========================================
+        // NAVIGATION
+        // ==========================================
+        window.showSection = function(sectionId) {
+            document.querySelectorAll('.section').forEach(s => s.classList.add('d-none'));
+            document.getElementById(sectionId).classList.remove('d-none');
+            if (sectionId === 'admin-dashboard') loadAdminDashboard();
+            if (sectionId === 'admin-products') loadAdminProducts();
+            if (sectionId === 'admin-durations') loadAdminDurations();
+            if (sectionId === 'admin-prices') loadAdminPrices();
+            if (sectionId === 'admin-keys') loadAdminKeys();
+            if (sectionId === 'admin-coupons') loadAdminCoupons();
+            if (sectionId === 'admin-orders') loadAdminOrders();
+            if (sectionId === 'admin-payments') loadAdminPayments();
+        };
+
+        // ==========================================
+        // HOME PAGE - LOAD PRODUCTS
+        // ==========================================
+        async function loadHomeProducts() {
+            const select = document.getElementById('productSelect');
+            select.innerHTML = '<option value="">Select Product</option>';
+
+            const products = await getList('products');
+            products.forEach(p => {
+                if (p.enabled !== false) {
+                    select.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+                }
+            });
+        }
+
+        window.onProductChange = async function() {
+            const productId = document.getElementById('productSelect').value;
+            const durationSelect = document.getElementById('durationSelect');
+            durationSelect.innerHTML = '<option value="">Select Duration</option>';
+            // price display removed
+            document.getElementById('purchaseBtn').disabled = true;
+            currentProduct = null;
+            currentDuration = null;
+            currentPrice = 0;
+            currentCoupon = null;
+            document.getElementById('couponInput').value = '';
+            document.getElementById('couponMsg').innerHTML = '';
+
+            if (!productId) {
+                durationSelect.disabled = true;
+                return;
+            }
+
+            const product = await getData('products/' + productId);
+            if (product) {
+                currentProduct = { id: productId, ...product };
+
+                // Load durations specific to this product
+                const durations = await getList('durations');
+                const productDurations = durations.filter(d => d.productId === productId);
+
+                productDurations.forEach(dur => {
+                    const unitLabel = dur.unit ? dur.unit.charAt(0).toUpperCase() + dur.unit.slice(1) : 'Days';
+                    durationSelect.innerHTML += `<option value="${dur.id}">${dur.name} ${unitLabel}</option>`;
+                });
+                durationSelect.disabled = false;
+            }
+        };
+
+        window.onDurationChange = async function() {
+            const durationId = document.getElementById('durationSelect').value;
+            if (!durationId || !currentProduct) return;
+
+            const durData = await getData('durations/' + durationId);
+            const prices = await getList('prices');
+            let priceFound = false;
+            prices.forEach(p => {
+                if (p.productId === currentProduct.id && p.durationId === durationId) {
+                    currentPrice = p.price;
+                    const unitLabel = durData?.unit ? durData.unit.charAt(0).toUpperCase() + durData.unit.slice(1) : '';
+                    currentDuration = { id: durationId, name: durData?.name + ' ' + unitLabel };
+                    priceFound = true;
+                }
             });
 
-            if (!wasActive) {
-                item.classList.add('active');
+            if (!priceFound) {
+                document.getElementById('totalDisplay').innerHTML = '<span class="text-danger fw-bold"><i class="bi bi-x-circle"></i> Price not set for this combination</span>';
+                document.getElementById('purchaseBtn').disabled = true;
+                return;
+            }
+
+            const keys = await getList('licenseKeys');
+            const availableKey = keys.find(k => k.productId === currentProduct.id && k.durationId === durationId && !k.used);
+
+            if (!availableKey) {
+                document.getElementById('totalDisplay').innerHTML = '<span class="text-danger fw-bold"><i class="bi bi-x-circle"></i> Not available. Choose another duration</span>';
+                document.getElementById('purchaseBtn').disabled = true;
+                return;
+            }
+
+            document.getElementById('purchaseBtn').disabled = false;
+
+            // Re-validate coupon if price changed
+            if (currentCoupon) {
+                const minOrder = parseFloat(currentCoupon.minOrderValue) || 0;
+                if (currentPrice < minOrder) {
+                    currentCoupon = null;
+                    document.getElementById('couponMsg').innerHTML = '<span class="text-warning"><i class="bi bi-exclamation-triangle"></i> Coupon removed - minimum order value not met for this duration</span>';
+                    document.getElementById('couponInput').value = '';
+                }
+            }
+
+            calculateTotal();
+        };
+
+        window.applyCoupon = async function() {
+            const code = document.getElementById('couponInput').value.trim().toUpperCase();
+            if (!code) {
+                currentCoupon = null;
+                document.getElementById('couponMsg').innerHTML = '';
+                calculateTotal();
+                return;
+            }
+
+            // If no product/duration selected yet, don't allow coupon
+            if (!currentProduct || !currentDuration || currentPrice <= 0) {
+                document.getElementById('couponMsg').innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Please select a product and duration first</span>';
+                currentCoupon = null;
+                calculateTotal();
+                return;
+            }
+
+            const coupons = await getList('coupons');
+            let matchedCoupon = null;
+            let minOrderFail = false;
+            let expired = false;
+
+            for (const c of coupons) {
+                if (c.code === code) {
+                    const now = new Date();
+                    const expiry = c.expiryDate ? new Date(c.expiryDate) : null;
+                    // Set expiry to end of day for fair comparison
+                    if (expiry) {
+                        expiry.setHours(23, 59, 59, 999);
+                    }
+
+                    if (expiry && expiry < now) {
+                        expired = true;
+                        continue;
+                    }
+
+                    const minOrder = parseFloat(c.minOrderValue) || 0;
+                    if (currentPrice >= minOrder) {
+                        matchedCoupon = { id: c.id, ...c };
+                        break; // Found valid coupon, stop searching
+                    } else {
+                        minOrderFail = true;
+                        // Don't break - keep looking for another valid coupon
+                    }
+                }
+            }
+
+            if (matchedCoupon) {
+                currentCoupon = matchedCoupon;
+                document.getElementById('couponMsg').innerHTML = '<span class="text-success"><i class="bi bi-check-circle"></i> Coupon applied! You saved ₹' + (currentCoupon.type === 'percentage' ? Math.round(currentPrice * currentCoupon.value / 100) : currentCoupon.value) + '</span>';
+            } else if (minOrderFail) {
+                currentCoupon = null;
+                document.getElementById('couponMsg').innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Minimum order value not met (₹' + currentPrice + ' < required ₹' + (coupons.find(c => c.code === code)?.minOrderValue || 0) + ')</span>';
+            } else if (expired) {
+                currentCoupon = null;
+                document.getElementById('couponMsg').innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Coupon has expired</span>';
+            } else {
+                currentCoupon = null;
+                document.getElementById('couponMsg').innerHTML = '<span class="text-danger"><i class="bi bi-x-circle"></i> Invalid coupon code</span>';
+            }
+            calculateTotal();
+        };
+
+        function calculateTotal() {
+            discountAmount = 0;
+            if (currentCoupon) {
+                if (currentCoupon.type === 'percentage') {
+                    discountAmount = Math.round(currentPrice * currentCoupon.value / 100);
+                } else {
+                    discountAmount = currentCoupon.value;
+                }
+            }
+            finalAmount = Math.max(0, currentPrice - discountAmount);
+
+            let html = '';
+            if (currentCoupon) {
+                html += `<div class="text-decoration-line-through text-muted">₹${currentPrice}</div>`;
+                html += `<div class="text-success">Discount: -₹${discountAmount}</div>`;
+            }
+            html += `<div class="h3 text-primary fw-bold">Total: ₹${finalAmount}</div>`;
+            document.getElementById('totalDisplay').innerHTML = html;
+        }
+
+        // ==========================================
+        // PAYTM PAYMENT INTEGRATION
+        // ==========================================
+        window.initiatePayment = async function() {
+            if (!currentProduct || !currentDuration || finalAmount <= 0) return;
+
+            if (!appConfig.paytmMerchantId) {
+                alert('Payment gateway not configured. Please contact admin.');
+                return;
+            }
+
+            const orderId = 'ORD' + Date.now();
+
+            // Generate transaction token (normally done on server-side)
+            // For client-side demo, we'll use a simplified flow
+            // In production, you should generate txnToken from your backend
+
+            const config = {
+                "root": "",
+                "flow": "DEFAULT",
+                "data": {
+                    "orderId": orderId,
+                    "token": "", // Will be set below
+                    "tokenType": "TXN_TOKEN",
+                    "amount": finalAmount.toString()
+                },
+                "handler": {
+                    "notifyMerchant": async function(eventType, data) {
+                        if (eventType === 'APP_CLOSED') {
+                            console.log('Paytm APP_CLOSED');
+                        }
+                    }
+                }
+            };
+
+            try {
+                // Create order on your backend to get txnToken
+                // For demo, we'll simulate a txnToken generation
+                // IN PRODUCTION: Call your backend API here to generate txnToken
+                const txnToken = await generatePaytmTxnToken(orderId, finalAmount);
+
+                if (!txnToken) {
+                    alert('Unable to initialize payment. Please try again.');
+                    return;
+                }
+
+                config.data.token = txnToken;
+
+                if (window.Paytm && window.Paytm.CheckoutJS) {
+                    window.Paytm.CheckoutJS.init(config).then(function() {
+                        window.Paytm.CheckoutJS.onPayment(function(response) {
+                            if (response.STATUS === 'TXN_SUCCESS') {
+                                processSuccessPayment(response, orderId);
+                            } else {
+                                alert('Payment failed: ' + (response.RESPMSG || 'Unknown error'));
+                            }
+                        });
+                        window.Paytm.CheckoutJS.invoke();
+                    }).catch(function(error) {
+                        console.error('Paytm init error:', error);
+                        alert('Payment initialization failed. Please try again.');
+                    });
+                } else {
+                    // Fallback: Redirect to Paytm payment page
+                    const paytmUrl = `https://securegw.paytm.in/theia/processTransaction?orderId=${orderId}&txnToken=${txnToken}&mid=${appConfig.paytmMerchantId}`;
+                    window.open(paytmUrl, '_blank');
+                }
+            } catch (e) {
+                alert('Payment Error: ' + e.message);
+                console.error('Paytm Error:', e);
+            }
+        };
+
+        // ==========================================
+        // PAYTM BACKEND INTEGRATION REQUIRED
+        // ==========================================
+        // IMPORTANT: Paytm requires a backend server to generate txnToken securely.
+        // You CANNOT generate txnToken from client-side (browser) because it requires
+        // your Merchant Key which must be kept secret.
+        //
+        // SETUP STEPS:
+        // 1. Create a backend API (Node.js/PHP/Python) at your server
+        // 2. Backend receives: orderId, amount, customerId
+        // 3. Backend generates checksum using your Merchant Key
+        // 4. Backend calls Paytm's /initiateTransaction API
+        // 5. Backend returns txnToken to this frontend
+        //
+        // Sample Node.js backend code: https://developer.paytm.com/docs/v1/payment-gateway/
+        // ==========================================
+
+        async function generatePaytmTxnToken(orderId, amount) {
+            // NOTE: Replace this ENTIRE function with your backend API call
+            // This demo will NOT work for real payments without a backend
+
+            try {
+                // === REPLACE WITH YOUR BACKEND API ===
+                // const response = await fetch('https://your-server.com/api/paytm/initiate', {
+                //     method: 'POST',
+                //     headers: { 'Content-Type': 'application/json' },
+                //     body: JSON.stringify({ 
+                //         orderId: orderId, 
+                //         amount: amount, 
+                //         mid: appConfig.paytmMerchantId 
+                //     })
+                // });
+                // const data = await response.json();
+                // return data.txnToken; // txnToken from Paytm
+                // =====================================
+
+                // DEMO ONLY - Remove in production
+                console.warn('%c[Paytm] Using DEMO txnToken!', 'color:orange;font-weight:bold');
+                console.warn('%c[Paytm] You MUST implement a backend API to generate real txnToken!', 'color:red;font-weight:bold');
+                return 'DEMO_TOKEN_' + Date.now();
+            } catch (e) {
+                console.error('TxnToken generation failed:', e);
+                return null;
             }
         }
 
-        window.addEventListener('resize', () => {
-            if (window.innerWidth > 600) {
-                document.getElementById('mobileMenu').classList.remove('active');
+        async function processSuccessPayment(response, orderId) {
+            let assignedKey = null;
+            let keyDocId = null;
+
+            try {
+                // Find unused license key matching product + duration
+                const keys = await getList('licenseKeys');
+
+                for (const k of keys) {
+                    if (k.productId === currentProduct.id && k.durationId === currentDuration.id && !k.used) {
+                        assignedKey = k.key;
+                        keyDocId = k.id;
+                        break;
+                    }
+                }
+
+                if (keyDocId) {
+                    await updateData('licenseKeys/' + keyDocId, { used: true, usedAt: Date.now(), orderId: orderId });
+                }
+
+                // Extract Paytm payment details
+                const paytmTxnId = response.TXNID || response.txnId || 'PAYTM_' + Date.now();
+                const paytmBankTxnId = response.BANKTXNID || response.bankTxnId || 'N/A';
+
+                // Save order
+                const orderData = {
+                    orderId: orderId,
+                    productId: currentProduct.id,
+                    productName: currentProduct.name,
+                    durationId: currentDuration.id,
+                    durationName: currentDuration.name,
+                    originalPrice: currentPrice,
+                    discountAmount: discountAmount,
+                    finalAmount: finalAmount,
+                    couponCode: currentCoupon ? currentCoupon.code : null,
+                    licenseKey: assignedKey,
+                    paymentId: paytmTxnId,
+                    bankTxnId: paytmBankTxnId,
+                    status: 'paid',
+                    createdAt: Date.now()
+                };
+                await pushData('orders', orderData);
+
+                // Save payment record
+                await pushData('payments', {
+                    orderId: orderId,
+                    paymentId: paytmTxnId,
+                    bankTxnId: paytmBankTxnId,
+                    amount: finalAmount,
+                    gateway: 'paytm',
+                    status: 'success',
+                    paytmResponse: response,
+                    createdAt: Date.now()
+                });
+            } catch (e) {
+                console.error('Post-payment error:', e);
             }
+
+            // Store order details for invoice
+            window.lastOrder = {
+                orderId: orderId,
+                productName: currentProduct ? currentProduct.name : '',
+                durationName: currentDuration ? currentDuration.name : '',
+                licenseKey: assignedKey || 'No keys available - Contact Admin',
+                originalPrice: currentPrice || 0,
+                discountAmount: discountAmount || 0,
+                finalAmount: finalAmount || 0,
+                couponCode: currentCoupon ? currentCoupon.code : null,
+                paymentId: response.TXNID || response.txnId || 'PAYTM_' + Date.now(),
+                date: new Date().toLocaleString()
+            };
+
+            // Show success page regardless of DB errors
+            document.getElementById('successOrderId').textContent = orderId;
+            document.getElementById('successProduct').textContent = currentProduct.name;
+            document.getElementById('successDuration').textContent = currentDuration.name;
+            document.getElementById('successKey').textContent = assignedKey || 'No keys available - Contact Admin';
+            document.getElementById('successAmount').textContent = '₹' + finalAmount;
+
+            // Show APK download if URL is configured
+            if (appConfig.apkUrl) {
+                document.getElementById('apkDownloadCard').style.display = 'block';
+                document.getElementById('apkDownloadBtn').href = appConfig.apkUrl;
+            } else {
+                document.getElementById('apkDownloadCard').style.display = 'none';
+            }
+
+            showSection('success-page');
+        }
+
+        window.copyKey = function() {
+            const key = document.getElementById('successKey').textContent;
+            navigator.clipboard.writeText(key);
+            alert('License key copied!');
+        };
+
+        window.downloadInvoice = function() {
+            const order = window.lastOrder || {};
+            const orderId = order.orderId || document.getElementById('successOrderId').textContent || 'N/A';
+            const product = order.productName || document.getElementById('successProduct').textContent || 'N/A';
+            const duration = order.durationName || document.getElementById('successDuration').textContent || 'N/A';
+            const key = order.licenseKey || document.getElementById('successKey').textContent || 'N/A';
+            const originalPrice = order.originalPrice || 0;
+            const discountAmount = order.discountAmount || 0;
+            const finalAmount = order.finalAmount || 0;
+            const couponCode = order.couponCode || null;
+            const paymentId = order.paymentId || 'N/A';
+            const date = order.date || new Date().toLocaleString();
+
+            let invoice = `
+===============================================
+              NOVAESP - INVOICE
+===============================================
+Order ID     : ${orderId}
+Payment ID   : ${paymentId}
+Gateway      : Paytm
+Date         : ${date}
+-----------------------------------------------
+PRODUCT DETAILS
+-----------------------------------------------
+Product      : ${product}
+Duration     : ${duration}
+License Key  : ${key}
+-----------------------------------------------
+PAYMENT DETAILS
+-----------------------------------------------
+Original Price : ₹${originalPrice}`;
+
+            if (discountAmount > 0) {
+                invoice += `
+Discount       : -₹${discountAmount}`;
+                if (couponCode) {
+                    invoice += ` (Coupon: ${couponCode})`;
+                }
+            }
+
+            invoice += `
+-----------------------------------------------
+AMOUNT PAID    : ₹${finalAmount}
+===============================================
+Thank you for your purchase!
+===============================================
+            `;
+
+            const blob = new Blob([invoice], { type: 'text/plain' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Invoice_${orderId}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        };
+
+        // ==========================================
+        // ADMIN LOGIN
+        // ==========================================
+        window.adminLogin = async function() {
+            const u = document.getElementById('adminUser').value;
+            const p = document.getElementById('adminPass').value;
+
+            await loadAppConfig();
+
+            if (u === appConfig.adminUsername && p === appConfig.adminPassword) {
+                isAdmin = true;
+                document.getElementById('adminNav').classList.remove('d-none');
+                document.getElementById('loginNav').classList.add('d-none');
+                showSection('admin-dashboard');
+            } else {
+                alert('Invalid credentials!');
+            }
+        };
+
+        window.adminLogout = function() {
+            isAdmin = false;
+            document.getElementById('adminNav').classList.add('d-none');
+            document.getElementById('loginNav').classList.remove('d-none');
+            showSection('home');
+        };
+
+        // ==========================================
+        // ADMIN DASHBOARD
+        // ==========================================
+        async function loadAdminDashboard() {
+            const orders = await getList('orders');
+            let totalOrders = 0, totalSales = 0, totalRevenue = 0;
+
+            orders.forEach(data => {
+                totalOrders++;
+                if (data.status === 'paid') {
+                    totalSales++;
+                    totalRevenue += data.finalAmount || 0;
+                }
+            });
+
+            document.getElementById('dashTotalOrders').textContent = totalOrders;
+            document.getElementById('dashTotalSales').textContent = totalSales;
+            document.getElementById('dashRevenue').textContent = '₹' + totalRevenue;
+
+            orders.sort((a, b) => (b.createdAt || 0) - (a.createdAt || 0));
+            let html = '';
+            orders.slice(0, 5).forEach(o => {
+                html += `<tr><td>${o.orderId}</td><td>${o.productName}</td><td>${o.durationName}</td><td>₹${o.finalAmount}</td><td><span class="badge bg-success">${o.status}</span></td></tr>`;
+            });
+            document.getElementById('recentOrdersTable').innerHTML = html || '<tr><td colspan="5" class="text-center">No orders yet</td></tr>';
+        }
+
+        // ==========================================
+        // ADMIN PRODUCTS
+        // ==========================================
+        async function loadAdminProducts() {
+            const products = await getList('products');
+            let html = '';
+            products.forEach(p => {
+                html += `<tr>
+                    <td>${p.name}</td>
+                    <td><span class="badge ${p.enabled !== false ? 'bg-success' : 'bg-secondary'}">${p.enabled !== false ? 'Enabled' : 'Disabled'}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="editProduct('${p.id}', '${p.name}', ${p.enabled !== false})"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteProduct('${p.id}')"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('productsTable').innerHTML = html || '<tr><td colspan="3" class="text-center">No products</td></tr>';
+        }
+
+        window.saveProduct = async function() {
+            const name = document.getElementById('productName').value.trim();
+            const enabled = document.getElementById('productEnabled').checked;
+            const editId = document.getElementById('productEditId').value;
+
+            if (!name) { alert('Enter product name'); return; }
+
+            if (editId) {
+                await updateData('products/' + editId, { name, enabled });
+            } else {
+                await pushData('products', { name, enabled, createdAt: Date.now() });
+            }
+
+            document.getElementById('productName').value = '';
+            document.getElementById('productEditId').value = '';
+            document.getElementById('productEnabled').checked = true;
+            document.getElementById('productModalTitle').textContent = 'Add Product';
+            bootstrap.Modal.getInstance(document.getElementById('productModal')).hide();
+            loadAdminProducts();
+        };
+
+        window.editProduct = function(id, name, enabled) {
+            document.getElementById('productName').value = name;
+            document.getElementById('productEnabled').checked = enabled;
+            document.getElementById('productEditId').value = id;
+            document.getElementById('productModalTitle').textContent = 'Edit Product';
+            new bootstrap.Modal(document.getElementById('productModal')).show();
+        };
+
+        window.deleteProduct = async function(id) {
+            if (confirm('Delete this product?')) {
+                await deleteData('products/' + id);
+                loadAdminProducts();
+            }
+        };
+
+        window.openProductModal = function() {
+            document.getElementById('productName').value = '';
+            document.getElementById('productEditId').value = '';
+            document.getElementById('productEnabled').checked = true;
+            document.getElementById('productModalTitle').textContent = 'Add Product';
+            new bootstrap.Modal(document.getElementById('productModal')).show();
+        };
+
+        // ==========================================
+        // ADMIN DURATIONS
+        // ==========================================
+        async function loadAdminDurations() {
+            const durations = await getList('durations');
+            const productsSnap = await getData('products');
+            const products = productsSnap || {};
+            let html = '';
+            durations.forEach(d => {
+                const prodName = products[d.productId]?.name || 'Unknown';
+                const unitLabel = d.unit ? d.unit.charAt(0).toUpperCase() + d.unit.slice(1) : 'Days';
+                html += `<tr>
+                    <td>${prodName}</td>
+                    <td>${d.name}</td>
+                    <td><span class="badge bg-info">${unitLabel}</span></td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="editDuration('${d.id}', '${d.productId}', '${d.name}', '${d.unit || 'days'}')"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteDuration('${d.id}')"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('durationsTable').innerHTML = html || '<tr><td colspan="4" class="text-center">No durations</td></tr>';
+        }
+
+        window.saveDuration = async function() {
+            const productId = document.getElementById('durationProduct').value;
+            const name = document.getElementById('durationName').value.trim();
+            const unit = document.getElementById('durationUnit').value;
+            const editId = document.getElementById('durationEditId').value;
+            if (!productId) { alert('Select a product'); return; }
+            if (!name) { alert('Enter duration name'); return; }
+
+            if (editId) {
+                await updateData('durations/' + editId, { productId, name, unit });
+            } else {
+                await pushData('durations', { productId, name, unit, createdAt: Date.now() });
+            }
+
+            document.getElementById('durationProduct').value = '';
+            document.getElementById('durationName').value = '';
+            document.getElementById('durationUnit').value = 'days';
+            document.getElementById('durationEditId').value = '';
+            document.getElementById('durationModalTitle').textContent = 'Add Duration';
+            bootstrap.Modal.getInstance(document.getElementById('durationModal')).hide();
+            loadAdminDurations();
+        };
+
+        window.editDuration = async function(id, productId, name, unit) {
+            await populateDurationProductDropdown();
+            document.getElementById('durationProduct').value = productId || '';
+            document.getElementById('durationName').value = name;
+            document.getElementById('durationUnit').value = unit || 'days';
+            document.getElementById('durationEditId').value = id;
+            document.getElementById('durationModalTitle').textContent = 'Edit Duration';
+            new bootstrap.Modal(document.getElementById('durationModal')).show();
+        };
+
+        window.deleteDuration = async function(id) {
+            if (confirm('Delete this duration?')) {
+                await deleteData('durations/' + id);
+                loadAdminDurations();
+            }
+        };
+
+        window.openDurationModal = async function() {
+            await populateDurationProductDropdown();
+            document.getElementById('durationProduct').value = '';
+            document.getElementById('durationName').value = '';
+            document.getElementById('durationUnit').value = 'days';
+            document.getElementById('durationEditId').value = '';
+            document.getElementById('durationModalTitle').textContent = 'Add Duration';
+            new bootstrap.Modal(document.getElementById('durationModal')).show();
+        };
+
+        async function populateDurationProductDropdown() {
+            const select = document.getElementById('durationProduct');
+            select.innerHTML = '<option value="">Select Product</option>';
+            const products = await getList('products');
+            products.forEach(p => {
+                if (p.enabled !== false) select.innerHTML += `<option value="${p.id}">${p.name}</option>`;
+            });
+        }
+
+
+        window.onKeyProductChange = async function() {
+            const productId = document.getElementById('keyProduct').value;
+            const dSelect = document.getElementById('keyDuration');
+            dSelect.innerHTML = '<option value="">Select Duration</option>';
+
+            if (!productId) return;
+
+            const durations = await getList('durations');
+            const productDurations = durations.filter(d => d.productId === productId);
+            productDurations.forEach(d => {
+                const unitLabel = d.unit ? d.unit.charAt(0).toUpperCase() + d.unit.slice(1) : 'Days';
+                dSelect.innerHTML += `<option value="${d.id}">${d.name} ${unitLabel}</option>`;
+            });
+        };
+
+        // ==========================================
+        // ADMIN PRICES
+        // ==========================================
+        async function loadAdminPrices() {
+            const prices = await getList('prices');
+            const productsSnap = await getData('products');
+            const durationsSnap = await getData('durations');
+
+            const products = productsSnap || {};
+            const durations = durationsSnap || {};
+
+            let html = '';
+            prices.forEach(p => {
+                const prodName = products[p.productId]?.name || 'Unknown';
+                const dur = durations[p.durationId];
+                const durName = dur?.name || 'Unknown';
+                const durUnit = dur?.unit ? dur.unit.charAt(0).toUpperCase() + dur.unit.slice(1) : '';
+                html += `<tr>
+                    <td>${prodName}</td>
+                    <td>${durName} ${durUnit}</td>
+                    <td>₹${p.price}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning" onclick="editPrice('${p.id}', '${p.productId}', '${p.durationId}', ${p.price})"><i class="bi bi-pencil"></i></button>
+                        <button class="btn btn-sm btn-danger" onclick="deletePrice('${p.id}')"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('pricesTable').innerHTML = html || '<tr><td colspan="4" class="text-center">No prices set</td></tr>';
+        }
+
+        async function populatePriceDropdowns() {
+            const pSelect = document.getElementById('priceProduct');
+            const dSelect = document.getElementById('priceDuration');
+            pSelect.innerHTML = '<option value="">Select Product</option>';
+            dSelect.innerHTML = '<option value="">Select Duration</option>';
+
+            const products = await getList('products');
+            products.forEach(d => {
+                if (d.enabled !== false) pSelect.innerHTML += `<option value="${d.id}">${d.name}</option>`;
+            });
+        }
+
+        window.onPriceProductChange = async function() {
+            const productId = document.getElementById('priceProduct').value;
+            const dSelect = document.getElementById('priceDuration');
+            dSelect.innerHTML = '<option value="">Select Duration</option>';
+
+            if (!productId) return;
+
+            const durations = await getList('durations');
+            const productDurations = durations.filter(d => d.productId === productId);
+            productDurations.forEach(d => {
+                const unitLabel = d.unit ? d.unit.charAt(0).toUpperCase() + d.unit.slice(1) : 'Days';
+                dSelect.innerHTML += `<option value="${d.id}">${d.name} ${unitLabel}</option>`;
+            });
+        };
+
+        window.savePrice = async function() {
+            const productId = document.getElementById('priceProduct').value;
+            const durationId = document.getElementById('priceDuration').value;
+            const price = parseInt(document.getElementById('priceValue').value);
+            const editId = document.getElementById('priceEditId').value;
+
+            if (!productId || !durationId || !price || price <= 0) { alert('Fill all fields'); return; }
+
+            if (editId) {
+                await updateData('prices/' + editId, { productId, durationId, price });
+            } else {
+                await pushData('prices', { productId, durationId, price, createdAt: Date.now() });
+            }
+
+            document.getElementById('priceValue').value = '';
+            document.getElementById('priceEditId').value = '';
+            document.getElementById('priceModalTitle').textContent = 'Set Price';
+            bootstrap.Modal.getInstance(document.getElementById('priceModal')).hide();
+            loadAdminPrices();
+        };
+
+        window.editPrice = async function(id, productId, durationId, price) {
+            await populatePriceDropdowns();
+            document.getElementById('priceProduct').value = productId;
+            await onPriceProductChange();
+            document.getElementById('priceDuration').value = durationId;
+            document.getElementById('priceValue').value = price;
+            document.getElementById('priceEditId').value = id;
+            document.getElementById('priceModalTitle').textContent = 'Edit Price';
+            new bootstrap.Modal(document.getElementById('priceModal')).show();
+        };
+
+        window.deletePrice = async function(id) {
+            if (confirm('Delete this price?')) {
+                await deleteData('prices/' + id);
+                loadAdminPrices();
+            }
+        };
+
+        window.openPriceModal = async function() {
+            await populatePriceDropdowns();
+            document.getElementById('priceValue').value = '';
+            document.getElementById('priceEditId').value = '';
+            document.getElementById('priceModalTitle').textContent = 'Set Price';
+            new bootstrap.Modal(document.getElementById('priceModal')).show();
+        };
+
+        // ==========================================
+        // ADMIN LICENSE KEYS
+        // ==========================================
+        async function loadAdminKeys() {
+            const keys = await getList('licenseKeys');
+            const productsSnap = await getData('products');
+            const durationsSnap = await getData('durations');
+            const products = productsSnap || {};
+            const durations = durationsSnap || {};
+
+            // ===== STOCK SUMMARY CALCULATION =====
+            const stockMap = {};
+            // Initialize stock map for all product+duration combos that have keys
+            keys.forEach(k => {
+                const comboKey = k.productId + '_' + k.durationId;
+                if (!stockMap[comboKey]) {
+                    stockMap[comboKey] = { total: 0, used: 0, active: 0 };
+                }
+                stockMap[comboKey].total++;
+                if (k.used) {
+                    stockMap[comboKey].used++;
+                } else {
+                    stockMap[comboKey].active++;
+                }
+            });
+
+            // Build stock summary HTML
+            let stockHtml = '';
+            const stockEntries = Object.entries(stockMap).sort((a, b) => b[1].active - a[1].active);
+
+            if (stockEntries.length === 0) {
+                stockHtml = '<div class="col-12 text-center text-white-50">No keys in stock</div>';
+            } else {
+                stockEntries.forEach(([comboKey, counts]) => {
+                    const [prodId, durId] = comboKey.split('_');
+                    const prodName = products[prodId]?.name || 'Unknown Product';
+                    const dur = durations[durId];
+                    const durName = dur ? `${dur.name} ${dur.unit ? dur.unit.charAt(0).toUpperCase() + dur.unit.slice(1) : ''}` : 'Unknown Duration';
+                    const lowStock = counts.active <= 2;
+                    const outOfStock = counts.active === 0;
+
+                    stockHtml += `
+                    <div class="col-md-4 col-lg-3">
+                        <div class="p-3" style="background: rgba(255,255,255,0.05); border-radius: 12px; border: 1px solid rgba(255,255,255,0.08);">
+                            <div class="d-flex justify-content-between align-items-start mb-2">
+                                <div>
+                                    <div class="fw-bold text-white" style="font-size: 0.9rem;">${prodName}</div>
+                                    <div class="text-white-50" style="font-size: 0.75rem;">${durName}</div>
+                                </div>
+                                <span class="badge ${outOfStock ? 'bg-danger' : lowStock ? 'bg-warning text-dark' : 'bg-success'}" style="font-size: 0.7rem;">
+                                    ${outOfStock ? 'Out of Stock' : lowStock ? 'Low Stock' : 'In Stock'}
+                                </span>
+                            </div>
+                            <div class="d-flex gap-3 mt-2">
+                                <div class="text-center">
+                                    <div class="fw-bold ${counts.active > 0 ? 'text-success' : 'text-danger'}" style="font-size: 1.3rem;">${counts.active}</div>
+                                    <div class="text-white-50" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px;">Available</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="fw-bold text-white" style="font-size: 1.3rem;">${counts.used}</div>
+                                    <div class="text-white-50" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px;">Sold</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="fw-bold text-info" style="font-size: 1.3rem;">${counts.total}</div>
+                                    <div class="text-white-50" style="font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.5px;">Total</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>`;
+                });
+            }
+            document.getElementById('stockSummaryCards').innerHTML = stockHtml;
+            // ===== END STOCK SUMMARY =====
+
+            let activeHtml = '', usedHtml = '';
+            keys.forEach(k => {
+                const prodName = products[k.productId]?.name || 'Unknown';
+                const dur = durations[k.durationId];
+                const durName = dur ? `${dur.name} ${dur.unit ? dur.unit.charAt(0).toUpperCase() + dur.unit.slice(1) : ''}` : 'Unknown';
+                const usedDate = k.usedAt ? new Date(k.usedAt).toLocaleDateString() : '-';
+                const addedDate = k.createdAt ? new Date(k.createdAt).toLocaleDateString() : '-';
+                const row = `<tr><td>${prodName}</td><td>${durName}</td><td><code>${k.key}</code></td><td>${k.used ? usedDate : addedDate}</td><td><button class="btn btn-sm btn-danger" onclick="deleteKey('${k.id}')"><i class="bi bi-trash"></i></button></td></tr>`;
+                if (k.used) {
+                    usedHtml += row;
+                } else {
+                    activeHtml += row;
+                }
+            });
+
+            document.getElementById('activeKeysTable').innerHTML = activeHtml || '<tr><td colspan="5" class="text-center">No active keys</td></tr>';
+            document.getElementById('usedKeysTable').innerHTML = usedHtml || '<tr><td colspan="5" class="text-center">No used keys</td></tr>';
+
+            // Populate product dropdown for key import
+            const kSelect = document.getElementById('keyProduct');
+            kSelect.innerHTML = '<option value="">Select Product</option>';
+            const productsList = await getList('products');
+            productsList.forEach(d => {
+                if (d.enabled !== false) kSelect.innerHTML += `<option value="${d.id}">${d.name}</option>`;
+            });
+        }
+
+        window.importKeys = async function() {
+            const productId = document.getElementById('keyProduct').value;
+            const durationId = document.getElementById('keyDuration').value;
+            const keysText = document.getElementById('keysTextarea').value.trim();
+
+            if (!productId) { alert('Select a product'); return; }
+            if (!durationId) { alert('Select a duration'); return; }
+            if (!keysText) { alert('Enter keys to import'); return; }
+
+            const keys = keysText.split('\n').map(k => k.trim()).filter(k => k);
+            let count = 0;
+            for (const key of keys) {
+                await pushData('licenseKeys', { productId, durationId, key, used: false, createdAt: Date.now() });
+                count++;
+            }
+
+            alert(`${count} keys imported!`);
+            document.getElementById('keysTextarea').value = '';
+            loadAdminKeys();
+        };
+
+        window.addSingleKey = async function() {
+            const productId = document.getElementById('keyProduct').value;
+            const durationId = document.getElementById('keyDuration').value;
+            const key = document.getElementById('singleKeyInput').value.trim();
+
+            if (!productId) { alert('Select product'); return; }
+            if (!durationId) { alert('Select duration'); return; }
+            if (!key) { alert('Enter key'); return; }
+
+            await pushData('licenseKeys', { productId, durationId, key, used: false, createdAt: Date.now() });
+            document.getElementById('singleKeyInput').value = '';
+            alert('Key added!');
+            loadAdminKeys();
+        };
+
+        window.deleteKey = async function(id) {
+            if (confirm('Are you sure you want to delete this license key?')) {
+                await deleteData('licenseKeys/' + id);
+                loadAdminKeys();
+            }
+        };
+
+        // ==========================================
+        // ADMIN COUPONS
+        // ==========================================
+        async function loadAdminCoupons() {
+            const coupons = await getList('coupons');
+            let html = '';
+            coupons.forEach(c => {
+                const expiry = c.expiryDate ? new Date(c.expiryDate).toLocaleDateString() : 'No expiry';
+                const minOrder = c.minOrderValue ? '₹' + c.minOrderValue : 'Any';
+                html += `<tr>
+                    <td>${c.code}</td>
+                    <td>${c.type === 'percentage' ? c.value + '%' : '₹' + c.value}</td>
+                    <td>${minOrder}</td>
+                    <td>${expiry}</td>
+                    <td>
+                        <button class="btn btn-sm btn-danger" onclick="deleteCoupon('${c.id}')"><i class="bi bi-trash"></i></button>
+                    </td>
+                </tr>`;
+            });
+            document.getElementById('couponsTable').innerHTML = html || '<tr><td colspan="5" class="text-center">No coupons</td></tr>';
+        }
+
+        window.saveCoupon = async function() {
+            const code = document.getElementById('couponCode').value.trim().toUpperCase();
+            const type = document.getElementById('couponType').value;
+            const value = parseInt(document.getElementById('couponValue').value);
+            const minOrderValue = parseInt(document.getElementById('couponMinOrder').value) || 0;
+            const expiry = document.getElementById('couponExpiry').value;
+
+            if (!code || !value || value <= 0) { alert('Fill all fields'); return; }
+
+            await pushData('coupons', { code, type, value, minOrderValue, expiryDate: expiry || null, createdAt: Date.now() });
+
+            document.getElementById('couponCode').value = '';
+            document.getElementById('couponValue').value = '';
+            document.getElementById('couponMinOrder').value = '';
+            document.getElementById('couponExpiry').value = '';
+            bootstrap.Modal.getInstance(document.getElementById('couponModal')).hide();
+            loadAdminCoupons();
+        };
+
+        window.deleteCoupon = async function(id) {
+            if (confirm('Delete this coupon?')) {
+                await deleteData('coupons/' + id);
+                loadAdminCoupons();
+            }
+        };
+
+        window.openCouponModal = function() {
+            document.getElementById('couponCode').value = '';
+            document.getElementById('couponValue').value = '';
+            document.getElementById('couponMinOrder').value = '';
+            document.getElementById('couponExpiry').value = '';
+            new bootstrap.Modal(document.getElementById('couponModal')).show();
+        };
+
+        // ==========================================
+        // ADMIN ORDERS
+        // ==========================================
+        async function loadAdminOrders() {
+            const orders = await getList('orders');
+            const productsSnap = await getData('products');
+            const products = productsSnap || {};
+
+            let paidHtml = '', failedHtml = '';
+            orders.forEach(o => {
+                const date = o.createdAt ? new Date(o.createdAt).toLocaleString() : '-';
+                const row = `<tr>
+                    <td>${o.orderId}</td>
+                    <td>${o.productName}</td>
+                    <td>${o.durationName}</td>
+                    <td>₹${o.finalAmount}</td>
+                    <td><code>${o.licenseKey || 'N/A'}</code></td>
+                    <td>${date}</td>
+                </tr>`;
+
+                if (o.status === 'paid') paidHtml += row;
+                else failedHtml += row;
+            });
+
+            document.getElementById('paidOrdersTable').innerHTML = paidHtml || '<tr><td colspan="6" class="text-center">No paid orders</td></tr>';
+            document.getElementById('failedOrdersTable').innerHTML = failedHtml || '<tr><td colspan="6" class="text-center">No failed orders</td></tr>';
+        }
+
+        window.searchOrders = function() {
+            const term = document.getElementById('orderSearch').value.toLowerCase();
+            document.querySelectorAll('#paidOrdersTable tr, #failedOrdersTable tr').forEach(tr => {
+                tr.style.display = tr.textContent.toLowerCase().includes(term) ? '' : 'none';
+            });
+        };
+
+        // ==========================================
+        // ADMIN PAYMENT SETTINGS
+        // ==========================================
+        async function loadAdminPayments() {
+            const paytm = await getData('settings/paytm');
+            const admin = await getData('settings/admin');
+            const apk = await getData('settings/apk');
+
+            document.getElementById('paytmMerchantId').value = paytm?.merchantId || '';
+            document.getElementById('paytmMerchantKey').value = paytm?.merchantKey || '';
+            document.getElementById('adminUsername').value = admin?.username || '';
+            document.getElementById('adminPassword').value = admin?.password || '';
+
+            const apkUrl = apk?.url || '';
+            document.getElementById('apkUrl').value = apkUrl;
+            if (apkUrl) {
+                document.getElementById('apkPreviewBox').style.display = 'block';
+                document.getElementById('apkUrlPreview').value = apkUrl;
+                document.getElementById('apkUrlLink').href = apkUrl;
+            } else {
+                document.getElementById('apkPreviewBox').style.display = 'none';
+            }
+        }
+
+        window.savePaymentSettings = async function() {
+            const paytmMerchantId = document.getElementById('paytmMerchantId').value.trim();
+            const paytmMerchantKey = document.getElementById('paytmMerchantKey').value.trim();
+            const adminUsername = document.getElementById('adminUsername').value.trim();
+            const adminPassword = document.getElementById('adminPassword').value.trim();
+            const apkUrl = document.getElementById('apkUrl').value.trim();
+
+            if (paytmMerchantId) {
+                await setData('settings/paytm', { merchantId: paytmMerchantId, merchantKey: paytmMerchantKey });
+            }
+
+            if (adminUsername && adminPassword) {
+                await setData('settings/admin', { username: adminUsername, password: adminPassword });
+            }
+
+            await setData('settings/apk', { url: apkUrl });
+
+            await loadAppConfig();
+            alert('Settings saved!');
+        };
+
+        // ==========================================
+        // INITIALIZE
+        // ==========================================
+        document.addEventListener('DOMContentLoaded', async () => {
+            await loadAppConfig();
+            loadHomeProducts();
         });
     </script>
+
+<script>
+    // UI Helpers - do not modify Firebase logic above
+    function toggleSidebar() {
+        document.getElementById('adminSidebar').classList.toggle('show');
+        document.getElementById('sidebarOverlay').classList.toggle('show');
+    }
+
+    const _origShowSection = window.showSection;
+    window.showSection = function(sectionId) {
+        if (typeof _origShowSection === 'function') {
+            _origShowSection(sectionId);
+        }
+        // Update sidebar active state
+        document.querySelectorAll('.sidebar-nav .nav-link').forEach(function(l) {
+            l.classList.toggle('active', l.dataset.section === sectionId);
+        });
+        // Update page title
+        var titles = {
+            'admin-dashboard': 'Dashboard',
+            'admin-products': 'Products',
+            'admin-durations': 'Durations',
+            'admin-prices': 'Pricing',
+            'admin-keys': 'License Keys',
+            'admin-coupons': 'Coupons',
+            'admin-orders': 'Orders',
+            'admin-payments': 'Settings'
+        };
+        if (titles[sectionId]) {
+            var pt = document.getElementById('pageTitle');
+            if (pt) pt.textContent = titles[sectionId];
+        }
+        // Show/hide admin chrome
+        var adminSections = ['admin-dashboard','admin-products','admin-durations','admin-prices','admin-keys','admin-coupons','admin-orders','admin-payments'];
+        var isAdmin = adminSections.indexOf(sectionId) !== -1;
+        var sb = document.getElementById('adminSidebar');
+        var tb = document.getElementById('adminTopbar');
+        if (sb) sb.classList.toggle('d-none', !isAdmin);
+        if (tb) tb.classList.toggle('d-none', !isAdmin);
+        // Close mobile sidebar
+        if (sb) sb.classList.remove('show');
+        var so = document.getElementById('sidebarOverlay');
+        if (so) so.classList.remove('show');
+        // Scroll to top
+        window.scrollTo(0, 0);
+    };
+</script>
+
 </body>
 </html>
