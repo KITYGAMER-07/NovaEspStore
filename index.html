@@ -8,10 +8,7 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Paytm Checkout JS - Replace YOUR_MERCHANT_ID with your actual Paytm MID -->
-    <!-- For Production: https://securegw.paytm.in/merchantpgpui/checkoutjs/merchants/YOUR_MERCHANT_ID.js -->
-    <!-- For Testing: https://securegw-stage.paytm.in/merchantpgpui/checkoutjs/merchants/YOUR_MERCHANT_ID.js -->
-    <script src="https://securegw.paytm.in/merchantpgpui/checkoutjs/merchants/YOUR_MERCHANT_ID.js"></script>
+    <script src="https://checkout.razorpay.com/v1/checkout.js"></script>
     <style>
         :root {
             --black-deep: #050505;
@@ -893,7 +890,6 @@
         }
     </style>
 <base target="_blank">
-<base target="_blank">
 </head>
 <body>
 
@@ -1436,20 +1432,11 @@
             <div class="col-md-6">
                 <div class="glass-card h-100">
                     <div class="card-header-glass">
-                        <h5><i class="bi bi-credit-card me-2 text-red"></i>Paytm</h5>
+                        <h5><i class="bi bi-credit-card me-2 text-red"></i>Razorpay</h5>
                     </div>
                     <div class="p-4">
-                        <div class="mb-3">
-                            <label class="form-label-small">Paytm Merchant ID (MID)</label>
-                            <input type="text" class="form-control glass-input" id="paytmMerchantId" placeholder="YOUR_MERCHANT_ID">
-                        </div>
-                        <div class="mb-0">
-                            <label class="form-label-small">Paytm Merchant Key</label>
-                            <input type="password" class="form-control glass-input" id="paytmMerchantKey" placeholder="YOUR_MERCHANT_KEY">
-                        </div>
-                        <div class="alert alert-warning-glass py-2 small mt-3 mb-0 d-flex align-items-center gap-2">
-                            <i class="bi bi-exclamation-triangle"></i> <span>Keep Merchant Key secret. Used for checksum generation on backend.</span>
-                        </div>
+                        <label class="form-label-small">Razorpay Key ID</label>
+                        <input type="text" class="form-control glass-input mb-0" id="rzpKeyId" placeholder="rzp_test_...">
                     </div>
                 </div>
             </div>
@@ -1740,8 +1727,7 @@
         // APP CONFIG (LOADED FROM RTDB)
         // ==========================================
         let appConfig = {
-            paytmMerchantId: '',
-            paytmMerchantKey: '',
+            razorpayKeyId: '',
             adminUsername: '',
             adminPassword: '',
             apkUrl: ''
@@ -1749,11 +1735,8 @@
 
         async function loadAppConfig() {
             try {
-                const paytm = await getData('settings/paytm');
-                if (paytm) {
-                    appConfig.paytmMerchantId = paytm.merchantId || '';
-                    appConfig.paytmMerchantKey = paytm.merchantKey || '';
-                }
+                const rzp = await getData('settings/razorpay');
+                if (rzp) appConfig.razorpayKeyId = rzp.keyId || '';
 
                 const admin = await getData('settings/admin');
                 if (admin) {
@@ -1976,123 +1959,48 @@
         }
 
         // ==========================================
-        // PAYTM PAYMENT INTEGRATION
+        // RAZORPAY PAYMENT
         // ==========================================
         window.initiatePayment = async function() {
             if (!currentProduct || !currentDuration || finalAmount <= 0) return;
 
-            if (!appConfig.paytmMerchantId) {
+            if (!appConfig.razorpayKeyId) {
                 alert('Payment gateway not configured. Please contact admin.');
                 return;
             }
 
             const orderId = 'ORD' + Date.now();
 
-            // Generate transaction token (normally done on server-side)
-            // For client-side demo, we'll use a simplified flow
-            // In production, you should generate txnToken from your backend
-
-            const config = {
-                "root": "",
-                "flow": "DEFAULT",
-                "data": {
-                    "orderId": orderId,
-                    "token": "", // Will be set below
-                    "tokenType": "TXN_TOKEN",
-                    "amount": finalAmount.toString()
+            const options = {
+                key: appConfig.razorpayKeyId,
+                amount: finalAmount * 100,
+                currency: "INR",
+                name: currentProduct.name,
+                description: `${currentProduct.name} - ${currentDuration.name}`,
+                handler: async function(response) {
+                    await processSuccessPayment(response, orderId);
                 },
-                "handler": {
-                    "notifyMerchant": async function(eventType, data) {
-                        if (eventType === 'APP_CLOSED') {
-                            console.log('Paytm APP_CLOSED');
-                        }
-                    }
+                prefill: {
+                    name: "",
+                    email: "",
+                    contact: ""
+                },
+                theme: {
+                    color: "#0d6efd"
                 }
             };
 
             try {
-                // Create order on your backend to get txnToken
-                // For demo, we'll simulate a txnToken generation
-                // IN PRODUCTION: Call your backend API here to generate txnToken
-                const txnToken = await generatePaytmTxnToken(orderId, finalAmount);
-
-                if (!txnToken) {
-                    alert('Unable to initialize payment. Please try again.');
-                    return;
-                }
-
-                config.data.token = txnToken;
-
-                if (window.Paytm && window.Paytm.CheckoutJS) {
-                    window.Paytm.CheckoutJS.init(config).then(function() {
-                        window.Paytm.CheckoutJS.onPayment(function(response) {
-                            if (response.STATUS === 'TXN_SUCCESS') {
-                                processSuccessPayment(response, orderId);
-                            } else {
-                                alert('Payment failed: ' + (response.RESPMSG || 'Unknown error'));
-                            }
-                        });
-                        window.Paytm.CheckoutJS.invoke();
-                    }).catch(function(error) {
-                        console.error('Paytm init error:', error);
-                        alert('Payment initialization failed. Please try again.');
-                    });
-                } else {
-                    // Fallback: Redirect to Paytm payment page
-                    const paytmUrl = `https://securegw.paytm.in/theia/processTransaction?orderId=${orderId}&txnToken=${txnToken}&mid=${appConfig.paytmMerchantId}`;
-                    window.open(paytmUrl, '_blank');
-                }
+                const rzp = new Razorpay(options);
+                rzp.on('payment.failed', function(response) {
+                    alert('Payment failed: ' + (response.error?.description || 'Unknown error'));
+                });
+                rzp.open();
             } catch (e) {
                 alert('Payment Error: ' + e.message);
-                console.error('Paytm Error:', e);
+                console.error('Razorpay Error:', e);
             }
         };
-
-        // ==========================================
-        // PAYTM BACKEND INTEGRATION REQUIRED
-        // ==========================================
-        // IMPORTANT: Paytm requires a backend server to generate txnToken securely.
-        // You CANNOT generate txnToken from client-side (browser) because it requires
-        // your Merchant Key which must be kept secret.
-        //
-        // SETUP STEPS:
-        // 1. Create a backend API (Node.js/PHP/Python) at your server
-        // 2. Backend receives: orderId, amount, customerId
-        // 3. Backend generates checksum using your Merchant Key
-        // 4. Backend calls Paytm's /initiateTransaction API
-        // 5. Backend returns txnToken to this frontend
-        //
-        // Sample Node.js backend code: https://developer.paytm.com/docs/v1/payment-gateway/
-        // ==========================================
-
-        async function generatePaytmTxnToken(orderId, amount) {
-            // NOTE: Replace this ENTIRE function with your backend API call
-            // This demo will NOT work for real payments without a backend
-
-            try {
-                // === REPLACE WITH YOUR BACKEND API ===
-                // const response = await fetch('https://your-server.com/api/paytm/initiate', {
-                //     method: 'POST',
-                //     headers: { 'Content-Type': 'application/json' },
-                //     body: JSON.stringify({ 
-                //         orderId: orderId, 
-                //         amount: amount, 
-                //         mid: appConfig.paytmMerchantId 
-                //     })
-                // });
-                // const data = await response.json();
-                // return data.txnToken; // txnToken from Paytm
-                // =====================================
-
-                // DEMO ONLY - Remove in production
-                console.warn('%c[Paytm] Using DEMO txnToken!', 'color:orange;font-weight:bold');
-                console.warn('%c[Paytm] You MUST implement a backend API to generate real txnToken!', 'color:red;font-weight:bold');
-                return 'DEMO_TOKEN_' + Date.now();
-            } catch (e) {
-                console.error('TxnToken generation failed:', e);
-                return null;
-            }
-        }
 
         async function processSuccessPayment(response, orderId) {
             let assignedKey = null;
@@ -2114,10 +2022,6 @@
                     await updateData('licenseKeys/' + keyDocId, { used: true, usedAt: Date.now(), orderId: orderId });
                 }
 
-                // Extract Paytm payment details
-                const paytmTxnId = response.TXNID || response.txnId || 'PAYTM_' + Date.now();
-                const paytmBankTxnId = response.BANKTXNID || response.bankTxnId || 'N/A';
-
                 // Save order
                 const orderData = {
                     orderId: orderId,
@@ -2130,8 +2034,7 @@
                     finalAmount: finalAmount,
                     couponCode: currentCoupon ? currentCoupon.code : null,
                     licenseKey: assignedKey,
-                    paymentId: paytmTxnId,
-                    bankTxnId: paytmBankTxnId,
+                    paymentId: response.razorpay_payment_id,
                     status: 'paid',
                     createdAt: Date.now()
                 };
@@ -2140,12 +2043,10 @@
                 // Save payment record
                 await pushData('payments', {
                     orderId: orderId,
-                    paymentId: paytmTxnId,
-                    bankTxnId: paytmBankTxnId,
+                    paymentId: response.razorpay_payment_id,
                     amount: finalAmount,
-                    gateway: 'paytm',
+                    gateway: 'razorpay',
                     status: 'success',
-                    paytmResponse: response,
                     createdAt: Date.now()
                 });
             } catch (e) {
@@ -2162,7 +2063,7 @@
                 discountAmount: discountAmount || 0,
                 finalAmount: finalAmount || 0,
                 couponCode: currentCoupon ? currentCoupon.code : null,
-                paymentId: response.TXNID || response.txnId || 'PAYTM_' + Date.now(),
+                paymentId: response.razorpay_payment_id,
                 date: new Date().toLocaleString()
             };
 
@@ -2209,7 +2110,6 @@
 ===============================================
 Order ID     : ${orderId}
 Payment ID   : ${paymentId}
-Gateway      : Paytm
 Date         : ${date}
 -----------------------------------------------
 PRODUCT DETAILS
@@ -2807,12 +2707,11 @@ Thank you for your purchase!
         // ADMIN PAYMENT SETTINGS
         // ==========================================
         async function loadAdminPayments() {
-            const paytm = await getData('settings/paytm');
+            const rzp = await getData('settings/razorpay');
             const admin = await getData('settings/admin');
             const apk = await getData('settings/apk');
 
-            document.getElementById('paytmMerchantId').value = paytm?.merchantId || '';
-            document.getElementById('paytmMerchantKey').value = paytm?.merchantKey || '';
+            document.getElementById('rzpKeyId').value = rzp?.keyId || '';
             document.getElementById('adminUsername').value = admin?.username || '';
             document.getElementById('adminPassword').value = admin?.password || '';
 
@@ -2828,15 +2727,12 @@ Thank you for your purchase!
         }
 
         window.savePaymentSettings = async function() {
-            const paytmMerchantId = document.getElementById('paytmMerchantId').value.trim();
-            const paytmMerchantKey = document.getElementById('paytmMerchantKey').value.trim();
+            const rzpKeyId = document.getElementById('rzpKeyId').value.trim();
             const adminUsername = document.getElementById('adminUsername').value.trim();
             const adminPassword = document.getElementById('adminPassword').value.trim();
             const apkUrl = document.getElementById('apkUrl').value.trim();
 
-            if (paytmMerchantId) {
-                await setData('settings/paytm', { merchantId: paytmMerchantId, merchantKey: paytmMerchantKey });
-            }
+            await setData('settings/razorpay', { keyId: rzpKeyId });
 
             if (adminUsername && adminPassword) {
                 await setData('settings/admin', { username: adminUsername, password: adminPassword });
