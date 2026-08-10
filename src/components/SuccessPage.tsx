@@ -1,0 +1,200 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  CheckCircle2, 
+  Copy, 
+  Check, 
+  Eye, 
+  EyeOff, 
+  Download, 
+  ArrowLeft, 
+  ShieldCheck, 
+  Smartphone, 
+  FileText,
+  Key,
+  ExternalLink
+} from 'lucide-react';
+import confetti from 'canvas-confetti';
+import { Order } from '../types';
+import { downloadInvoiceTxt } from '../lib/invoice';
+
+interface SuccessPageProps {
+  order: Order;
+  apkUrl?: string;
+  apkAppName?: string;
+  apkVersion?: string;
+  onReturnHome: () => void;
+}
+
+export const SuccessPage: React.FC<SuccessPageProps> = ({
+  order,
+  apkUrl,
+  apkAppName = 'NovaEsp Android VIP Loader',
+  apkVersion = 'v2.4.0',
+  onReturnHome
+}) => {
+  const [copied, setCopied] = useState<boolean>(false);
+  const [showKey, setShowKey] = useState<boolean>(true);
+
+  // Fire celebratory confetti on mount!
+  useEffect(() => {
+    try {
+      confetti({
+        particleCount: 80,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#10b981', '#14b8a6', '#06b6d4', '#f59e0b']
+      });
+    } catch (e) {
+      console.warn('Confetti effect optional error:', e);
+    }
+  }, []);
+
+  const handleCopyKey = () => {
+    if (!order.licenseKey) return;
+    navigator.clipboard.writeText(order.licenseKey);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2500);
+  };
+
+  return (
+    <div className="py-10 sm:py-16 max-w-2xl mx-auto px-4">
+      <div className="bg-slate-900/90 backdrop-blur-2xl border border-emerald-500/30 rounded-3xl p-6 sm:p-10 shadow-2xl shadow-emerald-950/30 text-center relative overflow-hidden">
+        
+        {/* Glow Header Accent */}
+        <div className="absolute -top-24 left-1/2 -translate-x-1/2 w-72 h-72 bg-emerald-500/20 rounded-full blur-[80px] pointer-events-none" />
+
+        {/* Success Icon */}
+        <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-3xl bg-gradient-to-br from-emerald-400 to-teal-600 text-slate-950 flex items-center justify-center mx-auto mb-6 shadow-xl shadow-emerald-500/20 transform hover:scale-105 transition-transform">
+          <CheckCircle2 className="w-10 h-10 stroke-[2.5]" />
+        </div>
+
+        <span className="inline-block px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-xs font-bold uppercase tracking-widest mb-2">
+          Payment Confirmed
+        </span>
+
+        <h1 className="text-2xl sm:text-4xl font-extrabold text-white tracking-tight">
+          License Key Issued!
+        </h1>
+        <p className="mt-1.5 text-xs sm:text-sm text-slate-400">
+          Thank you for your purchase. Your digital license key is ready below.
+        </p>
+
+        {/* License Key Box */}
+        <div className="my-8 bg-slate-950 border border-slate-800 rounded-2xl p-5 relative group">
+          <div className="flex items-center justify-between text-xs font-bold text-slate-400 uppercase tracking-wider mb-2">
+            <span className="flex items-center gap-1.5 text-emerald-400">
+              <Key className="w-3.5 h-3.5" /> License Key
+            </span>
+            <button
+              onClick={() => setShowKey(!showKey)}
+              className="text-slate-400 hover:text-white text-[11px] flex items-center gap-1 transition-colors"
+            >
+              {showKey ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+              {showKey ? 'Hide' : 'Reveal'}
+            </button>
+          </div>
+
+          <div className="bg-slate-900 rounded-xl p-4 border border-slate-800 flex items-center justify-between gap-3 overflow-x-auto">
+            <code className="font-mono text-base sm:text-lg font-bold text-emerald-400 tracking-wide select-all whitespace-nowrap overflow-hidden text-ellipsis">
+              {showKey ? order.licenseKey : '••••••••••••••••'}
+            </code>
+
+            <button
+              onClick={handleCopyKey}
+              className={`shrink-0 flex items-center gap-1.5 px-3.5 py-2 rounded-lg text-xs font-bold transition-all ${
+                copied
+                  ? 'bg-emerald-500 text-slate-950'
+                  : 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'
+              }`}
+            >
+              {copied ? <Check className="w-4 h-4" /> : <Copy className="w-4 h-4" />}
+              <span>{copied ? 'Copied!' : 'Copy'}</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Order Details Grid */}
+        <div className="bg-slate-950/60 rounded-2xl p-5 border border-slate-800/80 text-left text-xs space-y-2.5 mb-8">
+          <div className="flex justify-between border-b border-slate-800/60 pb-2">
+            <span className="text-slate-400">Order Reference:</span>
+            <span className="text-white font-mono font-bold">{order.orderId}</span>
+          </div>
+
+          <div className="flex justify-between border-b border-slate-800/60 pb-2">
+            <span className="text-slate-400">Payment ID:</span>
+            <span className="text-slate-300 font-mono">{order.paymentId}</span>
+          </div>
+
+          <div className="flex justify-between border-b border-slate-800/60 pb-2">
+            <span className="text-slate-400">Product:</span>
+            <span className="text-white font-semibold">{order.productName}</span>
+          </div>
+
+          <div className="flex justify-between border-b border-slate-800/60 pb-2">
+            <span className="text-slate-400">Duration:</span>
+            <span className="text-white font-semibold">{order.durationName}</span>
+          </div>
+
+          <div className="flex justify-between pt-1">
+            <span className="text-slate-400">Amount Paid:</span>
+            <span className="text-emerald-400 font-mono font-bold text-sm">₹{order.finalAmount}</span>
+          </div>
+        </div>
+
+        {/* APK Download Banner (If URL is configured in settings) */}
+        {apkUrl && (
+          <div className="mb-8 p-5 rounded-2xl bg-gradient-to-r from-teal-950/80 to-slate-950 border border-teal-500/30 text-left relative overflow-hidden">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="flex items-center gap-3 min-w-0 w-full sm:w-auto">
+                {/* Android Icon */}
+                <div className="w-11 h-11 rounded-2xl bg-teal-500/10 text-teal-400 border border-teal-500/20 flex items-center justify-center shrink-0">
+                  <svg className="w-6 h-6 fill-current text-teal-400" viewBox="0 0 24 24">
+                    <path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997 0-.5511.4482-.9993.9993-.9993.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997zm-11.046 0c-.5511 0-.9993-.4486-.9993-.9997 0-.5511.4482-.9993.9993-.9993.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997zm11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1523-.5676.416.416 0 00-.5676.1523l-2.0223 3.503c-1.4801-.6761-3.1491-1.0573-4.9366-1.0573-1.7875 0-3.4565.3812-4.9366 1.0573l-2.0223-3.503a.4158.4158 0 00-.5676-.1523.416.416 0 00-.1523.5676l1.9973 3.4592c-3.3278 1.8385-5.5901 5.1636-5.8344 9.0435h22.0688c-.2443-3.8799-2.5066-7.205-5.8344-9.0435z" />
+                  </svg>
+                </div>
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h3 className="text-sm font-bold text-white leading-tight">{apkAppName}</h3>
+                    <span className="text-[10px] font-bold px-2 py-0.5 rounded bg-teal-500/20 text-teal-300 border border-teal-500/30 whitespace-nowrap">
+                      {apkVersion}
+                    </span>
+                  </div>
+                  <p className="text-xs text-slate-400 mt-1">Download Android Loader to activate key</p>
+                </div>
+              </div>
+              <a
+                href={apkUrl}
+                target="_blank"
+                rel="noreferrer"
+                className="w-full sm:w-auto flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-teal-400 hover:bg-teal-300 text-slate-950 font-bold text-xs shadow-lg shadow-teal-500/20 transition-all shrink-0"
+              >
+                <Download className="w-4 h-4" />
+                <span>Download APK</span>
+              </a>
+            </div>
+          </div>
+        )}
+
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-3">
+          <button
+            onClick={() => downloadInvoiceTxt(order)}
+            className="flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs border border-slate-700 transition-all active:scale-95"
+          >
+            <FileText className="w-4 h-4 text-emerald-400" />
+            <span>Download Invoice TXT</span>
+          </button>
+
+          <button
+            onClick={onReturnHome}
+            className="flex-1 flex items-center justify-center gap-2 py-3.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs shadow-lg shadow-emerald-500/20 transition-all active:scale-95"
+          >
+            <ArrowLeft className="w-4 h-4" />
+            <span>Buy Another Key</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  );
+};
