@@ -1,6 +1,0 @@
-{
-  "name": "NovaEsp Digital License Store",
-  "description": "Next-gen key selling store with real-time stock management, instant key delivery, coupon engine, invoice generator, and admin panel powered by Firebase RTDB.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
